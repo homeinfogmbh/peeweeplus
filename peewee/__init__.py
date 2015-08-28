@@ -3,6 +3,8 @@
 from peewee import MySQLDatabase as PeeweeMySQLDatabase, OperationalError
 from contextlib import suppress
 
+__all__ = ['create', 'MySQLDatabase']
+
 
 def create(model):
     """Decorator for peewee.Model definitions that
