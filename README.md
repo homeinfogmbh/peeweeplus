@@ -1,2 +1,2 @@
 # homeinfo-peewee
-Practical extension of @coleifer's small expressive ORM
+Practical extension of @coleifer 's small expressive ORM
