@@ -3,7 +3,7 @@
 from peewee import MySQLDatabase as PeeweeMySQLDatabase, OperationalError
 from contextlib import suppress
 
-__all__ = ['create', 'MySQLDatabase']
+__all__ = ['create', 'MySQLDatabase', 'Meta']
 
 
 def create(model):
@@ -38,3 +38,21 @@ class MySQLDatabase(PeeweeMySQLDatabase):
                 return super().execute_sql(*args, **kwargs)
         else:
             return super().execute_sql(*args, **kwargs)
+
+
+class Meta():
+    """Enhanced meta class for database configuration within models"""
+
+    def __init__(self):
+        """Initializes the schema override"""
+        self._schema = None
+
+    @property
+    def schema(self):
+        """Returns the schema override or the databse's name"""
+        return self._schema or self.database.database
+
+    @schema.setter
+    def schema(self, schema):
+        """Sets the schema override"""
+        self._schema = schema
