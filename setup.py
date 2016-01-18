@@ -14,5 +14,4 @@ setup(
               'homeinfo'],
     package_dir={'homeinfo': ''},
     packages=['homeinfo.peewee'],
-    description='peewee extensions for HOMEINFO',
-)
+    description='peewee extensions for HOMEINFO')
