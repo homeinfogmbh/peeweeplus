@@ -1,16 +1,17 @@
 FILE_LIST = ./.installed_files.txt
-ECHO = /bin/echo -e
+
+.PHONY: pull push clean check install uninstall
+
+default: | pull clean check install
 
 install:
 	@ ./setup.py install --record $(FILE_LIST)
 
 uninstall:
-	@ while read FILE; do
-		rm "${FILE}"
-	done < ${FILE_LIST}
+	@ while read FILE; do echo "Removing: $$FILE"; rm "$$FILE"; done < $(FILE_LIST)
 
 clean:
-	@ rm -R ./build
+	@ rm -Rf ./build
 
 check:
 	@ find . -type f -name "*.py" -not -path "./build/*" -exec pep8 --hang-closing {} \;
@@ -20,5 +21,3 @@ pull:
 
 push:
 	@ git push
-
-all:	pull uninstall clean install
