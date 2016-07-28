@@ -14,7 +14,7 @@ clean:
 	@ rm -Rf ./build
 
 check:
-	@ find . -type f -name "*.py" -not -path "./build/*" --exec pep8 --hang-closing {} \;
+	@ find . -type f -name "*.py" -not -path "./build/*" -exec pep8 --hang-closing {} \;
 
 pull:
 	@ git pull
