@@ -13,5 +13,5 @@ setup(
     requires=['peewee',
               'homeinfo'],
     package_dir={'homeinfo': ''},
-    packages=['homeinfo.peewee'],
+    py_modules=['homeinfo.peewee'],
     description='peewee extensions for HOMEINFO')
