@@ -1,7 +1,8 @@
 """peewee extensions for HOMEINFO"""
 
-from peewee import MySQLDatabase as PeeweeMySQLDatabase, OperationalError
 from contextlib import suppress
+
+import peewee
 
 __all__ = ['create', 'MySQLDatabase']
 
@@ -15,13 +16,13 @@ def create(model):
         class MyModel(peewee.Model):
             pass
     """
-    with suppress(OperationalError):
+    with suppress(peewee.OperationalError):
         with model._meta.database.execution_context():
             model.create_table(fail_silently=True)
     return model
 
 
-class MySQLDatabase(PeeweeMySQLDatabase):
+class MySQLDatabase(peewee.MySQLDatabase):
     """Extension of peewee.MySQLDatabase with closing option"""
 
     def __init__(self, *args, closing=False, **kwargs):
