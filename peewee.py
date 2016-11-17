@@ -16,9 +16,11 @@ def create(model):
         class MyModel(peewee.Model):
             pass
     """
+
     with suppress(peewee.OperationalError):
         with model._meta.database.execution_context():
             model.create_table(fail_silently=True)
+
     return model
 
 
