@@ -1,7 +1,7 @@
 """peewee extensions for HOMEINFO"""
 
 from contextlib import suppress
-from datetime import strpdatetime
+from timelib import strpdatetime
 
 import peewee
 
