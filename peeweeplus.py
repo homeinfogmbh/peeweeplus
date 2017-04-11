@@ -4,7 +4,14 @@ from contextlib import suppress
 
 import peewee
 
-__all__ = ['create', 'MySQLDatabase']
+__all__ = [
+    'create',
+    'dec2dom',
+    'dec2dict',
+    'dec2orm',
+    'date2orm',
+    'datetime2orm',
+    'MySQLDatabase']
 
 
 def create(model):
@@ -22,6 +29,41 @@ def create(model):
             model.create_table(fail_silently=True)
 
     return model
+
+
+def dec2dom(value):
+    """Converts decimal values into DOM-compatible strings"""
+
+    if value is not None:
+        return str(value)
+
+
+def dec2dict(value):
+    """Converts decimal values into DOM-compatible strings"""
+
+    if value is not None:
+        return float(value)
+
+
+def dec2orm(value):
+    """Converts decimal values into ORM-compatible floats"""
+
+    if value is not None:
+        return float(value)
+
+
+def date2orm(value):
+    """Converts a PyXB date object to a datetime.date object"""
+
+    if value is not None:
+        return value.date()
+
+
+def datetime2orm(value):
+    """Converts a PyXB date object to a datetime.date object"""
+
+    if value is not None:
+        return strpdatetime(value.isoformat())
 
 
 class MySQLDatabase(peewee.MySQLDatabase):
