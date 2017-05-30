@@ -1,6 +1,7 @@
 """peewee extensions for HOMEINFO"""
 
 from contextlib import suppress
+from json import dumps
 from timelib import strpdatetime
 
 import peewee
@@ -92,6 +93,7 @@ class JSONModel(peewee.Model):
 
     SHOW_PROTECTED = False
     RECURSE_FK = False
+    JSON_INDENT = None
 
     def __iter__(self):
         """Yields fields and values formatted for JSON complinace"""
@@ -140,3 +142,7 @@ class JSONModel(peewee.Model):
                         continue
 
                     yield (attr, val)
+
+    def __str__(self):
+        """Returns the model as a JSON string"""
+        return dumps(dict(self), indent=self.__class__.JSON_INDENT)
