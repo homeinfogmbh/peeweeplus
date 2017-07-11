@@ -16,7 +16,8 @@ __all__ = [
     'date2orm',
     'datetime2orm',
     'MySQLDatabase',
-    'JSONModel']
+    'JSONModel',
+    'EnumerationField']
 
 
 def create(model):
@@ -167,3 +168,34 @@ class JSONModel(peewee.Model):
     def __str__(self):
         """Returns the model as a JSON string"""
         return dumps(dict(self), indent=self.JSON_INDENT)
+
+
+class EnumerationField(peewee.CharField):
+    """VARCHAR baseed enumerations"""
+
+    def __init__(self, enum_values, *args, ignore_case=False, **kwargs):
+        self.enum_values = set(enum_values)
+        self.ignore_case = ignore_case
+        max_length = max(len(ev) for ev in self.enum_values)
+        super().__init__(max_length=max_length, *args, **kwargs)
+
+    def _invalid_value(self, value):
+        return ValueError('Invalid value: "{}".'.format(value))
+
+    def _validate_value(self, value):
+        if self.ignore_case:
+            return value.lower() in (ev.lower() for ev in self.enum_values)
+        else:
+            return value in self.enum_values
+
+    def db_value(self, value):
+        if self._validate_value(value):
+            return super().db_value(value)
+        else:
+            raise self._invalid_value(value)
+
+    def python_value(self, value):
+        if self._validate_value(value):
+            return super().python_value(value)
+        else:
+            raise self._invalid_value(value)
