@@ -15,6 +15,7 @@ __all__ = [
     'dec2orm',
     'date2orm',
     'datetime2orm',
+    'DisabledAutoIncrement',
     'MySQLDatabase',
     'JSONModel',
     'EnumerationField']
@@ -70,6 +71,20 @@ def datetime2orm(value):
 
     if value is not None:
         return strpdatetime(value.isoformat())
+
+
+class DisabledAutoIncrement():
+    """Disables auto increment of primary key on the respective model"""
+
+    def __init__(self, model):
+        self.model = model
+
+    def __enter__(self):
+        self.model._meta.auto_increment = False
+        return self
+
+    def __exit__(self, *_):
+        self.model._meta.auto_increment = True
 
 
 class MySQLDatabase(peewee.MySQLDatabase):
