@@ -186,7 +186,7 @@ class JSONModel(peewee.Model):
 
 
 class EnumerationField(peewee.CharField):
-    """VARCHAR baseed enumerations"""
+    """CharField-based enumeration field"""
 
     def __init__(self, enum_values, *args, ignore_case=False, **kwargs):
         self.enum_values = set(enum_values)
