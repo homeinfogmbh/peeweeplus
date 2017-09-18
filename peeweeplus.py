@@ -39,21 +39,22 @@ class FieldValueError(ValueError):
     """Indicates that the field cannot store data of the provided type."""
 
     TEMPLATE = (
-        '<{field.__class__.__name__} {field.db_column}> "{name}" '
-        'cannot store <{typ}>: {value}.')
+        '<{field.__class__.__name__} {field.db_column}> at '
+        '<{model.__class__.__name__}.{attr}> cannot store <{typ}>: {value}.')
 
-    def __init__(self, name, field, value):
+    def __init__(self, model, attr, field, value):
         """Sets the field and value."""
-        super().__init__((name, field, value))
-        self.name = name
+        super().__init__((model, attr, field, value))
+        self.model = model
+        self.attr = attr
         self.field = field
         self.value = value
 
     def __str__(self):
         """Returns the respective error message."""
         return self.TEMPLATE.format(
-            field=self.field, name=self.name, typ=type(self.value),
-            value=self.value)
+            field=self.field, model=self.model, attr=self.attr,
+            typ=type(self.value), value=self.value)
 
 
 class FieldNotNullError(FieldValueError):
@@ -62,16 +63,17 @@ class FieldNotNullError(FieldValueError):
     """
 
     TEMPLATE = (
-        '<{field.__class__.__name__} {field.db_column}> "{}" '
-        'must not be NULL.')
+        '<{field.__class__.__name__} {field.db_column}> at '
+        '<{model.__class__.__name__}.{attr}> must not be NULL.')
 
-    def __init__(self, name, field):
+    def __init__(self, model, attr, field):
         """Sets the field."""
-        super().__init__(name, field, None)
+        super().__init__(model, attr, field, None)
 
     def __str__(self):
         """Returns the respective error message."""
-        return self.TEMPLATE.format(field=self.field, name=self.name)
+        return self.TEMPLATE.format(
+            field=self.field, model=self.model, attr=self.attr)
 
 
 def create(model):
@@ -211,6 +213,27 @@ class MySQLDatabase(peewee.MySQLDatabase):
 class JSONModel(peewee.Model):
     """A JSON-serializable model"""
 
+    @classmethod
+    def from_dict(cls, dictionary, db_column=False):
+        """Creates a new instance from the given dictionary."""
+        record = cls()
+
+        for attr, field in fields(cls):
+            dict_value = dictionary.get(field.db_column if db_column else attr)
+
+            try:
+                value = str_to_field(field, dict_value)
+            except NullError:
+                raise FieldNotNullError(cls, attr, field)
+            except TypeError:
+                raise FieldValueError(cls, attr, field, value)
+            except ValueError:
+                raise FieldValueError(cls, attr, field, value)
+            else:
+                setattr(record, attr, value)
+
+        return record
+
     def to_dict(self, null=True, db_column=False, protected=False):
         """Returns the JSON model as a JSON-ish dictionary."""
         dictionary = {}
@@ -227,27 +250,24 @@ class JSONModel(peewee.Model):
 
         return dictionary
 
-    @classmethod
-    def from_dict(cls, dictionary, db_column=False):
-        """Creates a new instance from the given dictionary."""
-        record = cls()
-
-        for attr, field in fields(cls):
-            name = field.db_column if db_column else attr
-            dict_value = dictionary.get(name)
+    def patch(self, dictionary, db_column=False):
+        """Patches the model with the provided dictionary values."""
+        for attr, field in fields(self.__class__):
+            try:
+                dict_value = dictionary[field.db_column if db_column else attr]
+            except KeyError:
+                continue
 
             try:
                 value = str_to_field(field, dict_value)
             except NullError:
-                raise FieldNotNullError(name, field)
+                raise FieldNotNullError(self.__class__, attr, field)
             except TypeError:
-                raise FieldValueError(name, field, value)
+                raise FieldValueError(self.__class__, attr, field, value)
             except ValueError:
-                raise FieldValueError(name, field, value)
+                raise FieldValueError(self.__class__, attr, field, value)
             else:
-                setattr(record, attr, value)
-
-        return record
+                setattr(self, attr, value)
 
 
 class EnumerationField(peewee.CharField):
