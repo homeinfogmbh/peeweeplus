@@ -7,12 +7,17 @@ from timelib import strpdatetime, strpdate, strptime
 import peewee
 
 __all__ = [
+    'FieldValueError',
+    'FieldNotNullError',
     'create',
     'dec2dom',
     'dec2dict',
     'dec2orm',
     'date2orm',
     'datetime2orm',
+    'fields',
+    'field_to_str',
+    'str_to_field',
     'DisabledAutoIncrement',
     'MySQLDatabase',
     'JSONModel',
@@ -87,35 +92,31 @@ def create(model):
 
 
 def dec2dom(value):
-    """Converts decimal values into DOM-compatible strings"""
+    """Converts a decimal into a string."""
 
     if value is not None:
         return str(value)
 
 
 def dec2dict(value):
-    """Converts decimal values into DOM-compatible strings"""
+    """Converts a decimal into a string."""
 
     if value is not None:
         return float(value)
 
 
-def dec2orm(value):
-    """Converts decimal values into ORM-compatible floats"""
-
-    if value is not None:
-        return float(value)
+dec2orm = dec2dict
 
 
 def date2orm(value):
-    """Converts a PyXB date object to a datetime.date object"""
+    """Converts a PyXB date object to a datetime.date object."""
 
     if value is not None:
         return value.date()
 
 
 def datetime2orm(value):
-    """Converts a PyXB date object to a datetime.date object"""
+    """Converts a PyXB date object to a datetime.date object."""
 
     if value is not None:
         return strpdatetime(value.isoformat())
