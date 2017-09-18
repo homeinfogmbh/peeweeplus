@@ -1,10 +1,8 @@
 """peewee extensions for HOMEINFO"""
 
-from base64 import b64encode
+from base64 import b64encode, b64decode
 from contextlib import suppress
-from json import dumps
-from sys import stderr
-from timelib import strpdatetime
+from timelib import strpdatetime, strpdate, strptime
 
 import peewee
 
@@ -19,6 +17,56 @@ __all__ = [
     'MySQLDatabase',
     'JSONModel',
     'EnumerationField']
+
+
+TIME_FIELDS = (peewee.DateTimeField, peewee.DateField, peewee.TimeField)
+
+
+class NullError(TypeError):
+    """Indicates that the respective field
+    was set to NULL but must not be NULL.
+    """
+
+    pass
+
+
+class FieldValueError(ValueError):
+    """Indicates that the field cannot store data of the provided type."""
+
+    TEMPLATE = (
+        '<{field.__class__.__name__} {field.db_column}> "{name}" '
+        'cannot store <{typ}>: {value}.')
+
+    def __init__(self, name, field, value):
+        """Sets the field and value."""
+        super().__init__((name, field, value))
+        self.name = name
+        self.field = field
+        self.value = value
+
+    def __str__(self):
+        """Returns the respective error message."""
+        return self.TEMPLATE.format(
+            field=self.field, name=self.name, typ=type(self.value),
+            value=self.value)
+
+
+class FieldNotNullError(FieldValueError):
+    """Indicates that the field was assigned
+    a NULL value which it cannot store.
+    """
+
+    TEMPLATE = (
+        '<{field.__class__.__name__} {field.db_column}> "{}" '
+        'must not be NULL.')
+
+    def __init__(self, name, field):
+        """Sets the field."""
+        super().__init__(name, field, None)
+
+    def __str__(self):
+        """Returns the respective error message."""
+        return self.TEMPLATE.format(field=self.field, name=self.name)
 
 
 def create(model):
@@ -73,6 +121,59 @@ def datetime2orm(value):
         return strpdatetime(value.isoformat())
 
 
+def fields(model):
+    """Yields fields of a peewee.Model."""
+
+    for attr in dir(model):
+        candidate = getattr(model, attr)
+
+        if isinstance(candidate, peewee.Field):
+            yield (attr, candidate)
+
+
+def field_to_str(field, value):
+    """Converts the given field's content into a string."""
+
+    if value is not None:
+        if isinstance(field, peewee.ForeignKeyField):
+            return value.id
+        elif isinstance(field, peewee.DecimalField):
+            return float(value)
+        elif isinstance(field, TIME_FIELDS):
+            return value.isoformat()
+        elif isinstance(field, peewee.BlobField):
+            return b64encode(value)
+
+    return value
+
+
+def str_to_field(field, value):
+    """Converts the given field's content into a string."""
+
+    if value is None:
+        if not field.null:
+            raise NullError(field)
+
+        return value
+
+    if isinstance(field, peewee.IntegerField):
+        return int(value)
+    elif isinstance(field, peewee.FloatField):
+        return float(value)
+    elif isinstance(field, peewee.DecimalField):
+        return float(value)
+    elif isinstance(field, peewee.DateTimeField):
+        return strpdatetime(value)
+    elif isinstance(field, peewee.DateField):
+        return strpdate(value)
+    elif isinstance(field, peewee.TimeField):
+        return strptime(value)
+    elif isinstance(field, peewee.BlobField):
+        return b64decode(value)
+
+    return value
+
+
 class DisabledAutoIncrement():
     """Disables auto increment of primary key on the respective model"""
 
@@ -109,108 +210,83 @@ class MySQLDatabase(peewee.MySQLDatabase):
 class JSONModel(peewee.Model):
     """A JSON-serializable model"""
 
-    SHOW_PROTECTED = False
-    DISPLAY_PK = False
-    RECURSE_FK = False
-    JSON_INDENT = None
+    def to_dict(self, null=True, db_column=False, protected=False):
+        """Returns the JSON model as a JSON-ish dictionary."""
+        dictionary = {}
 
-    def __iter__(self):
-        """Yields fields and values formatted for JSON complinace"""
-        for attr in dir(self.__class__):
-            if not attr.startswith('_') or self.SHOW_PROTECTED:
-                field = getattr(self.__class__, attr)
+        for attr, field in fields(self.__class__):
+            if protected or not attr.startswith('_'):
+                name = field.db_column if db_column else attr
+                value = getattr(self, attr)
 
-                if isinstance(field, peewee.Field):
-                    if isinstance(field, peewee.ForeignKeyField):
-                        model = getattr(self, attr)
+                if value is None and not null:
+                    continue
 
-                        if model is not None:
-                            if self.RECURSE_FK:
-                                try:
-                                    val = dict(model)
-                                except (TypeError, ValueError):
-                                    val = '<Not JSON serializable>'
-                            else:
-                                val = model._get_pk_value()
-                        else:
-                            val = model
-                    elif isinstance(field, peewee.IntegerField):
-                        if isinstance(field, peewee.PrimaryKeyField):
-                            if not self.DISPLAY_PK:
-                                continue
+                dictionary[name] = field_to_str(field, value)
 
-                        val = getattr(self, attr)
-                    elif isinstance(field, peewee.DecimalField):
-                        val = getattr(self, attr)
+        return dictionary
 
-                        if val is not None:
-                            val = float(val)
-                    elif isinstance(field, peewee.FloatField):
-                        val = getattr(self, attr)
-                    elif isinstance(field, peewee.CharField):
-                        val = getattr(self, attr)
-                    elif isinstance(field, peewee.TextField):
-                        val = getattr(self, attr)
-                    elif isinstance(field, peewee.DateTimeField):
-                        val = getattr(self, attr)
+    @classmethod
+    def from_dict(cls, dictionary, db_column=False):
+        """Creates a new instance from the given dictionary."""
+        record = cls()
 
-                        if val is not None:
-                            val = val.isoformat()
-                    elif isinstance(field, peewee.DateField):
-                        val = getattr(self, attr)
+        for attr, field in fields(cls):
+            name = field.db_column if db_column else attr
+            dict_value = dictionary.get(name)
 
-                        if val is not None:
-                            val = val.isoformat()
-                    elif isinstance(field, peewee.TimeField):
-                        val = getattr(self, attr)
+            try:
+                value = str_to_field(field, dict_value)
+            except NullError:
+                raise FieldNotNullError(name, field)
+            except TypeError:
+                raise FieldValueError(name, field, value)
+            except ValueError:
+                raise FieldValueError(name, field, value)
+            else:
+                setattr(record, attr, value)
 
-                        if val is not None:
-                            val = val.isoformat()
-                    elif isinstance(field, peewee.BooleanField):
-                        val = getattr(self, attr)
-                    elif isinstance(field, peewee.BlobField):
-                        val = getattr(self, attr)
-
-                        if val is not None:
-                            val = b64encode(val)
-                    else:
-                        print('Unknown Field type: {}'.format(field),
-                              file=stderr)
-                        continue
-
-                    yield (attr, val)
-
-    def __str__(self):
-        """Returns the model as a JSON string"""
-        return dumps(dict(self), indent=self.JSON_INDENT)
+        return record
 
 
 class EnumerationField(peewee.CharField):
     """CharField-based enumeration field"""
 
-    def __init__(self, enum_values, *args, ignore_case=False, **kwargs):
-        self.enum_values = set(enum_values)
+    INVALID_VALUE = 'Invalid value: "{}".'
+
+    def __init__(self, enumeration, *args, ignore_case=False, **kwargs):
+        """Initializes the enumeration field with the possible values.
+
+        @enumeration: enum.Enum
+        """
+        self.enumeration = enumeration
         self.ignore_case = ignore_case
-        max_length = max(len(ev) for ev in self.enum_values)
+        max_length = max(len(value) for value in self.values)
         super().__init__(max_length=max_length, *args, **kwargs)
 
-    def _invalid_value(self, value):
-        return ValueError('Invalid value: "{}".'.format(value))
+    @property
+    def values(self):
+        """Yieds the appropriate enumeration values."""
+        for value in self.enumeration:
+            yield value.value
 
-    def _validate_value(self, value):
+    def is_valid(self, value):
+        """Validates an enumeration value."""
         if self.ignore_case:
-            return value.lower() in (ev.lower() for ev in self.enum_values)
-        else:
-            return value in self.enum_values
+            return value.lower() in (value.lower() for value in self.values)
+
+        return value in self.values
 
     def db_value(self, value):
-        if self._validate_value(value):
+        """Returns the appropriate database value."""
+        if self.is_valid(value):
             return super().db_value(value)
-        else:
-            raise self._invalid_value(value)
+
+        raise ValueError(self.INVALID_VALUE.format(value))
 
     def python_value(self, value):
-        if self._validate_value(value):
+        """Returns the appropriate python value."""
+        if self.is_valid(value):
             return super().python_value(value)
-        else:
-            raise self._invalid_value(value)
+
+        raise ValueError(self.INVALID_VALUE.format(value))
