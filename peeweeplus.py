@@ -21,7 +21,7 @@ __all__ = [
     'DisabledAutoIncrement',
     'MySQLDatabase',
     'JSONModel',
-    'EnumerationField']
+    'EnumField']
 
 
 TIME_FIELDS = (peewee.DateTimeField, peewee.DateField, peewee.TimeField)
@@ -270,7 +270,7 @@ class JSONModel(peewee.Model):
                 setattr(self, attr, value)
 
 
-class EnumerationField(peewee.CharField):
+class EnumField(peewee.CharField):
     """CharField-based enumeration field"""
 
     INVALID_VALUE = 'Invalid value: "{}".'
