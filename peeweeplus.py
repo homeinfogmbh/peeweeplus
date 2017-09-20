@@ -40,7 +40,7 @@ class FieldValueError(ValueError):
 
     TEMPLATE = (
         '<{field.__class__.__name__} {field.db_column}> at '
-        '<{model.__class__.__name__}.{attr}> cannot store <{typ}>: {value}.')
+        '<{model.__class__.__name__}.{attr}> cannot store {typ}: {value}.')
 
     def __init__(self, model, attr, field, value):
         """Sets the field and value."""
