@@ -133,16 +133,13 @@ def datetime2orm(value):
         return strpdatetime(value.isoformat())
 
 
-def fields(model, omit_fk=True):
+def fields(model):
     """Yields fields of a peewee.Model."""
 
     for attr in dir(model):
         candidate = getattr(model, attr)
 
         if isinstance(candidate, peewee.Field):
-            if omit_fk and isinstance(candidate, peewee.ForeignKeyField):
-                continue
-
             yield (attr, candidate)
 
 
@@ -250,7 +247,12 @@ class JSONModel(peewee.Model):
         """Creates a new instance from the given dictionary."""
         record = cls()
 
-        for attr, field in fields(cls, omit_fk=omit_fk):
+        for attr, field in fields(cls):
+            if isinstance(field, peewee.PrimaryKeyField):
+                continue
+            elif omit_fk and isinstance(field, peewee.ForeignKeyField):
+                continue
+
             value = dictionary.get(field.db_column if db_column else attr)
 
             try:
@@ -284,7 +286,10 @@ class JSONModel(peewee.Model):
 
     def patch(self, dictionary, db_column=False, omit_fk=True):
         """Patches the model with the provided dictionary values."""
-        for attr, field in fields(self.__class__, omit_fk=omit_fk):
+        for attr, field in fields(self.__class__):
+            if omit_fk and isinstance(field, peewee.ForeignKeyField):
+                continue
+
             try:
                 value = dictionary[field.db_column if db_column else attr]
             except KeyError:
