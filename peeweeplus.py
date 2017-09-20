@@ -140,7 +140,7 @@ def fields(model, omit_fk=True):
         candidate = getattr(model, attr)
 
         if isinstance(candidate, peewee.Field):
-            if omit_fk and isinstance(candidate, ForeignKeyField):
+            if omit_fk and isinstance(candidate, peewee.ForeignKeyField):
                 continue
 
             yield (attr, candidate)
