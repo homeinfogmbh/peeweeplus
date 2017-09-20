@@ -2,6 +2,7 @@
 
 from base64 import b64encode, b64decode
 from contextlib import suppress
+from datetime import datetime, date, time
 from timelib import strpdatetime, strpdate, strptime
 
 import peewee
@@ -16,8 +17,8 @@ __all__ = [
     'date2orm',
     'datetime2orm',
     'fields',
-    'field_to_str',
-    'str_to_field',
+    'strffield',
+    'strpfield',
     'DisabledAutoIncrement',
     'MySQLDatabase',
     'JSONModel',
@@ -25,6 +26,14 @@ __all__ = [
 
 
 TIME_FIELDS = (peewee.DateTimeField, peewee.DateField, peewee.TimeField)
+BOOL_VALUES = {
+    'true': True,
+    'false': False,
+    '1': True,
+    '0': False,
+    1: True,
+    0: False,
+    None: None}
 
 
 class NullError(TypeError):
@@ -134,7 +143,7 @@ def fields(model):
             yield (attr, candidate)
 
 
-def field_to_str(field, value):
+def strffield(field, value):
     """Converts the given field's content into a string."""
 
     if value is not None:
@@ -150,8 +159,8 @@ def field_to_str(field, value):
     return value
 
 
-def str_to_field(field, value):
-    """Converts the given field's content into a string."""
+def strpfield(value, field):
+    """Converts respective value for the provided field."""
 
     if value is None:
         if not field.null:
@@ -159,19 +168,39 @@ def str_to_field(field, value):
 
         return value
 
-    if isinstance(field, peewee.IntegerField):
+    if isinstance(field, peewee.BooleanField):
+        if isinstance(value, (bool, int)):
+            return bool(value)
+
+        try:
+            return BOOL_VALUES[value]
+        except KeyError:
+            raise ValueError(value)
+    elif isinstance(field, peewee.IntegerField):
         return int(value)
     elif isinstance(field, peewee.FloatField):
         return float(value)
     elif isinstance(field, peewee.DecimalField):
         return float(value)
     elif isinstance(field, peewee.DateTimeField):
+        if isinstance(value, datetime):
+            return value
+
         return strpdatetime(value)
     elif isinstance(field, peewee.DateField):
+        if isinstance(value, date):
+            return value
+
         return strpdate(value)
     elif isinstance(field, peewee.TimeField):
+        if isinstance(value, time):
+            return value
+
         return strptime(value)
     elif isinstance(field, peewee.BlobField):
+        if isinstance(value, bytes):
+            return value
+
         return b64decode(value)
 
     return value
@@ -222,7 +251,7 @@ class JSONModel(peewee.Model):
             value = dictionary.get(field.db_column if db_column else attr)
 
             try:
-                value = str_to_field(field, value)
+                value = strpfield(value, field)
             except NullError:
                 raise FieldNotNullError(cls, attr, field)
             except TypeError:
@@ -246,7 +275,7 @@ class JSONModel(peewee.Model):
                 if value is None and not null:
                     continue
 
-                dictionary[name] = field_to_str(field, value)
+                dictionary[name] = strffield(field, value)
 
         return dictionary
 
@@ -259,7 +288,7 @@ class JSONModel(peewee.Model):
                 continue
 
             try:
-                value = str_to_field(field, value)
+                value = strpfield(value, field)
             except NullError:
                 raise FieldNotNullError(self.__class__, attr, field)
             except TypeError:
