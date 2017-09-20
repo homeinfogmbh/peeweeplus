@@ -219,10 +219,10 @@ class JSONModel(peewee.Model):
         record = cls()
 
         for attr, field in fields(cls):
-            dict_value = dictionary.get(field.db_column if db_column else attr)
+            value = dictionary.get(field.db_column if db_column else attr)
 
             try:
-                value = str_to_field(field, dict_value)
+                value = str_to_field(field, value)
             except NullError:
                 raise FieldNotNullError(cls, attr, field)
             except TypeError:
@@ -254,12 +254,12 @@ class JSONModel(peewee.Model):
         """Patches the model with the provided dictionary values."""
         for attr, field in fields(self.__class__):
             try:
-                dict_value = dictionary[field.db_column if db_column else attr]
+                value = dictionary[field.db_column if db_column else attr]
             except KeyError:
                 continue
 
             try:
-                value = str_to_field(field, dict_value)
+                value = str_to_field(field, value)
             except NullError:
                 raise FieldNotNullError(self.__class__, attr, field)
             except TypeError:
