@@ -243,12 +243,13 @@ class JSONModel(peewee.Model):
     """A JSON-serializable model"""
 
     @classmethod
-    def from_dict(cls, dictionary, db_column=False, omit_fk=True):
+    def from_dict(cls, dictionary, db_column=False,
+                  omit_pk=True, omit_fk=True):
         """Creates a new instance from the given dictionary."""
         record = cls()
 
         for attr, field in fields(cls):
-            if isinstance(field, peewee.PrimaryKeyField):
+            if omit_pk and isinstance(field, peewee.PrimaryKeyField):
                 continue
             elif omit_fk and isinstance(field, peewee.ForeignKeyField):
                 continue
@@ -286,7 +287,9 @@ class JSONModel(peewee.Model):
 
     def patch(self, dictionary, db_column=False, omit_fk=True):
         """Patches the model with the provided dictionary values."""
-        for attr, field in fields(self.__class__):
+        cls = self.__class__
+
+        for attr, field in fields(cls):
             if omit_fk and isinstance(field, peewee.ForeignKeyField):
                 continue
 
@@ -298,11 +301,11 @@ class JSONModel(peewee.Model):
             try:
                 value = strpfield(value, field)
             except NullError:
-                raise FieldNotNullError(self.__class__, attr, field)
+                raise FieldNotNullError(cls, attr, field)
             except TypeError:
-                raise FieldValueError(self.__class__, attr, field, value)
+                raise FieldValueError(cls, attr, field, value)
             except ValueError:
-                raise FieldValueError(self.__class__, attr, field, value)
+                raise FieldValueError(cls, attr, field, value)
             else:
                 setattr(self, attr, value)
 
