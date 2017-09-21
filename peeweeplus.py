@@ -230,7 +230,7 @@ class JSONModel(peewee.Model):
 
     @classmethod
     def from_dict(cls, dictionary):
-        """Creates a new instance from the given dictionary."""
+        """Creates a new record from a JSON-ish dictionary."""
         record = cls()
 
         for attr, field in fields(cls):
@@ -249,7 +249,7 @@ class JSONModel(peewee.Model):
         return record
 
     def patch(self, dictionary):
-        """Patches the model with the provided dictionary values."""
+        """Modifies the record with the values from a JSON-ish dictionary."""
         cls = self.__class__
 
         for attr, field in fields(cls):
@@ -271,7 +271,7 @@ class JSONModel(peewee.Model):
                 setattr(self, attr, value)
 
     def to_dict(self, null=True, protected=False):
-        """Returns the JSON model as a JSON-ish dictionary."""
+        """Returns a JSON-ish dictionary with the record's values."""
         dictionary = {}
 
         for attr, field in fields(self.__class__):
