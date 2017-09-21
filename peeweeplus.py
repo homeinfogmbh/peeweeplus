@@ -1,7 +1,6 @@
 """peewee extensions for HOMEINFO"""
 
 from base64 import b64encode, b64decode
-from contextlib import suppress
 from timelib import strpdatetime, strpdate, strptime
 
 import peewee
@@ -145,7 +144,7 @@ def fields(model):
 
 
 def field_to_json(field, value):
-    """Converts the given field's content into a string."""
+    """Converts the given field's content into JSON-ish data."""
 
     if value is not None:
         if isinstance(field, peewee.ForeignKeyField):
@@ -161,7 +160,7 @@ def field_to_json(field, value):
 
 
 def json_to_field(value, field):
-    """Converts respective value for the provided field."""
+    """Converts a JSON-ish value for the provided field."""
 
     if value is None:
         if not field.null:
