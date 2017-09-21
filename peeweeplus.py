@@ -165,7 +165,7 @@ def json_to_field(value, field):
 
     if value is None:
         if not field.null:
-            raise NullError(field)
+            raise NullError()
 
         return value
 
@@ -270,7 +270,7 @@ class JSONModel(peewee.Model):
             else:
                 setattr(self, attr, value)
 
-    def to_dict(self, null=True, protected=False):
+    def to_dict(self, protected=False, omit_null=False):
         """Returns a JSON-ish dictionary with the record's values."""
         dictionary = {}
 
@@ -278,7 +278,7 @@ class JSONModel(peewee.Model):
             if protected or not attr.startswith('_'):
                 value = getattr(self, attr)
 
-                if value is None and not null:
+                if value is None and omit_null:
                     continue
 
                 dictionary[attr] = field_to_json(field, value)
