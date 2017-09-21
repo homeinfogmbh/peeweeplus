@@ -144,7 +144,7 @@ def fields(model):
 
 
 def field_to_json(field, value):
-    """Converts the given field's content into JSON-ish data."""
+    """Converts the given field's value into JSON-ish data."""
 
     if value is not None:
         if isinstance(field, peewee.ForeignKeyField):
