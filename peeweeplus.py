@@ -2,7 +2,6 @@
 
 from base64 import b64encode, b64decode
 from contextlib import suppress
-from datetime import datetime, date, time
 from timelib import strpdatetime, strpdate, strptime
 
 import peewee
@@ -17,8 +16,8 @@ __all__ = [
     'date2orm',
     'datetime2orm',
     'fields',
-    'strffield',
-    'strpfield',
+    'field_to_json',
+    'json_to_field',
     'DisabledAutoIncrement',
     'MySQLDatabase',
     'JSONModel',
@@ -26,14 +25,6 @@ __all__ = [
 
 
 TIME_FIELDS = (peewee.DateTimeField, peewee.DateField, peewee.TimeField)
-BOOL_VALUES = {
-    'true': True,
-    'false': False,
-    '1': True,
-    '0': False,
-    1: True,
-    0: False,
-    None: None}
 
 
 class NullError(TypeError):
@@ -153,12 +144,12 @@ def fields(model):
             yield (attr, candidate)
 
 
-def strffield(field, value):
+def field_to_json(field, value):
     """Converts the given field's content into a string."""
 
     if value is not None:
         if isinstance(field, peewee.ForeignKeyField):
-            return value.id
+            return value._get_pk_value()
         elif isinstance(field, peewee.DecimalField):
             return float(value)
         elif isinstance(field, TIME_FIELDS):
@@ -169,7 +160,7 @@ def strffield(field, value):
     return value
 
 
-def strpfield(value, field):
+def json_to_field(value, field):
     """Converts respective value for the provided field."""
 
     if value is None:
@@ -182,10 +173,7 @@ def strpfield(value, field):
         if isinstance(value, (bool, int)):
             return bool(value)
 
-        try:
-            return BOOL_VALUES[value]
-        except KeyError:
-            raise ValueError(value)
+        raise ValueError(value)
     elif isinstance(field, peewee.IntegerField):
         return int(value)
     elif isinstance(field, peewee.FloatField):
@@ -193,31 +181,19 @@ def strpfield(value, field):
     elif isinstance(field, peewee.DecimalField):
         return float(value)
     elif isinstance(field, peewee.DateTimeField):
-        if isinstance(value, datetime):
-            return value
-
         return strpdatetime(value)
     elif isinstance(field, peewee.DateField):
-        if isinstance(value, date):
-            return value
-
         return strpdate(value)
     elif isinstance(field, peewee.TimeField):
-        if isinstance(value, time):
-            return value
-
         return strptime(value)
     elif isinstance(field, peewee.BlobField):
-        if isinstance(value, bytes):
-            return value
-
         return b64decode(value)
 
     return value
 
 
 class DisabledAutoIncrement():
-    """Disables auto increment of primary key on the respective model"""
+    """Disables auto increment on the respective model."""
 
     def __init__(self, model):
         self.model = model
@@ -231,16 +207,16 @@ class DisabledAutoIncrement():
 
 
 class MySQLDatabase(peewee.MySQLDatabase):
-    """Extension of peewee.MySQLDatabase with closing option"""
+    """Extension of peewee.MySQLDatabase with closing option."""
 
     def __init__(self, *args, closing=False, **kwargs):
-        """Adds closing switch for automatic connection closing"""
+        """Adds closing switch for automatic connection closing."""
         super().__init__(*args, **kwargs)
         self.closing = closing
 
     def execute_sql(self, *args, **kwargs):
         """Conditionally execute the SQL query in an
-        execution context iff closing is enabled
+        execution context iff closing is enabled.
         """
         if self.closing:
             with self.execution_context():
@@ -250,78 +226,68 @@ class MySQLDatabase(peewee.MySQLDatabase):
 
 
 class JSONModel(peewee.Model):
-    """A JSON-serializable model"""
+    """A JSON-serializable model."""
 
     @classmethod
-    def from_dict(cls, dictionary, db_column=False,
-                  omit_pk=True, omit_fk=True):
+    def from_dict(cls, dictionary):
         """Creates a new instance from the given dictionary."""
         record = cls()
 
         for attr, field in fields(cls):
-            if omit_pk and isinstance(field, peewee.PrimaryKeyField):
+            if isinstance(field, peewee.PrimaryKeyField):
                 continue
-            elif omit_fk and isinstance(field, peewee.ForeignKeyField):
-                continue
-
-            value = dictionary.get(field.db_column if db_column else attr)
 
             try:
-                value = strpfield(value, field)
+                value = json_to_field(dictionary.get(attr), field)
             except NullError:
-                raise FieldNotNullError(cls, attr, field)
-            except TypeError:
-                raise FieldValueError(cls, attr, field, value)
-            except ValueError:
-                raise FieldValueError(cls, attr, field, value)
+                raise FieldNotNullError(cls, attr, field) from None
+            except (TypeError, ValueError):
+                raise FieldValueError(cls, attr, field, value) from None
             else:
                 setattr(record, attr, value)
 
         return record
 
-    def to_dict(self, null=True, db_column=False, protected=False):
+    def patch(self, dictionary):
+        """Patches the model with the provided dictionary values."""
+        cls = self.__class__
+
+        for attr, field in fields(cls):
+            if isinstance(field, peewee.PrimaryKeyField):
+                continue
+
+            try:
+                value = dictionary[attr]
+            except KeyError:
+                continue
+
+            try:
+                value = json_to_field(value, field)
+            except NullError:
+                raise FieldNotNullError(cls, attr, field) from None
+            except (TypeError, ValueError):
+                raise FieldValueError(cls, attr, field, value) from None
+            else:
+                setattr(self, attr, value)
+
+    def to_dict(self, null=True, protected=False):
         """Returns the JSON model as a JSON-ish dictionary."""
         dictionary = {}
 
         for attr, field in fields(self.__class__):
             if protected or not attr.startswith('_'):
-                name = field.db_column if db_column else attr
                 value = getattr(self, attr)
 
                 if value is None and not null:
                     continue
 
-                dictionary[name] = strffield(field, value)
+                dictionary[attr] = field_to_json(field, value)
 
         return dictionary
 
-    def patch(self, dictionary, db_column=False, omit_fk=True):
-        """Patches the model with the provided dictionary values."""
-        cls = self.__class__
-
-        for attr, field in fields(cls):
-            if omit_fk and isinstance(field, peewee.ForeignKeyField):
-                continue
-
-            try:
-                value = dictionary[field.db_column if db_column else attr]
-            except KeyError:
-                continue
-
-            try:
-                value = strpfield(value, field)
-            except NullError:
-                raise FieldNotNullError(cls, attr, field)
-            except TypeError:
-                raise FieldValueError(cls, attr, field, value)
-            except ValueError:
-                raise FieldValueError(cls, attr, field, value)
-            else:
-                setattr(self, attr, value)
-
 
 class EnumField(peewee.CharField):
-    """CharField-based enumeration field"""
+    """CharField-based enumeration field."""
 
     INVALID_VALUE = 'Invalid value: "{}".'
 
