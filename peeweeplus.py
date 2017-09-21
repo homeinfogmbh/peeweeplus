@@ -65,6 +65,16 @@ class FieldValueError(ValueError):
             field=self.field, model=self.model, attr=self.attr,
             typ=type(self.value), value=self.value)
 
+    def to_dict(self):
+        """Returns a JSON-ish representation of this error."""
+        return {
+            'model': self.model.__class__.__name__,
+            'attr': self.attr,
+            'field': self.field.__class__.__name__,
+            'db_column': self.field.db_column,
+            'value': str(self.value),
+            'type': type(self.value)}
+
 
 class FieldNotNullError(FieldValueError):
     """Indicates that the field was assigned
