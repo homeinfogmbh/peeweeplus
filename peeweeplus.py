@@ -326,11 +326,15 @@ class JSONModel(peewee.Model):
             else:
                 setattr(self, attribute, value)
 
-    def to_dict(self, protected=False, null=True):
+    def to_dict(self, protected=False, null=True, blacklist=None):
         """Returns a JSON-ish dictionary with the record's values."""
         dictionary = {}
+        blacklist = Blacklist.load(blacklist)
 
         for attr, field in list_fields(self.__class__):
+            if (attribute, field) in blacklist:
+                continue
+
             if protected or not attr.startswith('_'):
                 value = getattr(self, attr)
 
