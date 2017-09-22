@@ -17,7 +17,7 @@ __all__ = [
     'date2orm',
     'datetime2orm',
     'list_fields',
-    'shortest_fks',
+    'filter_fk_ids',
     'field_to_json',
     'value_to_field',
     'DisabledAutoIncrement',
@@ -147,7 +147,7 @@ def list_fields(model):
             yield (attribute, candidate)
 
 
-def shortest_fks(fields):
+def filter_fk_ids(fields):
     """Filters shortest-named foreign key descriptors."""
 
     fk_fields = {}
@@ -317,7 +317,7 @@ class JSONModel(peewee.Model):
         record = cls()
         blacklist = Blacklist.load(blacklist)
 
-        for attribute, field in shortest_fks(list_fields(cls)):
+        for attribute, field in filter_fk_ids(list_fields(cls)):
             if (attribute, field) in blacklist:
                 continue
 
@@ -337,7 +337,7 @@ class JSONModel(peewee.Model):
         cls = self.__class__
         blacklist = Blacklist.load(blacklist)
 
-        for attribute, field in shortest_fks(list_fields(cls)):
+        for attribute, field in filter_fk_ids(list_fields(cls)):
             if (attribute, field) in blacklist:
                 continue
 
@@ -360,7 +360,7 @@ class JSONModel(peewee.Model):
         dictionary = {}
         blacklist = Blacklist.load(blacklist)
 
-        for attribute, field in shortest_fks(list_fields(self.__class__)):
+        for attribute, field in filter_fk_ids(list_fields(self.__class__)):
             if (attribute, field) in blacklist:
                 continue
 
