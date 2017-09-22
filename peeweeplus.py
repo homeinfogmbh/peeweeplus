@@ -169,7 +169,7 @@ def filter_fk_ids(fields):
                 if field.db_column == alt_field.db_column:
                     continue
 
-        yield field
+        yield (attribute, field)
 
 
 def field_to_json(field, value):
