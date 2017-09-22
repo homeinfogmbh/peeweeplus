@@ -17,6 +17,7 @@ __all__ = [
     'date2orm',
     'datetime2orm',
     'list_fields',
+    'filter_key_fields',
     'filter_fk_ids',
     'field_to_json',
     'value_to_field',
@@ -28,6 +29,7 @@ __all__ = [
 
 
 TIME_FIELDS = (peewee.DateTimeField, peewee.DateField, peewee.TimeField)
+KEY_FIELDS = (peewee.PrimaryKeyField, peewee.ForeignKeyField)
 
 
 class NullError(TypeError):
@@ -168,6 +170,18 @@ def filter_fk_ids(fields):
             else:
                 if field.db_column == alt_field.db_column:
                     continue
+
+        yield (attribute, field)
+
+
+def filter_key_fields(fields, foreign=True):
+    """Filters field types."""
+
+    for attribute, field in fields:
+        if isinstance(field, peewee.PrimaryKeyField):
+            continue
+        elif foreign and isinstance(field, peewee.ForeignKeyField):
+            continue
 
         yield (attribute, field)
 
@@ -317,8 +331,8 @@ class JSONModel(peewee.Model):
         record = cls()
         blacklist = Blacklist.load(blacklist)
 
-        for attribute, field in filter_fk_ids(list_fields(cls)):
-            if (attribute, field) in blacklist:
+        for attribute, field in filter_key_fields(list_fields(cls)):
+            if isinstance(field, peewee.PrimaryKeyField):
                 continue
 
             try:
@@ -337,8 +351,8 @@ class JSONModel(peewee.Model):
         cls = self.__class__
         blacklist = Blacklist.load(blacklist)
 
-        for attribute, field in filter_fk_ids(list_fields(cls)):
-            if (attribute, field) in blacklist:
+        for attribute, field in filter_key_fields(list_fields(cls)):
+            if isinstance(field, peewee.PrimaryKeyField):
                 continue
 
             try:
@@ -360,7 +374,8 @@ class JSONModel(peewee.Model):
         dictionary = {}
         blacklist = Blacklist.load(blacklist)
 
-        for attribute, field in filter_fk_ids(list_fields(self.__class__)):
+        for attribute, field in filter_key_fields(
+                list_fields(self.__class__), foreign=False):
             if (attribute, field) in blacklist:
                 continue
 
