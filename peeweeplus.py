@@ -331,17 +331,17 @@ class JSONModel(peewee.Model):
         dictionary = {}
         blacklist = Blacklist.load(blacklist)
 
-        for attr, field in list_fields(self.__class__):
+        for attribute, field in list_fields(self.__class__):
             if (attribute, field) in blacklist:
                 continue
 
-            if protected or not attr.startswith('_'):
-                value = getattr(self, attr)
+            if protected or not attribute.startswith('_'):
+                value = getattr(self, attribute)
 
                 if value is None and not null:
                     continue
 
-                dictionary[attr] = field_to_json(field, value)
+                dictionary[attribute] = field_to_json(field, value)
 
         return dictionary
 
