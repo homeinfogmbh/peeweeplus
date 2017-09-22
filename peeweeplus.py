@@ -372,7 +372,7 @@ class JSONModel(peewee.Model):
         dictionary = {}
         blacklist = Blacklist.load(blacklist)
 
-        for attribute, field in filter_key_fields(list_fields(self.__class__)):
+        for attribute, field in filter_fk_ids(list_fields(self.__class__)):
             if (attribute, field) in blacklist:
                 continue
 
