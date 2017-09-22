@@ -164,7 +164,7 @@ def shortest_fks(fields):
         else:
             yield (attribute, field)
 
-    for _, field in fk_fields:
+    for _, field in fk_fields.items():
         yield field
 
 
