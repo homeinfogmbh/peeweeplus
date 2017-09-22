@@ -1,6 +1,8 @@
 """peewee extensions for HOMEINFO"""
 
 from base64 import b64encode, b64decode
+from contextlib import suppress
+from datetime import datetime, date, time
 from timelib import strpdatetime, strpdate, strptime
 
 import peewee
@@ -14,10 +16,11 @@ __all__ = [
     'dec2orm',
     'date2orm',
     'datetime2orm',
-    'fields',
+    'list_fields',
     'field_to_json',
-    'json_to_field',
+    'value_to_field',
     'DisabledAutoIncrement',
+    'Blacklist',
     'MySQLDatabase',
     'JSONModel',
     'EnumField']
@@ -133,14 +136,14 @@ def datetime2orm(value):
         return strpdatetime(value.isoformat())
 
 
-def fields(model):
+def list_fields(model):
     """Yields fields of a peewee.Model."""
 
-    for attr in dir(model):
-        candidate = getattr(model, attr)
+    for attribute in dir(model):
+        candidate = getattr(model, attribute)
 
         if isinstance(candidate, peewee.Field):
-            yield (attr, candidate)
+            yield (attribute, candidate)
 
 
 def field_to_json(field, value):
@@ -159,8 +162,8 @@ def field_to_json(field, value):
     return value
 
 
-def json_to_field(value, field):
-    """Converts a JSON-ish value for the provided field."""
+def value_to_field(value, field):
+    """Converts a value for the provided field."""
 
     if value is None:
         if not field.null:
@@ -180,12 +183,24 @@ def json_to_field(value, field):
     elif isinstance(field, peewee.DecimalField):
         return float(value)
     elif isinstance(field, peewee.DateTimeField):
+        if isinstance(value, datetime):
+            return value
+
         return strpdatetime(value)
     elif isinstance(field, peewee.DateField):
+        if isinstance(value, date):
+            return value
+
         return strpdate(value)
     elif isinstance(field, peewee.TimeField):
+        if isinstance(value, time):
+            return value
+
         return strptime(value)
     elif isinstance(field, peewee.BlobField):
+        if isinstance(value, bytes):
+            return value
+
         return b64decode(value)
 
     return value
@@ -224,60 +239,102 @@ class MySQLDatabase(peewee.MySQLDatabase):
             return super().execute_sql(*args, **kwargs)
 
 
+class Blacklist:
+    """Blacklist of fields and attributes."""
+
+    def __init__(self, attributes=None, fields=None):
+        """Sets the respective attributes and fields."""
+        self.attributes = set() if attributes is None else set(attributes)
+        self.fields = set() if fields is None else set(fields)
+
+    def __contains__(self, item):
+        """Determines whether the item is contained within the blacklist."""
+        fields = tuple(self.fields)
+
+        try:
+            attribute, field = item
+        except ValueError:
+            if isinstance(item, peewee.Field):
+                return isinstance(item, fields)
+
+            return item in self.attributes
+
+        return attribute in self.attributes or isinstance(field, fields)
+
+    @classmethod
+    def default(cls):
+        """Returns a default blacklist which
+        disables primary and foreign key fields.
+        """
+        return cls(fields=(peewee.PrimaryKeyField, peewee.ForeignKeyField))
+
+    @classmethod
+    def load(cls, value):
+        """Loads a blacklist from the respective value."""
+        if not value:
+            return cls()
+        elif value is True:
+            return cls.default()
+
+        return value
+
+
 class JSONModel(peewee.Model):
     """A JSON-serializable model."""
 
     @classmethod
-    def from_dict(cls, dictionary):
+    def from_dict(cls, dictionary, blacklist=None):
         """Creates a new record from a JSON-ish dictionary."""
         record = cls()
+        blacklist = Blacklist.load(blacklist)
 
-        for attr, field in fields(cls):
-            if isinstance(field, peewee.PrimaryKeyField):
+        for attribute, field in list_fields(cls):
+            if (attribute, field) in blacklist:
                 continue
 
             try:
-                value = json_to_field(dictionary.get(attr), field)
+                value = value_to_field(dictionary.get(attribute), field)
             except NullError:
-                raise FieldNotNullError(cls, attr, field) from None
+                raise FieldNotNullError(cls, attribute, field) from None
             except (TypeError, ValueError):
-                raise FieldValueError(cls, attr, field, value) from None
+                raise FieldValueError(cls, attribute, field, value) from None
             else:
-                setattr(record, attr, value)
+                setattr(record, attribute, value)
 
         return record
 
-    def patch(self, dictionary):
+    def patch(self, dictionary, blacklist=None):
         """Modifies the record with the values from a JSON-ish dictionary."""
         cls = self.__class__
+        blacklist = Blacklist.load(blacklist)
 
-        for attr, field in fields(cls):
-            if isinstance(field, peewee.PrimaryKeyField):
+        for attribute, field in list_fields(cls):
+            if (attribute, field) in blacklist:
                 continue
 
             try:
-                value = dictionary[attr]
+                value = dictionary[attribute]
             except KeyError:
                 continue
 
             try:
-                value = json_to_field(value, field)
+                value = value_to_field(value, field)
             except NullError:
-                raise FieldNotNullError(cls, attr, field) from None
+                raise FieldNotNullError(cls, attribute, field) from None
             except (TypeError, ValueError):
-                raise FieldValueError(cls, attr, field, value) from None
+                raise FieldValueError(cls, attribute, field, value) from None
             else:
-                setattr(self, attr, value)
+                setattr(self, attribute, value)
 
-    def to_dict(self, protected=False, omit_null=False):
+    def to_dict(self, protected=False, null=True):
         """Returns a JSON-ish dictionary with the record's values."""
         dictionary = {}
 
-        for attr, field in fields(self.__class__):
+        for attr, field in list_fields(self.__class__):
             if protected or not attr.startswith('_'):
                 value = getattr(self, attr)
 
-                if value is None and omit_null:
+                if value is None and not null:
                     continue
 
                 dictionary[attr] = field_to_json(field, value)
