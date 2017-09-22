@@ -17,6 +17,7 @@ __all__ = [
     'date2orm',
     'datetime2orm',
     'list_fields',
+    'shortest_fks',
     'field_to_json',
     'value_to_field',
     'DisabledAutoIncrement',
@@ -146,13 +147,36 @@ def list_fields(model):
             yield (attribute, candidate)
 
 
+def shortest_fks(fields):
+    """Filters shortest-named foreign key descriptors."""
+
+    fk_fields = {}
+
+    for attribute, field in fields:
+        if isinstance(field, peewee.ForeignKeyField):
+            try:
+                current_attribute, _ = fk_fields[field.db_column]
+            except KeyError:
+                fk_fields[field.db_column] = (attribute, field)
+            else:
+                if len(current_attribute) > len(attribute):
+                    fk_fields[field.db_column] = (attribute, field)
+        else:
+            yield (attribute, field)
+
+    for _, field in fk_fields:
+        yield field
+
+
 def field_to_json(field, value):
     """Converts the given field's value into JSON-ish data."""
 
     if value is not None:
         if isinstance(field, peewee.ForeignKeyField):
-            print('DEBUG:', value, type(value))
-            return value
+            try:
+                return value._get_pk_value()
+            except AttributeError:
+                return value
         elif isinstance(field, peewee.DecimalField):
             return float(value)
         elif isinstance(field, TIME_FIELDS):
@@ -289,7 +313,7 @@ class JSONModel(peewee.Model):
         record = cls()
         blacklist = Blacklist.load(blacklist)
 
-        for attribute, field in list_fields(cls):
+        for attribute, field in shortest_fks(list_fields(cls)):
             if (attribute, field) in blacklist:
                 continue
 
@@ -309,7 +333,7 @@ class JSONModel(peewee.Model):
         cls = self.__class__
         blacklist = Blacklist.load(blacklist)
 
-        for attribute, field in list_fields(cls):
+        for attribute, field in shortest_fks(list_fields(cls)):
             if (attribute, field) in blacklist:
                 continue
 
@@ -332,7 +356,7 @@ class JSONModel(peewee.Model):
         dictionary = {}
         blacklist = Blacklist.load(blacklist)
 
-        for attribute, field in list_fields(self.__class__):
+        for attribute, field in shortest_fks(list_fields(self.__class__)):
             if (attribute, field) in blacklist:
                 continue
 
