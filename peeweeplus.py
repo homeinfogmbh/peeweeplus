@@ -151,6 +151,7 @@ def field_to_json(field, value):
 
     if value is not None:
         if isinstance(field, peewee.ForeignKeyField):
+            print('DEBUG:', value, type(value))
             return value
         elif isinstance(field, peewee.DecimalField):
             return float(value)
