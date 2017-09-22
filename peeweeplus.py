@@ -174,13 +174,11 @@ def filter_fk_ids(fields):
         yield (attribute, field)
 
 
-def filter_key_fields(fields, foreign=True):
+def filter_key_fields(fields):
     """Filters field types."""
 
     for attribute, field in fields:
-        if isinstance(field, peewee.PrimaryKeyField):
-            continue
-        elif foreign and isinstance(field, peewee.ForeignKeyField):
+        if isinstance(field, KEY_FIELDS):
             continue
 
         yield (attribute, field)
@@ -374,8 +372,7 @@ class JSONModel(peewee.Model):
         dictionary = {}
         blacklist = Blacklist.load(blacklist)
 
-        for attribute, field in filter_key_fields(
-                list_fields(self.__class__), foreign=False):
+        for attribute, field in filter_key_fields(list_fields(self.__class__)):
             if (attribute, field) in blacklist:
                 continue
 
