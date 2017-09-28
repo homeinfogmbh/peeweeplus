@@ -426,6 +426,10 @@ class EnumField(peewee.CharField):
         for value in self.enumeration:
             yield value.value
 
+    def _invalid_value(self, value):
+        """Returns an invalid value error for the respective value."""
+        return ValueError(self.INVALID_VALUE.format(value))
+
     def is_valid(self, value):
         """Validates an enumeration value."""
         if self.ignore_case:
@@ -438,11 +442,11 @@ class EnumField(peewee.CharField):
         if self.is_valid(value):
             return super().db_value(value)
 
-        raise ValueError(self.INVALID_VALUE.format(value))
+        raise self._invalid_value(value)
 
     def python_value(self, value):
         """Returns the appropriate python value."""
         if self.is_valid(value):
             return super().python_value(value)
 
-        raise ValueError(self.INVALID_VALUE.format(value))
+        raise self._invalid_value(value)
