@@ -3,6 +3,8 @@
 from base64 import b64encode, b64decode
 from contextlib import suppress
 from datetime import datetime, date, time
+from types import GeneratorType
+
 from timelib import strpdatetime, strpdate, strptime
 
 import peewee
@@ -22,7 +24,6 @@ __all__ = [
     'field_to_json',
     'value_to_field',
     'DisabledAutoIncrement',
-    'Blacklist',
     'MySQLDatabase',
     'JSONModel',
     'EnumField']
@@ -178,10 +179,8 @@ def filter_key_fields(fields):
     """Filters field types."""
 
     for attribute, field in fields:
-        if isinstance(field, KEY_FIELDS):
-            continue
-
-        yield (attribute, field)
+        if not isinstance(field, KEY_FIELDS):
+            yield (attribute, field)
 
 
 def field_to_json(field, value):
@@ -190,9 +189,11 @@ def field_to_json(field, value):
     if value is not None:
         if isinstance(field, peewee.ForeignKeyField):
             try:
-                return value._get_pk_value()
+                get_pk_value = value._get_pk_value
             except AttributeError:
                 return value
+            else:
+                return get_pk_value()
         elif isinstance(field, peewee.DecimalField):
             return float(value)
         elif isinstance(field, TIME_FIELDS):
@@ -245,6 +246,13 @@ def value_to_field(value, field):
         return b64decode(value)
 
     return value
+
+
+def blacklist_type_error(value):
+    """Returns a TypeError for the given value."""
+
+    return TypeError('Invalid blacklist item: {} ({}).'.format(
+        value, type(value)))
 
 
 class DisabledAutoIncrement():
@@ -303,21 +311,29 @@ class Blacklist:
         return attribute in self.attributes or isinstance(field, fields)
 
     @classmethod
-    def default(cls):
-        """Returns a default blacklist which
-        disables primary and foreign key fields.
-        """
-        return cls(fields=(peewee.PrimaryKeyField, peewee.ForeignKeyField))
-
-    @classmethod
     def load(cls, value):
         """Loads a blacklist from the respective value."""
-        if not value:
+        if value is None:
             return cls()
-        elif value is True:
-            return cls.default()
+        elif isinstance(value, str):
+            return cls(attributes=[value])
+        elif isinstance(value, peewee.Field):
+            return cls(fields=[value])
+        elif isinstance(value, (tuple, list, GeneratorType)):
+            attributes = set()
+            fields = set()
 
-        return value
+            for item in value:
+                if isinstance(item, str):
+                    attributes.add(item)
+                elif isinstance(item, peewee.Field):
+                    fields.add(item)
+                else:
+                    raise blacklist_type_error(item)
+
+            return cls(attributes=attributes, fields=fields)
+        else:
+            raise blacklist_type_error(value)
 
 
 class JSONModel(peewee.Model):
@@ -330,17 +346,19 @@ class JSONModel(peewee.Model):
         blacklist = Blacklist.load(blacklist)
 
         for attribute, field in filter_key_fields(list_fields(cls)):
-            if isinstance(field, peewee.PrimaryKeyField):
+            if (attribute, field) in blacklist:
                 continue
 
+            value = dictionary.get(attribute)
+
             try:
-                value = value_to_field(dictionary.get(attribute), field)
+                field_value = value_to_field(value, field)
             except NullError:
                 raise FieldNotNullError(cls, attribute, field) from None
             except (TypeError, ValueError):
                 raise FieldValueError(cls, attribute, field, value) from None
             else:
-                setattr(record, attribute, value)
+                setattr(record, attribute, field_value)
 
         return record
 
@@ -350,7 +368,7 @@ class JSONModel(peewee.Model):
         blacklist = Blacklist.load(blacklist)
 
         for attribute, field in filter_key_fields(list_fields(cls)):
-            if isinstance(field, peewee.PrimaryKeyField):
+            if (attribute, field) in blacklist:
                 continue
 
             try:
@@ -359,15 +377,15 @@ class JSONModel(peewee.Model):
                 continue
 
             try:
-                value = value_to_field(value, field)
+                field_value = value_to_field(value, field)
             except NullError:
                 raise FieldNotNullError(cls, attribute, field) from None
             except (TypeError, ValueError):
                 raise FieldValueError(cls, attribute, field, value) from None
             else:
-                setattr(self, attribute, value)
+                setattr(self, attribute, field_value)
 
-    def to_dict(self, protected=False, null=True, blacklist=None):
+    def to_dict(self, blacklist=None, null=True, protected=False):
         """Returns a JSON-ish dictionary with the record's values."""
         dictionary = {}
         blacklist = Blacklist.load(blacklist)
