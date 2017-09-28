@@ -1,4 +1,4 @@
-"""peewee extensions for HOMEINFO"""
+"""Practical extension of the peewee ORM framework."""
 
 from base64 import b64encode, b64decode
 from contextlib import suppress
