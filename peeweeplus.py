@@ -286,8 +286,8 @@ class MySQLDatabase(peewee.MySQLDatabase):
         if self.closing:
             with self.execution_context():
                 return super().execute_sql(*args, **kwargs)
-        else:
-            return super().execute_sql(*args, **kwargs)
+
+        return super().execute_sql(*args, **kwargs)
 
 
 class Blacklist:
@@ -334,8 +334,8 @@ class Blacklist:
                     raise blacklist_type_error(item)
 
             return cls(attributes=attributes, fields=fields)
-        else:
-            raise blacklist_type_error(value)
+
+        raise blacklist_type_error(value)
 
 
 class JSONModel(peewee.Model):
