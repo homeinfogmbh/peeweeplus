@@ -340,7 +340,7 @@ class JSONModel(peewee.Model):
     """A JSON-serializable model."""
 
     @classmethod
-    def from_dict(cls, dictionary, blacklist=None):
+    def from_dict(cls, dictionary, blacklist=None, by_attr=False):
         """Creates a new record from a JSON-ish dictionary."""
         record = cls()
         blacklist = Blacklist.load(blacklist)
@@ -349,7 +349,7 @@ class JSONModel(peewee.Model):
             if (attribute, field) in blacklist:
                 continue
 
-            value = dictionary.get(attribute)
+            value = dictionary.get(attribute if by_attr else field.db_column)
 
             try:
                 field_value = value_to_field(value, field)
@@ -362,7 +362,7 @@ class JSONModel(peewee.Model):
 
         return record
 
-    def patch(self, dictionary, blacklist=None):
+    def patch(self, dictionary, blacklist=None, by_attr=False):
         """Modifies the record with the values from a JSON-ish dictionary."""
         cls = self.__class__
         blacklist = Blacklist.load(blacklist)
@@ -372,7 +372,7 @@ class JSONModel(peewee.Model):
                 continue
 
             try:
-                value = dictionary[attribute]
+                value = dictionary[attribute if by_attr else field.db_column]
             except KeyError:
                 continue
 
@@ -385,7 +385,8 @@ class JSONModel(peewee.Model):
             else:
                 setattr(self, attribute, field_value)
 
-    def to_dict(self, blacklist=None, null=True, protected=False):
+    def to_dict(self, blacklist=None, null=True, protected=False,
+                by_attr=False):
         """Returns a JSON-ish dictionary with the record's values."""
         dictionary = {}
         blacklist = Blacklist.load(blacklist)
@@ -400,7 +401,8 @@ class JSONModel(peewee.Model):
                 if value is None and not null:
                     continue
 
-                dictionary[attribute] = field_to_json(field, value)
+                key = attribute if by_attr else field.db_column
+                dictionary[key] = field_to_json(field, value)
 
         return dictionary
 
