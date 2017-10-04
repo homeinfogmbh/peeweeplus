@@ -3,6 +3,7 @@
 from base64 import b64encode, b64decode
 from contextlib import suppress
 from datetime import datetime, date, time
+from logging import getLogger
 from types import GeneratorType
 
 from timelib import strpdatetime, strpdate, strptime
@@ -31,6 +32,7 @@ __all__ = [
 
 TIME_FIELDS = (peewee.DateTimeField, peewee.DateField, peewee.TimeField)
 KEY_FIELDS = (peewee.PrimaryKeyField, peewee.ForeignKeyField)
+LOGGER = getLogger('peeweeplus')
 
 
 class NullError(TypeError):
@@ -410,45 +412,32 @@ class JSONModel(peewee.Model):
 class EnumField(peewee.CharField):
     """CharField-based enumeration field."""
 
-    INVALID_VALUE = 'Invalid value: "{}".'
-
-    def __init__(self, enumeration, *args, ignore_case=False, **kwargs):
+    def __init__(self, enumeration, *args, max_length=None, **kwargs):
         """Initializes the enumeration field with the possible values.
 
-        @enumeration: enum.Enum
+        @values: enum.Enum
         """
+        super().__init__(*args, max_length=max_length, **kwargs)
         self.enumeration = enumeration
-        self.ignore_case = ignore_case
-        max_length = max(len(value) for value in self.values)
-        super().__init__(max_length=max_length, *args, **kwargs)
 
     @property
-    def values(self):
-        """Yieds the appropriate enumeration values."""
-        for value in self.enumeration:
-            yield value.value
+    def max_length(self):
+        """Derives the required field size from the enumeration values."""
+        return max(len(item.value) for item in self.enumeration)
 
-    def _invalid_value(self, value):
-        """Returns an invalid value error for the respective value."""
-        return ValueError(self.INVALID_VALUE.format(value))
+    @max_length.setter
+    def max_length(self, max_length):
+        """Mockup to comply with super class' __init__."""
+        if max_length is not None:
+            LOGGER.warning(
+                'Parameter max_length=%s will be ignored since max_length '
+                'is derived from enumeration values.', str(max_length))
 
-    def is_valid(self, value):
-        """Validates an enumeration value."""
-        if self.ignore_case:
-            return value.lower() in (value.lower() for value in self.values)
+    def coerce(self, value):
+        """Coerce valid enumeration value."""
+        if value in self.enumeration:
+            return super().coerce(value.value)
+        elif value in (item.value for item in self.enumeration):
+            return super().coerce(value)
 
-        return value in self.values
-
-    def db_value(self, value):
-        """Returns the appropriate database value."""
-        if self.is_valid(value):
-            return super().db_value(value)
-
-        raise self._invalid_value(value)
-
-    def python_value(self, value):
-        """Returns the appropriate python value."""
-        if self.is_valid(value):
-            return super().python_value(value)
-
-        raise self._invalid_value(value)
+        raise ValueError('Invalid value: "{}".'.format(value))
