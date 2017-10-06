@@ -7,9 +7,9 @@ setup(
     name='peeweeplus',
     version='latest',
     author='HOMEINFO - Digitale Informationssysteme GmbH',
-    author_email='info@homeinfo.de',
+    author_email='<info at homeinfo dot de>',
     maintainer='Richard Neumann',
-    maintainer_email='r.neumann@homeinfo.de',
+    maintainer_email='<r dot neumann at homeinfo priod de>',
     py_modules=['peeweeplus'],
     license='GPLv3',
     description='Practical extensions for the peewee ORM framework.')
