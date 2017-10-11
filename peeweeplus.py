@@ -14,6 +14,7 @@ import peewee
 __all__ = [
     'FieldValueError',
     'FieldNotNullError',
+    'InvalidBlacklistItem',
     'InvalidEnumerationValue',
     'create',
     'dec2dom',
@@ -96,6 +97,14 @@ class FieldNotNullError(FieldValueError):
             field=self.field, model=self.model, attr=self.attr)
 
 
+class InvalidBlacklistItem(TypeError):
+    """Indicates an invalid item for the blacklist."""
+
+    def __init__(self, value):
+        super().__init__('Invalid blacklist item: {} ({}).'.format(
+            value, type(value)))
+
+
 class InvalidEnumerationValue(ValueError):
     """Indicates that an invalid enumeration value has been specified."""
 
@@ -134,7 +143,10 @@ def dec2dict(value):
         return float(value)
 
 
-dec2orm = dec2dict
+def dec2orm(value):
+    """Converts a decimal into an ORM compliant value."""
+
+    return dec2dict(value)
 
 
 def date2orm(value):
@@ -259,13 +271,6 @@ def value_to_field(value, field):
     return value
 
 
-def blacklist_type_error(value):
-    """Returns a TypeError for the given value."""
-
-    return TypeError('Invalid blacklist item: {} ({}).'.format(
-        value, type(value)))
-
-
 def is_enum(obj):
     """Determines whether the object is an enum.Enum."""
 
@@ -349,11 +354,11 @@ class Blacklist:
                 elif isinstance(item, peewee.Field):
                     fields.add(item)
                 else:
-                    raise blacklist_type_error(item)
+                    raise InvalidBlacklistItem(item)
 
             return cls(attributes=attributes, fields=fields)
 
-        raise blacklist_type_error(value)
+        raise InvalidBlacklistItem(value)
 
 
 class JSONModel(peewee.Model):
