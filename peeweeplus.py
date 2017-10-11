@@ -492,7 +492,7 @@ class EnumField(peewee.CharField):
 
     def python_value(self, value):
         """Coerce enumeration value for python."""
-        print(value, type(value))
+        print(self.enum, type(self.enum))
 
         if isinstance(self.enum, Enum):
             print('yes')
