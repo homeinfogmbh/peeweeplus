@@ -496,8 +496,7 @@ class EnumField(peewee.CharField):
             for item in self.enum:
                 if item.value == value:
                     return item
-        else:
-            if value in self.values:
-                return value
+        elif value in self.values:
+            return value
 
         raise InvalidEnumerationValue(value)
