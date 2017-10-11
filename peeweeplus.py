@@ -412,12 +412,15 @@ class JSONModel(peewee.Model):
 class EnumField(peewee.CharField):
     """CharField-based enumeration field."""
 
-    def __init__(self, enumeration, *args, max_length=None, **kwargs):
+    def __init__(self, enumeration, *args, max_length=None, null=None,
+                 **kwargs):
         """Initializes the enumeration field with the possible values.
 
-        @values: enum.Enum
+        :enumeration enum.Enum: The respective enumeration.
+        :max_length: Ignored.
+        :null: Ignored.
         """
-        super().__init__(*args, max_length=max_length, **kwargs)
+        super().__init__(*args, max_length=max_length, null=null, **kwargs)
         self.enumeration = enumeration
 
     @property
@@ -430,8 +433,21 @@ class EnumField(peewee.CharField):
         """Mockup to comply with super class' __init__."""
         if max_length is not None:
             LOGGER.warning(
-                'Parameter max_length=%s will be ignored since max_length '
+                'Parameter max_length=%s will be ignored since it '
                 'is derived from enumeration values.', str(max_length))
+
+    @property
+    def null(self):
+        """Determines nullability by enum values."""
+        return any(item.value is None for item in self.enumeration)
+
+    @null.setter
+    def null(self, null):
+        """Mockup to comply with super class' __init__."""
+        if null is not None:
+            LOGGER.warning(
+                'Parameter null=%s will be ignored since it '
+                'is derived from enumeration values.', str(null))
 
     def coerce(self, value):
         """Coerce valid enumeration value."""
