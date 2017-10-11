@@ -3,6 +3,7 @@
 from base64 import b64encode, b64decode
 from contextlib import suppress
 from datetime import datetime, date, time
+from enum import Enum
 from logging import getLogger
 from types import GeneratorType
 
@@ -257,6 +258,12 @@ def blacklist_type_error(value):
         value, type(value)))
 
 
+def invalid_enum_value(value):
+    """Reutns a value error rendered for the faulty value."""
+
+    return ValueError('Invalid value: "{}".'.format(value))
+
+
 class DisabledAutoIncrement():
     """Disables auto increment on the respective model."""
 
@@ -412,21 +419,43 @@ class JSONModel(peewee.Model):
 class EnumField(peewee.CharField):
     """CharField-based enumeration field."""
 
-    def __init__(self, enumeration, *args, max_length=None, null=None,
-                 **kwargs):
+    def __init__(self, enum, *args, max_length=None, null=None, **kwargs):
         """Initializes the enumeration field with the possible values.
 
-        :enumeration enum.Enum: The respective enumeration.
+        :enum: The respective enumeration.
         :max_length: Ignored.
         :null: Ignored.
         """
         super().__init__(*args, max_length=max_length, null=null, **kwargs)
-        self.enumeration = enumeration
+        self.enum = enum
+
+    @property
+    def enum(self):
+        """Yields appropriate database values."""
+        return self._enum
+
+    @enum.setter
+    def enum(self, enum):
+        """Sets the enumeration values."""
+        if isinstance(enum, Enum):
+            self._enum = enum
+        else:
+            self._enum = set(enum)
+
+    @property
+    def values(self):
+        """Yields appropriate database values."""
+        if isinstance(self.enum, Enum):
+            for item in self.enum:
+                yield item.value
+        else:
+            for value in self.enum:
+                yield value
 
     @property
     def max_length(self):
         """Derives the required field size from the enumeration values."""
-        return max(len(item.value) for item in self.enumeration)
+        return max(len(value) for value in self.values if value is not None)
 
     @max_length.setter
     def max_length(self, max_length):
@@ -439,7 +468,7 @@ class EnumField(peewee.CharField):
     @property
     def null(self):
         """Determines nullability by enum values."""
-        return any(item.value is None for item in self.enumeration)
+        return any(value is None for value in self.values)
 
     @null.setter
     def null(self, null):
@@ -449,11 +478,24 @@ class EnumField(peewee.CharField):
                 'Parameter null=%s will be ignored since it '
                 'is derived from enumeration values.', str(null))
 
-    def coerce(self, value):
+    def db_value(self, value):
         """Coerce valid enumeration value."""
-        if value in self.enumeration:
-            return super().coerce(value.value)
-        elif value in (item.value for item in self.enumeration):
-            return super().coerce(value)
+        if isinstance(value, Enum):
+            if value in self.enum:
+                return value.value
+        elif value in self.values:
+            return value
 
-        raise ValueError('Invalid value: "{}".'.format(value))
+        raise invalid_enum_value(value)
+
+    def python_value(self, value):
+        """Coerce valid enumeration value."""
+        if isinstance(self.enum, Enum):
+            for item in self.enum:
+                if item.value == value:
+                    return item
+        else:
+            if value in self.values:
+                return value
+
+        raise invalid_enum_value(value)
