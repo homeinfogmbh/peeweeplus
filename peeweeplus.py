@@ -266,6 +266,15 @@ def blacklist_type_error(value):
         value, type(value)))
 
 
+def is_enum(obj):
+    """Determines whether the object is an enum.Enum."""
+
+    try:
+        return issubclass(obj, Enum)
+    except TypeError:
+        return False
+
+
 class DisabledAutoIncrement():
     """Disables auto increment on the respective model."""
 
@@ -439,7 +448,7 @@ class EnumField(peewee.CharField):
     @enum.setter
     def enum(self, enum):
         """Sets the enumeration values."""
-        if issubclass(enum, Enum):
+        if is_enum(enum):
             self._enum = enum
         else:
             self._enum = set(enum)
@@ -447,7 +456,7 @@ class EnumField(peewee.CharField):
     @property
     def values(self):
         """Yields appropriate database values."""
-        if issubclass(self.enum, Enum):
+        if is_enum(self.enum):
             for item in self.enum:
                 yield item.value
         else:
@@ -482,7 +491,7 @@ class EnumField(peewee.CharField):
 
     def db_value(self, value):
         """Coerce enumeration value for database."""
-        if issubclass(value, Enum):
+        if is_enum(value):
             if value in self.enum:
                 return value.value
         elif value in self.values:
@@ -492,7 +501,7 @@ class EnumField(peewee.CharField):
 
     def python_value(self, value):
         """Coerce enumeration value for python."""
-        if issubclass(self.enum, Enum):
+        if is_enum(self.enum):
             for item in self.enum:
                 if item.value == value:
                     return item
