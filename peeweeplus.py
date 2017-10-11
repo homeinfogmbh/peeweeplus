@@ -14,6 +14,7 @@ import peewee
 __all__ = [
     'FieldValueError',
     'FieldNotNullError',
+    'InvalidEnumerationValue',
     'create',
     'dec2dom',
     'dec2dict',
@@ -93,6 +94,13 @@ class FieldNotNullError(FieldValueError):
         """Returns the respective error message."""
         return self.TEMPLATE.format(
             field=self.field, model=self.model, attr=self.attr)
+
+
+class InvalidEnumerationValue(ValueError):
+    """Indicates that an invalid enumeration value has been specified."""
+
+    def __init__(self, value):
+        super().__init__('Invalid value: "{}".'.format(value))
 
 
 def create(model):
@@ -256,12 +264,6 @@ def blacklist_type_error(value):
 
     return TypeError('Invalid blacklist item: {} ({}).'.format(
         value, type(value)))
-
-
-def invalid_enum_value(value):
-    """Reutns a value error rendered for the faulty value."""
-
-    return ValueError('Invalid value: "{}".'.format(value))
 
 
 class DisabledAutoIncrement():
@@ -479,17 +481,17 @@ class EnumField(peewee.CharField):
                 'is derived from enumeration values.', str(null))
 
     def db_value(self, value):
-        """Coerce valid enumeration value."""
+        """Coerce enumeration value for database."""
         if isinstance(value, Enum):
             if value in self.enum:
                 return value.value
         elif value in self.values:
             return value
 
-        raise invalid_enum_value(value)
+        raise InvalidEnumerationValue(value)
 
     def python_value(self, value):
-        """Coerce valid enumeration value."""
+        """Coerce enumeration value for python."""
         if isinstance(self.enum, Enum):
             for item in self.enum:
                 if item.value == value:
@@ -498,4 +500,4 @@ class EnumField(peewee.CharField):
             if value in self.values:
                 return value
 
-        raise invalid_enum_value(value)
+        raise InvalidEnumerationValue(value)
