@@ -439,7 +439,7 @@ class EnumField(peewee.CharField):
     @enum.setter
     def enum(self, enum):
         """Sets the enumeration values."""
-        if isinstance(enum, Enum):
+        if issubclass(enum, Enum):
             self._enum = enum
         else:
             self._enum = set(enum)
@@ -447,7 +447,7 @@ class EnumField(peewee.CharField):
     @property
     def values(self):
         """Yields appropriate database values."""
-        if isinstance(self.enum, Enum):
+        if issubclass(self.enum, Enum):
             for item in self.enum:
                 yield item.value
         else:
@@ -482,7 +482,7 @@ class EnumField(peewee.CharField):
 
     def db_value(self, value):
         """Coerce enumeration value for database."""
-        if isinstance(value, Enum):
+        if issubclass(value, Enum):
             if value in self.enum:
                 return value.value
         elif value in self.values:
@@ -492,16 +492,11 @@ class EnumField(peewee.CharField):
 
     def python_value(self, value):
         """Coerce enumeration value for python."""
-        print(self.enum, type(self.enum))
-
-        if isinstance(self.enum, Enum):
-            print('yes')
+        if issubclass(self.enum, Enum):
             for item in self.enum:
                 if item.value == value:
                     return item
         elif value in self.values:
             return value
-
-        print('no')
 
         raise InvalidEnumerationValue(value)
