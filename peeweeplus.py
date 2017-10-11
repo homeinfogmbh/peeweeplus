@@ -433,7 +433,7 @@ class EnumField(peewee.CharField):
 
     @property
     def enum(self):
-        """Yields appropriate database values."""
+        """Returns the enumeration values."""
         return self._enum
 
     @enum.setter
