@@ -1,8 +1,8 @@
 FILE_LIST = ./.installed_files.txt
 
-.PHONY: pull push clean check install uninstall
+.PHONY: pull push clean install uninstall
 
-default: | pull clean check install
+default: | pull clean install
 
 install:
 	@ ./setup.py install --record $(FILE_LIST)
@@ -12,9 +12,6 @@ uninstall:
 
 clean:
 	@ rm -Rf ./build
-
-check:
-	@ find . -type f -name "*.py" -not -path "./build/*" -exec pep8 --hang-closing {} \;
 
 pull:
 	@ git pull
