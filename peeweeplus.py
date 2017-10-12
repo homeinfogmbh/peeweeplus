@@ -3,7 +3,6 @@
 from base64 import b64encode, b64decode
 from contextlib import suppress
 from datetime import datetime, date, time
-from enum import Enum
 from logging import getLogger
 from types import GeneratorType
 
@@ -271,15 +270,6 @@ def value_to_field(value, field):
     return value
 
 
-def is_enum(obj):
-    """Determines whether the object is an enum.Enum."""
-
-    try:
-        return issubclass(obj, Enum)
-    except TypeError:
-        return False
-
-
 class DisabledAutoIncrement():
     """Disables auto increment on the respective model."""
 
@@ -443,11 +433,11 @@ class EnumField(peewee.CharField):
         :null: Ignored.
         """
         super().__init__(*args, max_length=max_length, null=null, **kwargs)
+        self.values = set(values)
 
-        if is_enum(values):
-            self.values = {item.value: item for item in values}
-        else:
-            self.values = set(values)
+        # Try to build translation dict for enum.Enum.
+        with suppress(AttributeError):
+            self.values = {item.value: item for item in self.values}
 
     @property
     def max_length(self):
