@@ -109,7 +109,7 @@ class InvalidEnumerationValue(ValueError):
     """Indicates that an invalid enumeration value has been specified."""
 
     def __init__(self, value):
-        super().__init__('Invalid value: "{}".'.format(value))
+        super().__init__('Invalid enum value: "{}".'.format(value))
 
 
 def create(model):
