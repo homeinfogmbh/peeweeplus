@@ -1,4 +1,4 @@
-"""Practical extension of the peewee ORM framework."""
+"""Practical extensions of the peewee ORM framework."""
 
 from base64 import b64encode, b64decode
 from collections import namedtuple
