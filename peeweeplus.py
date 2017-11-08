@@ -158,7 +158,7 @@ def datetime2orm(value):
 
 
 def list_fields(model, protected=False):
-    """Yields fields of a peewee.Model."""
+    """Yields attribute-value tuples of fields of a peewee.Model."""
 
     return filter(lambda aval: isinstance(aval.value, peewee.Field), map(
         lambda attr: AttributeValue(attr, getattr(model, attr)), filter(
