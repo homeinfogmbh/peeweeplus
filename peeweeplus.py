@@ -22,7 +22,7 @@ __all__ = [
     'date2orm',
     'datetime2orm',
     'list_fields',
-    'filter_fields',
+    'non_key_fields',
     'filter_fk_dupes',
     'field_to_json',
     'value_to_field',
@@ -190,10 +190,56 @@ def filter_fk_dupes(fields):
         yield (attribute, field)
 
 
-def filter_fields(fields, exclude=KEY_FIELDS):
-    """Filters field types."""
+def non_key_fields(fields):
+    """Filters out key fields."""
 
-    return filter(lambda aval: not isinstance(aval.value, exclude), fields)
+    return filter(lambda field: not isinstance(
+        field.value, KEY_FIELDS), fields)
+
+
+def patch(record, dictionary, blacklist=None, protected=False, by_attr=False):
+    """Patches the provided record with the respective dictionary."""
+
+    cls = record.__class__
+    field_map = {
+        attribute if by_attr else field.db_column: (attribute, field)
+        for attribute, field in Blacklist.load(blacklist).filter(
+            non_key_fields(list_fields(cls, protected=protected)))}
+
+    for key, value in dictionary.items():
+        try:
+            attribute, field = field_map[key]
+        except KeyError:
+            LOGGER.warning('Got invalid field: %s → %s.', str(key), str(value))
+            continue
+
+        try:
+            field_value = value_to_field(value, field)
+        except NullError:
+            raise FieldNotNullError(cls, attribute, field) from None
+        except (TypeError, ValueError):
+            raise FieldValueError(cls, attribute, field, value) from None
+        else:
+            setattr(record, attribute, field_value)
+
+    return record
+
+
+def to_dict(record, blacklist=None, null=True, protected=False,
+            by_attr=False):
+    """Returns a JSON-ish dictionary with the record's values."""
+    dictionary = {}
+
+    for attribute, field in Blacklist.load(blacklist).filter(
+            filter_fk_dupes(list_fields(
+                record.__class__, protected=protected))):
+        value = getattr(record, attribute)
+
+        if null or value is not None:
+            key = attribute if by_attr else field.db_column
+            dictionary[key] = field_to_json(field, value)
+
+    return dictionary
 
 
 def field_to_json(field, value):
@@ -338,6 +384,10 @@ class Blacklist:
 
         raise TypeError('Cannot create blacklist from {}.'.format(value))
 
+    def filter(self, fields):
+        """Filters (attribute, field) tuples."""
+        return filter(lambda field: field not in self, fields)
+
 
 class JSONModel(peewee.Model):
     """A JSON-serializable model."""
@@ -346,72 +396,23 @@ class JSONModel(peewee.Model):
     def from_dict(cls, dictionary, blacklist=None, protected=False,
                   by_attr=False):
         """Creates a new record from a JSON-ish dictionary."""
-        record = cls()
-        blacklist = Blacklist.load(blacklist)
-
-        for attribute, field in filter_fields(list_fields(
-                cls, protected=protected)):
-            if (attribute, field) in blacklist:
-                continue
-
-            value = dictionary.get(attribute if by_attr else field.db_column)
-
-            try:
-                field_value = value_to_field(value, field)
-            except NullError:
-                raise FieldNotNullError(cls, attribute, field) from None
-            except (TypeError, ValueError):
-                raise FieldValueError(cls, attribute, field, value) from None
-            else:
-                setattr(record, attribute, field_value)
-
-        return record
+        return patch(
+            cls(), dictionary, blacklist=blacklist, protected=protected,
+            by_attr=by_attr)
 
     def patch(self, dictionary, blacklist=None, protected=False,
               by_attr=False):
         """Modifies the record with the values from a JSON-ish dictionary."""
-        cls = self.__class__
-        blacklist = Blacklist.load(blacklist)
-
-        for attribute, field in filter_fields(list_fields(
-                cls, protected=protected)):
-            if (attribute, field) in blacklist:
-                continue
-
-            try:
-                value = dictionary[attribute if by_attr else field.db_column]
-            except KeyError:
-                continue
-
-            try:
-                field_value = value_to_field(value, field)
-            except NullError:
-                raise FieldNotNullError(cls, attribute, field) from None
-            except (TypeError, ValueError):
-                raise FieldValueError(cls, attribute, field, value) from None
-            else:
-                setattr(self, attribute, field_value)
+        return patch(
+            self, dictionary, blacklist=blacklist, protected=protected,
+            by_attr=by_attr)
 
     def to_dict(self, blacklist=None, null=True, protected=False,
                 by_attr=False):
         """Returns a JSON-ish dictionary with the record's values."""
-        dictionary = {}
-        blacklist = Blacklist.load(blacklist)
-
-        for attribute, field in filter_fk_dupes(list_fields(
-                self.__class__, protected=protected)):
-            if (attribute, field) in blacklist:
-                continue
-
-            value = getattr(self, attribute)
-
-            if value is None and not null:
-                continue
-
-            key = attribute if by_attr else field.db_column
-            dictionary[key] = field_to_json(field, value)
-
-        return dictionary
+        return to_dict(
+            self, blacklist=blacklist, null=null, protected=protected,
+            by_attr=by_attr)
 
 
 class EnumField(peewee.CharField):
