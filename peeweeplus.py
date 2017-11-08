@@ -1,6 +1,7 @@
 """Practical extension of the peewee ORM framework."""
 
 from base64 import b64encode, b64decode
+from collections import namedtuple
 from contextlib import suppress
 from datetime import datetime, date, time
 from logging import getLogger
@@ -13,7 +14,6 @@ import peewee
 __all__ = [
     'FieldValueError',
     'FieldNotNullError',
-    'InvalidBlacklistItem',
     'InvalidEnumerationValue',
     'create',
     'dec2dom',
@@ -22,8 +22,8 @@ __all__ = [
     'date2orm',
     'datetime2orm',
     'list_fields',
-    'filter_key_fields',
-    'filter_fk_ids',
+    'filter_fields',
+    'filter_fk_dupes',
     'field_to_json',
     'value_to_field',
     'DisabledAutoIncrement',
@@ -35,6 +35,9 @@ __all__ = [
 TIME_FIELDS = (peewee.DateTimeField, peewee.DateField, peewee.TimeField)
 KEY_FIELDS = (peewee.PrimaryKeyField, peewee.ForeignKeyField)
 LOGGER = getLogger('peeweeplus')
+
+
+AttributeValue = namedtuple('AttributeValue', ('attribute', 'value'))
 
 
 class NullError(TypeError):
@@ -96,14 +99,6 @@ class FieldNotNullError(FieldValueError):
             field=self.field, model=self.model, attr=self.attr)
 
 
-class InvalidBlacklistItem(TypeError):
-    """Indicates an invalid item for the blacklist."""
-
-    def __init__(self, value):
-        super().__init__('Invalid blacklist item: {} ({}).'.format(
-            value, type(value)))
-
-
 class InvalidEnumerationValue(ValueError):
     """Indicates that an invalid enumeration value has been specified."""
 
@@ -162,17 +157,15 @@ def datetime2orm(value):
         return strpdatetime(value.isoformat())
 
 
-def list_fields(model):
+def list_fields(model, protected=False):
     """Yields fields of a peewee.Model."""
 
-    for attribute in dir(model):
-        candidate = getattr(model, attribute)
-
-        if isinstance(candidate, peewee.Field):
-            yield (attribute, candidate)
+    return filter(lambda aval: isinstance(aval.value, peewee.Field), map(
+        lambda attr: AttributeValue(attr, getattr(model, attr)), filter(
+            lambda attr: protected or not attr.startswith('_'), dir(model))))
 
 
-def filter_fk_ids(fields):
+def filter_fk_dupes(fields):
     """Filters shortest-named foreign key descriptors."""
 
     fk_fields = {}
@@ -197,12 +190,10 @@ def filter_fk_ids(fields):
         yield (attribute, field)
 
 
-def filter_key_fields(fields):
+def filter_fields(fields, exclude=KEY_FIELDS):
     """Filters field types."""
 
-    for attribute, field in fields:
-        if not isinstance(field, KEY_FIELDS):
-            yield (attribute, field)
+    return filter(lambda aval: not isinstance(aval.value, exclude), fields)
 
 
 def field_to_json(field, value):
@@ -313,17 +304,16 @@ class Blacklist:
 
     def __contains__(self, item):
         """Determines whether the item is contained within the blacklist."""
-        fields = tuple(self.fields)
-
         try:
             attribute, field = item
         except ValueError:
             if isinstance(item, peewee.Field):
-                return isinstance(item, fields)
+                return isinstance(item, tuple(self.fields))
 
             return item in self.attributes
 
-        return attribute in self.attributes or isinstance(field, fields)
+        return attribute in self.attributes or isinstance(
+            field, tuple(self.fields))
 
     @classmethod
     def load(cls, value):
@@ -344,23 +334,25 @@ class Blacklist:
                 elif isinstance(item, peewee.Field):
                     fields.add(item)
                 else:
-                    raise InvalidBlacklistItem(item)
+                    raise TypeError('Invalid blacklist item {}.'.format(item))
 
             return cls(attributes=attributes, fields=fields)
 
-        raise InvalidBlacklistItem(value)
+        raise TypeError('Cannot create blacklist from {}.'.format(value))
 
 
 class JSONModel(peewee.Model):
     """A JSON-serializable model."""
 
     @classmethod
-    def from_dict(cls, dictionary, blacklist=None, by_attr=False):
+    def from_dict(cls, dictionary, blacklist=None, protected=False,
+                  by_attr=False):
         """Creates a new record from a JSON-ish dictionary."""
         record = cls()
         blacklist = Blacklist.load(blacklist)
 
-        for attribute, field in filter_key_fields(list_fields(cls)):
+        for attribute, field in filter_fields(
+                list_fields(cls, protected=protected)):
             if (attribute, field) in blacklist:
                 continue
 
@@ -377,12 +369,14 @@ class JSONModel(peewee.Model):
 
         return record
 
-    def patch(self, dictionary, blacklist=None, by_attr=False):
+    def patch(self, dictionary, blacklist=None, protected=False,
+              by_attr=False):
         """Modifies the record with the values from a JSON-ish dictionary."""
         cls = self.__class__
         blacklist = Blacklist.load(blacklist)
 
-        for attribute, field in filter_key_fields(list_fields(cls)):
+        for attribute, field in filter_fields(
+                list_fields(cls, protected=protected)):
             if (attribute, field) in blacklist:
                 continue
 
@@ -406,18 +400,18 @@ class JSONModel(peewee.Model):
         dictionary = {}
         blacklist = Blacklist.load(blacklist)
 
-        for attribute, field in filter_fk_ids(list_fields(self.__class__)):
+        for attribute, field in filter_fk_dupes(
+                list_fields(self.__class__, protected=protected)):
             if (attribute, field) in blacklist:
                 continue
 
-            if protected or not attribute.startswith('_'):
-                value = getattr(self, attribute)
+            value = getattr(self, attribute)
 
-                if value is None and not null:
-                    continue
+            if value is None and not null:
+                continue
 
-                key = attribute if by_attr else field.db_column
-                dictionary[key] = field_to_json(field, value)
+            key = attribute if by_attr else field.db_column
+            dictionary[key] = field_to_json(field, value)
 
         return dictionary
 
