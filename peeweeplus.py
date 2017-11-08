@@ -166,7 +166,7 @@ def list_fields(model, protected=False):
 
 
 def filter_fk_dupes(fields):
-    """Filters shortest-named foreign key descriptors."""
+    """Filters out shortest-named foreign key descriptors."""
 
     fk_fields = {}
 
@@ -199,20 +199,19 @@ def filter_fields(fields, exclude=KEY_FIELDS):
 def field_to_json(field, value):
     """Converts the given field's value into JSON-ish data."""
 
-    if value is not None:
-        if isinstance(field, peewee.ForeignKeyField):
-            try:
-                get_pk_value = value._get_pk_value
-            except AttributeError:
-                return value
-            else:
-                return get_pk_value()
-        elif isinstance(field, peewee.DecimalField):
-            return float(value)
-        elif isinstance(field, TIME_FIELDS):
-            return value.isoformat()
-        elif isinstance(field, peewee.BlobField):
-            return b64encode(value)
+    if value is None:
+        return value
+    elif isinstance(field, peewee.ForeignKeyField):
+        try:
+            return value._get_pk_value()
+        except AttributeError:
+            return value
+    elif isinstance(field, peewee.DecimalField):
+        return float(value)
+    elif isinstance(field, TIME_FIELDS):
+        return value.isoformat()
+    elif isinstance(field, peewee.BlobField):
+        return b64encode(value)
 
     return value
 
@@ -225,8 +224,7 @@ def value_to_field(value, field):
             raise NullError()
 
         return value
-
-    if isinstance(field, peewee.BooleanField):
+    elif isinstance(field, peewee.BooleanField):
         if isinstance(value, (bool, int)):
             return bool(value)
 
@@ -261,7 +259,7 @@ def value_to_field(value, field):
     return value
 
 
-class DisabledAutoIncrement():
+class DisabledAutoIncrement:
     """Disables auto increment on the respective model."""
 
     def __init__(self, model):
@@ -351,8 +349,8 @@ class JSONModel(peewee.Model):
         record = cls()
         blacklist = Blacklist.load(blacklist)
 
-        for attribute, field in filter_fields(
-                list_fields(cls, protected=protected)):
+        for attribute, field in filter_fields(list_fields(
+                cls, protected=protected)):
             if (attribute, field) in blacklist:
                 continue
 
@@ -375,8 +373,8 @@ class JSONModel(peewee.Model):
         cls = self.__class__
         blacklist = Blacklist.load(blacklist)
 
-        for attribute, field in filter_fields(
-                list_fields(cls, protected=protected)):
+        for attribute, field in filter_fields(list_fields(
+                cls, protected=protected)):
             if (attribute, field) in blacklist:
                 continue
 
@@ -400,8 +398,8 @@ class JSONModel(peewee.Model):
         dictionary = {}
         blacklist = Blacklist.load(blacklist)
 
-        for attribute, field in filter_fk_dupes(
-                list_fields(self.__class__, protected=protected)):
+        for attribute, field in filter_fk_dupes(list_fields(
+                self.__class__, protected=protected)):
             if (attribute, field) in blacklist:
                 continue
 
@@ -442,9 +440,7 @@ class EnumField(peewee.CharField):
     def max_length(self, max_length):
         """Mockup to comply with super class' __init__."""
         if max_length is not None:
-            LOGGER.warning(
-                'Parameter max_length=%s will be ignored since it '
-                'is derived from enumeration values.', str(max_length))
+            raise TypeError('Cannot set max_length to non-None value.')
 
     @property
     def null(self):
@@ -455,9 +451,7 @@ class EnumField(peewee.CharField):
     def null(self, null):
         """Mockup to comply with super class' __init__."""
         if null is not None:
-            LOGGER.warning(
-                'Parameter null=%s will be ignored since it '
-                'is derived from enumeration values.', str(null))
+            raise TypeError('Cannot set null to non-None value.')
 
     def db_value(self, value):
         """Coerce enumeration value for database."""
