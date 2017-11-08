@@ -23,11 +23,14 @@ __all__ = [
     'datetime2orm',
     'list_fields',
     'non_key_fields',
+    'patch',
+    'to_dict',
     'filter_fk_dupes',
     'field_to_json',
     'value_to_field',
     'DisabledAutoIncrement',
     'MySQLDatabase',
+    'JSONSerializable',
     'JSONModel',
     'EnumField']
 
@@ -391,8 +394,8 @@ class Blacklist:
         return filter(lambda field: field not in self, fields)
 
 
-class JSONModel(peewee.Model):
-    """A JSON-serializable model."""
+class JSONSerializable:
+    """A JSON-serializable non-model base."""
 
     @classmethod
     def from_dict(cls, dictionary, blacklist=None, protected=False,
@@ -415,6 +418,12 @@ class JSONModel(peewee.Model):
         return to_dict(
             self, blacklist=blacklist, null=null, protected=protected,
             by_attr=by_attr)
+
+
+class JSONModel(peewee.Model, JSONSerializable):
+    """A JSON-serializable model."""
+
+    pass
 
 
 class EnumField(peewee.CharField):
