@@ -344,7 +344,7 @@ class MySQLDatabase(peewee.MySQLDatabase):
 
 
 class Blacklist:
-    """Blacklist of fields and attributes."""
+    """Blacklist of attributes and fields."""
 
     def __init__(self, attributes=None, fields=None):
         """Sets the respective attributes and fields."""
@@ -361,8 +361,7 @@ class Blacklist:
 
             return item in self.attributes
 
-        return attribute in self.attributes or isinstance(
-            field, tuple(self.fields))
+        return attribute in self or field in self
 
     @classmethod
     def load(cls, value):
