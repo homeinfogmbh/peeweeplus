@@ -258,6 +258,8 @@ def field_to_json(field, value):
         return value.isoformat()
     elif isinstance(field, peewee.BlobField):
         return b64encode(value)
+    elif isinstance(field, EnumField):
+        return value.value
 
     return value
 
