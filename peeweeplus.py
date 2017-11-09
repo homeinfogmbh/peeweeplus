@@ -5,7 +5,6 @@ from collections import namedtuple
 from contextlib import suppress
 from datetime import datetime, date, time
 from logging import getLogger
-from types import GeneratorType
 
 from timelib import strpdatetime, strpdate, strptime
 
@@ -372,21 +371,24 @@ class Blacklist:
             return cls(attributes=[value])
         elif isinstance(value, peewee.Field):
             return cls(fields=[value])
-        elif isinstance(value, (tuple, list, GeneratorType)):
-            attributes = set()
-            fields = set()
 
-            for item in value:
-                if isinstance(item, str):
-                    attributes.add(item)
-                elif isinstance(item, peewee.Field):
-                    fields.add(item)
-                else:
-                    raise TypeError('Invalid blacklist item {}.'.format(item))
+        try:
+            iterator = iter(value)
+        except TypeError:
+            raise TypeError('Cannot create blacklist from {}.'.format(value))
 
-            return cls(attributes=attributes, fields=fields)
+        attributes = set()
+        fields = set()
 
-        raise TypeError('Cannot create blacklist from {}.'.format(value))
+        for item in iterator:
+            if isinstance(item, str):
+                attributes.add(item)
+            elif isinstance(item, peewee.Field):
+                fields.add(item)
+            else:
+                raise TypeError('Invalid blacklist item {}.'.format(item))
+
+        return cls(attributes=attributes, fields=fields)
 
     def filter(self, fields):
         """Filters (attribute, field) tuples."""
