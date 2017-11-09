@@ -162,9 +162,12 @@ def datetime2orm(value):
 def list_fields(model, protected=False):
     """Yields attribute-value tuples of fields of a peewee.Model."""
 
-    return filter(lambda aval: isinstance(aval.value, peewee.Field), map(
-        lambda attr: AttributeValue(attr, getattr(model, attr)), filter(
-            lambda attr: protected or not attr.startswith('_'), dir(model))))
+    for attribute in dir(model):
+        if protected or not attribute.startswith('_'):
+            value = getattr(model, attribute)
+
+            if isinstance(value, peewee.Field):
+                yield AttributeValue(attribute, value)
 
 
 def filter_fk_dupes(fields):
@@ -192,11 +195,12 @@ def filter_fk_dupes(fields):
         yield (attribute, field)
 
 
-def non_key_fields(fields):
+def non_key_fields(attribute_values):
     """Filters out key fields."""
 
-    return filter(lambda field: not isinstance(
-        field.value, KEY_FIELDS), fields)
+    for attribute_value in attribute_values:
+        if not isinstance(attribute_value.value, KEY_FIELDS):
+            yield attribute_value
 
 
 def patch(record, dictionary, ignore=None, protected=False, by_attr=False):
@@ -392,7 +396,9 @@ class Blacklist:
 
     def filter(self, fields):
         """Filters (attribute, field) tuples."""
-        return filter(lambda field: field not in self, fields)
+        for field in fields:
+            if field not in self:
+                yield field
 
 
 class JSONSerializable:
