@@ -200,13 +200,13 @@ def non_key_fields(fields):
         field.value, KEY_FIELDS), fields)
 
 
-def patch(record, dictionary, blacklist=None, protected=False, by_attr=False):
+def patch(record, dictionary, ignore=None, protected=False, by_attr=False):
     """Patches the provided record with the respective dictionary."""
 
     cls = record.__class__
     field_map = {
         attribute if by_attr else field.db_column: (attribute, field)
-        for attribute, field in Blacklist.load(blacklist).filter(
+        for attribute, field in Blacklist.load(ignore).filter(
             non_key_fields(list_fields(cls, protected=protected)))}
 
     for key, value in dictionary.items():
@@ -228,12 +228,12 @@ def patch(record, dictionary, blacklist=None, protected=False, by_attr=False):
     return record
 
 
-def to_dict(record, blacklist=None, null=True, protected=False,
+def to_dict(record, ignore=None, null=True, protected=False,
             by_attr=False):
     """Returns a JSON-ish dictionary with the record's values."""
     dictionary = {}
 
-    for attribute, field in Blacklist.load(blacklist).filter(
+    for attribute, field in Blacklist.load(ignore).filter(
             filter_fk_dupes(list_fields(
                 record.__class__, protected=protected))):
         value = getattr(record, attribute)
@@ -397,25 +397,22 @@ class JSONSerializable:
     """A JSON-serializable non-model base."""
 
     @classmethod
-    def from_dict(cls, dictionary, blacklist=None, protected=False,
-                  by_attr=False):
+    def from_dict(cls, dictionary, ignore=None, protected=False, by_attr=False):
         """Creates a new record from a JSON-ish dictionary."""
         return patch(
-            cls(), dictionary, blacklist=blacklist, protected=protected,
+            cls(), dictionary, ignore=ignore, protected=protected,
             by_attr=by_attr)
 
-    def patch(self, dictionary, blacklist=None, protected=False,
-              by_attr=False):
+    def patch(self, dictionary, ignore=None, protected=False, by_attr=False):
         """Modifies the record with the values from a JSON-ish dictionary."""
         return patch(
-            self, dictionary, blacklist=blacklist, protected=protected,
+            self, dictionary, ignore=ignore, protected=protected,
             by_attr=by_attr)
 
-    def to_dict(self, blacklist=None, null=True, protected=False,
-                by_attr=False):
+    def to_dict(self, ignore=None, null=True, protected=False, by_attr=False):
         """Returns a JSON-ish dictionary with the record's values."""
         return to_dict(
-            self, blacklist=blacklist, null=null, protected=protected,
+            self, ignore=ignore, null=null, protected=protected,
             by_attr=by_attr)
 
 
