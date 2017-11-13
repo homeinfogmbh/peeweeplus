@@ -4,6 +4,7 @@ from base64 import b64encode, b64decode
 from collections import namedtuple
 from contextlib import suppress
 from datetime import datetime, date, time
+from enum import Enum
 from logging import getLogger
 
 from timelib import strpdatetime, strpdate, strptime
@@ -27,6 +28,7 @@ __all__ = [
     'filter_fk_dupes',
     'field_to_json',
     'value_to_field',
+    'ForeignKeyConstraint',
     'DisabledAutoIncrement',
     'MySQLDatabase',
     'JSONSerializable',
@@ -313,6 +315,16 @@ def value_to_field(value, field):
     return value
 
 
+class ForeignKeyConstraint(Enum):
+    """Valid constraints for ForeignKeyFields."""
+
+    RESTRICT = 'RESTRICT'
+    CASCADE = 'CASCADE'
+    SET_NULL = 'SET NULL'
+    NO_ACTION = 'NO ACTION'
+    SET_DEFAULT = 'SET DEFAULT'
+
+
 class DisabledAutoIncrement:
     """Disables auto increment on the respective model."""
 
@@ -405,7 +417,8 @@ class JSONSerializable:
     """A JSON-serializable non-model base."""
 
     @classmethod
-    def from_dict(cls, dictionary, ignore=None, protected=False, by_attr=False):
+    def from_dict(cls, dictionary, ignore=None, protected=False,
+                  by_attr=False):
         """Creates a new record from a JSON-ish dictionary."""
         return patch(
             cls(), dictionary, ignore=ignore, protected=protected,
