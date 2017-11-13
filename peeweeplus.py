@@ -324,6 +324,9 @@ class ForeignKeyConstraint(Enum):
     NO_ACTION = 'NO ACTION'
     SET_DEFAULT = 'SET DEFAULT'
 
+    def __str__(self):
+        return self.value
+
 
 class DisabledAutoIncrement:
     """Disables auto increment on the respective model."""
