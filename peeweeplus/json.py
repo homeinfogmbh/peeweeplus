@@ -33,10 +33,6 @@ class NullError(ValueError):
 class FieldValueError(ValueError):
     """Indicates that the field cannot store data of the provided type."""
 
-    TEMPLATE = (
-        '<{field.__class__.__name__} {field.db_column}> at '
-        '<{model.__class__.__name__}.{attr}> cannot store {typ}: {value}.')
-
     def __init__(self, model, attr, field, value):
         """Sets the field and value."""
         super().__init__((model, attr, field, value))
@@ -47,9 +43,11 @@ class FieldValueError(ValueError):
 
     def __str__(self):
         """Returns the respective error message."""
-        return self.TEMPLATE.format(
-            field=self.field, model=self.model, attr=self.attr,
-            typ=type(self.value), value=self.value)
+        return (
+            '<{field.__class__.__name__} {field.db_column}> at <{model.'
+            '__class__.__name__}.{attr}> cannot store {typ}: {value}.').format(
+                field=self.field, model=self.model, attr=self.attr,
+                typ=type(self.value), value=self.value)
 
     def to_dict(self):
         """Returns a JSON-ish representation of this error."""
