@@ -214,17 +214,16 @@ def value_to_field(value, field):
 
 def deserialize(model, dictionary, protected=False, foreign_keys=False):
     """Creates a record from the provided JSON-ish dictionary.
-    Returns a tuple (<record>, <unconsumed_keys>).
+    This will consume the provided dictionary.
     """
 
     field_map = map_fields(
         model, protected=protected, foreign_keys=foreign_keys)
-    consumed_keys = []
     record = model()
 
     for db_column, (attribute, field) in field_map.items():
         try:
-            value = dictionary[db_column]
+            value = dictionary.pop(db_column)
         except KeyError:
             if not field.null and field.default is None:
                 raise FieldNotNullable(model, attribute, field)
@@ -239,23 +238,21 @@ def deserialize(model, dictionary, protected=False, foreign_keys=False):
             raise FieldValueError(model, attribute, field, value)
 
         setattr(record, attribute, field_value)
-        consumed_keys.append(db_column)
 
-    return (record, [key for key in dictionary if key not in consumed_keys])
+    return record
 
 
 def patch(record, dictionary, protected=False, foreign_keys=False):
     """Patches the record with the provided JSON-ish dictionary.
-    Returns a tuple (<record>, <unconsumed_keys>).
+    This will consume the provided dictionary.
     """
 
     field_map = map_fields(
         record.__class__, protected=protected, foreign_keys=foreign_keys)
-    consumed_keys = []
 
     for db_column, (attribute, field) in field_map.items():
         try:
-            value = dictionary[db_column]
+            value = dictionary.pop(db_column)
         except KeyError:
             continue
 
@@ -267,9 +264,8 @@ def patch(record, dictionary, protected=False, foreign_keys=False):
             raise FieldValueError(record.__class__, attribute, field, value)
 
         setattr(record, attribute, field_value)
-        consumed_keys.append(db_column)
 
-    return (record, [key for key in dictionary if key not in consumed_keys])
+    return record
 
 
 def serialize(record, ignore=(), null=True, protected=False, primary_key=True,
