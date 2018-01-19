@@ -1,4 +1,4 @@
-"""JSON serializable and deserializable model definitions."""
+"""JSON serialization and deserialization."""
 
 from base64 import b64decode, b64encode
 from contextlib import suppress
