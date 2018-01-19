@@ -268,7 +268,7 @@ def patch(record, dictionary, protected=False, foreign_keys=False):
     return record
 
 
-def serialize(record, ignore=(), null=True, protected=False, primary_key=True,
+def serialize(record, ignore=(), null=False, protected=False, primary_key=True,
               foreign_keys=False):
     """Returns a JSON-ish dictionary with the record's values."""
 
