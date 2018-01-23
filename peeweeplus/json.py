@@ -266,19 +266,22 @@ def patch(record, dictionary, protected=False, foreign_keys=False):
     return record
 
 
-def serialize(record, ignore=(), null=False, protected=False, primary_key=True,
-              foreign_keys=False):
+def serialize(record, only=None, ignore=(), null=False, protected=False,
+              primary_key=True, foreign_keys=False):
     """Returns a JSON-ish dictionary with the record's values."""
 
-    ignored_fields = tuple(filter_fields(ignore))
+    only = None if only is None else FieldList(only)
+    ignore = None if ignore is None else FieldList(ignore)
     dictionary = {}
     field_map = map_fields(
         record.__class__, protected=protected, primary_key=primary_key,
         foreign_keys=foreign_keys)
 
     for db_column, (attribute, field) in field_map.items():
-        if any((db_column in ignore, attribute in ignore,
-                isinstance(field, ignored_fields))):
+        if only is not None and (db_column, attribute, field) not in only:
+            continue
+
+        if ignore is not None and (db_column, attribute, field) in ignore:
             continue
 
         value = getattr(record, attribute)
@@ -287,6 +290,36 @@ def serialize(record, ignore=(), null=False, protected=False, primary_key=True,
             dictionary[field.db_column] = field_to_json(field, value)
 
     return dictionary
+
+
+class FieldList:
+    """A list of DB columns, attributes or fields."""
+
+    def __init__(self, items):
+        """Splits into a list of strings and fields."""
+        self.strings = []
+        fields = []
+
+        for item in items:
+            with suppress(TypeError):
+                if issubclass(item, Field):
+                    fields.append(item)
+                    continue
+
+            self.strings.append(item)
+
+        self.fields = tuple(fields)     # Need tuple for isinstance().
+
+    def __contains__(self, item):
+        """Determines whether the list contains either
+        the DB column's name, attribute or field.
+        """
+        db_column, attribute, field = item
+
+        if db_column in self.strings or attribute in self.strings:
+            return True
+
+        return isinstance(field, self.fields)
 
 
 class JSONModel(Model):
@@ -303,9 +336,9 @@ class JSONModel(Model):
         return patch(
             self, json, protected=protected, foreign_keys=foreign_keys)
 
-    def to_dict(self, ignore=(), null=True, protected=False, primary_key=True,
-                foreign_keys=False):
+    def to_dict(self, only=None, ignore=(), null=True, protected=False,
+                primary_key=True, foreign_keys=False):
         """Returns a JSON-ish dictionary with the record's values."""
         return serialize(
-            self, ignore=ignore, null=null, protected=protected,
+            self, only=only, ignore=ignore, null=null, protected=protected,
             primary_key=primary_key, foreign_keys=foreign_keys)
