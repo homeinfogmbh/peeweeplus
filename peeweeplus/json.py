@@ -149,7 +149,7 @@ def field_to_json(field, value):
     """Converts the given field's value into JSON-ish data."""
 
     if value is None:
-        return value
+        return None
     elif isinstance(field, ForeignKeyField):
         try:
             return value._get_pk_value()
