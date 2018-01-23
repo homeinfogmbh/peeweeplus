@@ -174,7 +174,7 @@ def value_to_field(value, field):
         if not field.null:
             raise NullError()
 
-        return value
+        return None
     elif isinstance(field, BooleanField):
         if isinstance(value, (bool, int)):
             return bool(value)
