@@ -6,6 +6,7 @@ from peeweeplus.database import MySQLDatabase
 from peeweeplus.fields import InvalidEnumerationValue, EnumField
 from peeweeplus.json import FieldValueError, FieldNotNullable, iterfields, \
     deserialize, serialize, JSONModel
+from peeweeplus import monkeypatches
 
 __all__ = [
     'FieldValueError',
@@ -20,4 +21,5 @@ __all__ = [
     'serialize',
     'MySQLDatabase',
     'JSONModel',
-    'EnumField']
+    'EnumField',
+    'monkeypatches']
