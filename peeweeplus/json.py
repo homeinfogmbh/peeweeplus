@@ -216,7 +216,8 @@ def deserialize(model, dictionary, protected=False, foreign_keys=False):
     """
 
     field_map = map_fields(
-        model, protected=protected, foreign_keys=foreign_keys)
+        model, protected=protected, primary_key=False,
+        foreign_keys=foreign_keys)
     record = model()
 
     for db_column, (attribute, field) in field_map.items():
@@ -246,7 +247,8 @@ def patch(record, dictionary, protected=False, foreign_keys=False):
     """
 
     field_map = map_fields(
-        record.__class__, protected=protected, foreign_keys=foreign_keys)
+        record.__class__, protected=protected, primary_key=False,
+        foreign_keys=foreign_keys)
 
     for db_column, (attribute, field) in field_map.items():
         try:
