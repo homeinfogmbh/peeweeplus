@@ -267,15 +267,15 @@ def deserialize(target, dictionary, strict=True, allow=None):
     return record
 
 
-def serialize(record, only=None, ignore=(), null=False, primary_key=True,
+def serialize(record, only=None, ignore=None, null=False, primary_key=True,
               foreign_keys=False):
     """Returns a JSON-ish dictionary with the record's values."""
 
     only = None if only is None else FieldList(only)
     ignore = None if ignore is None else FieldList(ignore)
-    dictionary = {}
     field_map = map_fields(
         record.__class__, primary_key=primary_key, foreign_keys=foreign_keys)
+    dictionary = {}
 
     for db_column, (attribute, field) in field_map.items():
         if only is not None and (db_column, attribute, field) not in only:
@@ -297,16 +297,16 @@ class FieldList:
 
     def __init__(self, items):
         """Splits into a list of strings and fields."""
-        self.strings = []
-        fields = []
+        self.strings = set()
+        fields = set()
 
         for item in items:
             with suppress(TypeError):
                 if issubclass(item, Field):
-                    fields.append(item)
+                    fields.add(item)
                     continue
 
-            self.strings.append(item)
+            self.strings.add(item)
 
         self.fields = tuple(fields)     # Need tuple for isinstance().
 
