@@ -11,7 +11,7 @@ def by_primary_key(model, pk_value):
     return model.get(model._meta.primary_key == pk_value)
 
 
-def monkeypatch(getitem=True):
+def monkeypatch(getitem=False):
     """Applies the respective monkey patches."""
 
     if getitem:
