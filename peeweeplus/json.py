@@ -34,7 +34,7 @@ class FieldValueError(ValueError):
 
     def __init__(self, model, attr, field, value):
         """Sets the field and value."""
-        super().__init__((model, attr, field, value))
+        super().__init__(model, attr, field, value)
         self.model = model
         self.attr = attr
         self.field = field
@@ -56,7 +56,7 @@ class FieldValueError(ValueError):
             'field': self.field.__class__.__name__,
             'db_column': self.field.db_column,
             'value': str(self.value),
-            'type': type(self.value)}
+            'type': str(type(self.value))}
 
 
 class FieldNotNullable(FieldValueError):
