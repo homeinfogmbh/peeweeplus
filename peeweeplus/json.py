@@ -253,9 +253,7 @@ def deserialize(target, dictionary, strict=True, allow=None):
         try:
             value = dictionary[db_column]
         except KeyError:
-            if patch:
-                continue
-            elif not field.null and field.default is None:
+            if not patch and not field.null and field.default is None:
                 raise FieldNotNullable(model, attribute, field)
 
             continue
