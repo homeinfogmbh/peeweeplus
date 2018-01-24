@@ -11,13 +11,17 @@ def _by_primary_key(model, pk_value):
     return model.get(model._meta.primary_key == pk_value)
 
 
-def getitem():
-    """Enables getting records by primary
-    keys using the indexing syntax:
+def getitem(enable=True):
+    """Enables or disables getting records by
+    primary keys values using the indexing syntax:
 
         try:
             record_with_pk_12 = Model[12]
         except DoesNotExist:
             print('No record with primary key 12.')
     """
-    BaseModel.__getitem__ = _by_primary_key
+
+    if enable:
+        BaseModel.__getitem__ = _by_primary_key
+    else:
+        del BaseModel.__getitem__
