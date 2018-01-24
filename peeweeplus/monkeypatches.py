@@ -13,7 +13,7 @@ def _by_primary_key(model, pk_value):
 
 def getitem():
     """Enables getting records by primary
-    keys using the following syntax:
+    keys using the indexing syntax:
 
         try:
             record_with_pk_12 = Model[12]
