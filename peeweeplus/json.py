@@ -325,20 +325,6 @@ class FieldList:
 class JSONModel(Model):
     """A JSON serializable and deserializable model."""
 
-    @classmethod
-    def from_dict(cls, dictionary, protected=False, foreign_keys=False):
-        """Creates a record from the provided JSON-ish dictionary."""
-        return deserialize(
-            cls, dictionary, protected=protected, foreign_keys=foreign_keys)
-
-    def patch(self, json, protected=False, foreign_keys=False):
-        """Patches the record with the provided JSON-ish dictionary."""
-        return patch(
-            self, json, protected=protected, foreign_keys=foreign_keys)
-
-    def to_dict(self, only=None, ignore=(), null=True, protected=False,
-                primary_key=True, foreign_keys=False):
-        """Returns a JSON-ish dictionary with the record's values."""
-        return serialize(
-            self, only=only, ignore=ignore, null=null, protected=protected,
-            primary_key=primary_key, foreign_keys=foreign_keys)
+    from_dict = classmethod(deserialize)
+    patch = patch
+    to_dict = serialize
