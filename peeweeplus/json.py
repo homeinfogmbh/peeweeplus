@@ -15,6 +15,7 @@ from peeweeplus.fields import EnumField
 __all__ = [
     'FieldValueError',
     'FieldNotNullable',
+    'InvalidKeys',
     'iterfields',
     'filter_fk_dupes',
     'map_fields',
@@ -24,7 +25,7 @@ __all__ = [
     'JSONModel']
 
 
-class NullError(ValueError):
+class NullError(TypeError):
     """Indicates that the respective field cannot be null."""
 
     pass
@@ -75,6 +76,19 @@ class FieldNotNullable(FieldValueError):
             '<{field.__class__.__name__} {field.db_column}> at '
             '<{model.__class__.__name__}.{attr}> must not be NULL.').format(
                 field=self.field, model=self.model, attr=self.attr)
+
+
+class InvalidKeys(ValueError):
+    """Indicates that the respective keys can not be consumed by the model."""
+
+    def __init__(self, invalid_keys):
+        """Sets the respective invalid keys."""
+        super().__init__(invalid_keys)
+        self.invalid_keys = invalid_keys
+
+    def __iter__(self):
+        """Yields the invalid keys."""
+        yield from self.invalid_keys
 
 
 def iterfields(model, protected=False, primary_key=True, foreign_keys=False):
@@ -210,19 +224,25 @@ def value_to_field(value, field):
     return value
 
 
-def deserialize(model, dictionary, protected=False, foreign_keys=False):
+def deserialize(model, dictionary, protected=False, primary_key=False,
+                foreign_keys=False, strict=True):
     """Creates a record from the provided JSON-ish dictionary.
     This will consume the provided dictionary.
     """
 
     field_map = map_fields(
-        model, protected=protected, primary_key=False,
+        model, protected=protected, primary_key=primary_key,
         foreign_keys=foreign_keys)
+    invalid_keys = set(key for key in dictionary if not key in field_map)
+
+    if invalid_keys and strict:
+        raise InvalidKeys(invalid_keys)
+
     record = model()
 
     for db_column, (attribute, field) in field_map.items():
         try:
-            value = dictionary.pop(db_column)
+            value = dictionary[db_column]
         except KeyError:
             if not field.null and field.default is None:
                 raise FieldNotNullable(model, attribute, field)
@@ -241,18 +261,23 @@ def deserialize(model, dictionary, protected=False, foreign_keys=False):
     return record
 
 
-def patch(record, dictionary, protected=False, foreign_keys=False):
+def patch(record, dictionary, protected=False, primary_key=False,
+          foreign_keys=False, strict=True):
     """Patches the record with the provided JSON-ish dictionary.
     This will consume the provided dictionary.
     """
 
     field_map = map_fields(
-        record.__class__, protected=protected, primary_key=False,
+        record.__class__, protected=protected, primary_key=primary_key,
         foreign_keys=foreign_keys)
+    invalid_keys = set(key for key in dictionary if not key in field_map)
+
+    if invalid_keys and strict:
+        raise InvalidKeys(invalid_keys)
 
     for db_column, (attribute, field) in field_map.items():
         try:
-            value = dictionary.pop(db_column)
+            value = dictionary[db_column]
         except KeyError:
             continue
 
