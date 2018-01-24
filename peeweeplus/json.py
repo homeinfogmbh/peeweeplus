@@ -244,10 +244,7 @@ def deserialize(target, dictionary, strict=True, allow=None):
     if invalid_keys and strict:
         raise InvalidKeys(invalid_keys)
 
-    if patch:
-        record = target
-    else:
-        record = model()
+    record = target if patch else model()
 
     for db_column, (attribute, field) in field_map.items():
         try:
