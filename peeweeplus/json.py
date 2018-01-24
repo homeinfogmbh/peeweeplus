@@ -94,17 +94,14 @@ class InvalidKeys(ValueError):
 def iterfields(model, protected=False, primary_key=True, foreign_keys=False):
     """Yields fields of the model."""
 
-    for attribute in dir(model):
+    for attribute, field in model._meta.fields:
         if protected or not attribute.startswith('_'):
-            field = getattr(model, attribute)
+            if not primary_key and isinstance(field, PrimaryKeyField):
+                continue
+            if not foreign_keys and isinstance(field, ForeignKeyField):
+                continue
 
-            if isinstance(field, Field):
-                if not primary_key and isinstance(field, PrimaryKeyField):
-                    continue
-                if not foreign_keys and isinstance(field, ForeignKeyField):
-                    continue
-
-                yield (attribute, field)
+            yield (attribute, field)
 
 
 def filter_fk_dupes(fields):
