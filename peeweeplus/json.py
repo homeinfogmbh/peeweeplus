@@ -94,7 +94,7 @@ def iterfields(model, protected=False, primary_key=True, foreign_keys=False):
     instance for each field  of the model.
     """
 
-    for attribute, field in model._meta.fields:
+    for attribute, field in model._meta.fields.items():
         if protected or not attribute.startswith('_'):
             if not primary_key and isinstance(field, PrimaryKeyField):
                 continue
