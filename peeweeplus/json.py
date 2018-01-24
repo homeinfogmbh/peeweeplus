@@ -51,7 +51,7 @@ class FieldValueError(ValueError):
     def to_dict(self):
         """Returns a JSON-ish representation of this error."""
         return {
-            'model': self.model.__class__.__name__,
+            'model': self.model.__name__,
             'attr': self.attr,
             'field': self.field.__class__.__name__,
             'db_column': self.field.db_column,
