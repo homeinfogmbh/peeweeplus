@@ -3,6 +3,7 @@
 from base64 import b64decode, b64encode
 from contextlib import suppress
 from datetime import datetime, date, time
+from itertools import chain
 
 from peewee import Model, Field, PrimaryKeyField, ForeignKeyField, \
     BooleanField, IntegerField, FloatField, DecimalField, DateTimeField, \
@@ -20,7 +21,6 @@ __all__ = [
     'filter_fk_dupes',
     'map_fields',
     'deserialize',
-    'patch',
     'serialize',
     'JSONModel']
 
@@ -132,22 +132,20 @@ def filter_fk_dupes(fields):
         yield (attribute, field)
 
 
-def map_fields(model, protected=False, primary_key=True, foreign_keys=False):
+def map_fields(model, primary_key=True, foreign_keys=True):
     """Returns a dictionary of the respective database fields."""
 
     if foreign_keys:
         return {
             field.db_column: (attribute, field) for attribute, field
             in filter_fk_dupes(iterfields(
-                model, protected=protected, primary_key=primary_key,
-                foreign_keys=True))}
+                model, primary_key=primary_key, foreign_keys=True))}
 
     # No need to filter foreign key duplicates if
     # we excluded foreign keys in the fist place.
     return {
         field.db_column: (attribute, field) for attribute, field in iterfields(
-            model, protected=protected, primary_key=primary_key,
-            foreign_keys=False)}
+            model, primary_key=primary_key, foreign_keys=False)}
 
 
 def filter_fields(iterable):
@@ -224,27 +222,40 @@ def value_to_field(value, field):
     return value
 
 
-def deserialize(model, dictionary, protected=False, primary_key=False,
-                foreign_keys=False, strict=True):
-    """Creates a record from the provided JSON-ish dictionary.
-    This will consume the provided dictionary.
+def deserialize(target, dictionary, strict=True, allow=None):
+    """Applies the provided dictionary onto the target.
+    The target can either be a Model subclass (deserialization)
+    or a Model instance (patching).
     """
 
-    field_map = map_fields(
-        model, protected=protected, primary_key=primary_key,
-        foreign_keys=foreign_keys)
-    invalid_keys = set(key for key in dictionary if not key in field_map)
+    if isinstance(target, Model):
+        model = target.__class__
+        patch = True
+    elif issubclass(target, Model):
+        model = target
+        patch = False
+    else:
+        raise TypeError('Cannot apply dictionary to: {}.'.format(target))
+
+    field_map = map_fields(model, primary_key=False, foreign_keys=False)
+    allowed_keys = chain(field_map, allow or ())
+    invalid_keys = set(key for key in dictionary if not key in allowed_keys)
 
     if invalid_keys and strict:
         raise InvalidKeys(invalid_keys)
 
-    record = model()
+    if patch:
+        record = target
+    else:
+        record = model()
 
     for db_column, (attribute, field) in field_map.items():
         try:
             value = dictionary[db_column]
         except KeyError:
-            if not field.null and field.default is None:
+            if patch:
+                continue
+            elif not field.null and field.default is None:
                 raise FieldNotNullable(model, attribute, field)
 
             continue
@@ -261,48 +272,15 @@ def deserialize(model, dictionary, protected=False, primary_key=False,
     return record
 
 
-def patch(record, dictionary, protected=False, primary_key=False,
-          foreign_keys=False, strict=True):
-    """Patches the record with the provided JSON-ish dictionary.
-    This will consume the provided dictionary.
-    """
-
-    field_map = map_fields(
-        record.__class__, protected=protected, primary_key=primary_key,
-        foreign_keys=foreign_keys)
-    invalid_keys = set(key for key in dictionary if not key in field_map)
-
-    if invalid_keys and strict:
-        raise InvalidKeys(invalid_keys)
-
-    for db_column, (attribute, field) in field_map.items():
-        try:
-            value = dictionary[db_column]
-        except KeyError:
-            continue
-
-        try:
-            field_value = value_to_field(value, field)
-        except NullError:
-            raise FieldNotNullable(record.__class__, attribute, field)
-        except (TypeError, ValueError):
-            raise FieldValueError(record.__class__, attribute, field, value)
-
-        setattr(record, attribute, field_value)
-
-    return record
-
-
-def serialize(record, only=None, ignore=(), null=False, protected=False,
-              primary_key=True, foreign_keys=False):
+def serialize(record, only=None, ignore=(), null=False, primary_key=True,
+              foreign_keys=False):
     """Returns a JSON-ish dictionary with the record's values."""
 
     only = None if only is None else FieldList(only)
     ignore = None if ignore is None else FieldList(ignore)
     dictionary = {}
     field_map = map_fields(
-        record.__class__, protected=protected, primary_key=primary_key,
-        foreign_keys=foreign_keys)
+        record.__class__, primary_key=primary_key, foreign_keys=foreign_keys)
 
     for db_column, (attribute, field) in field_map.items():
         if only is not None and (db_column, attribute, field) not in only:
@@ -353,5 +331,5 @@ class JSONModel(Model):
     """A JSON serializable and deserializable model."""
 
     from_dict = classmethod(deserialize)
-    patch = patch
+    patch = deserialize
     to_dict = serialize
