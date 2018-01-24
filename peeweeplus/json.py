@@ -238,7 +238,7 @@ def deserialize(target, dictionary, strict=True, allow=None):
         raise TypeError('Cannot apply dictionary to: {}.'.format(target))
 
     field_map = map_fields(model, primary_key=False, foreign_keys=False)
-    allowed_keys = chain(field_map, allow or ())
+    allowed_keys = set(chain(field_map, allow or ()))
     invalid_keys = set(key for key in dictionary if not key in allowed_keys)
 
     if invalid_keys and strict:
