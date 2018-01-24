@@ -18,7 +18,6 @@ __all__ = [
     'FieldNotNullable',
     'InvalidKeys',
     'iterfields',
-    'map_fields',
     'deserialize',
     'serialize',
     'JSONModel']
@@ -91,7 +90,9 @@ class InvalidKeys(ValueError):
 
 
 def iterfields(model, protected=False, primary_key=True, foreign_keys=False):
-    """Yields fields of the model."""
+    """Yields JSON-key, attribute name and field
+    instance for each field  of the model.
+    """
 
     for attribute, field in model._meta.fields:
         if protected or not attribute.startswith('_'):
@@ -100,15 +101,12 @@ def iterfields(model, protected=False, primary_key=True, foreign_keys=False):
             if not foreign_keys and isinstance(field, ForeignKeyField):
                 continue
 
-            yield (attribute, field)
+            try:
+                key = field.json_key
+            except AttributeError:
+                key = field.db_column
 
-
-def map_fields(model, primary_key=True, foreign_keys=True):
-    """Returns a dictionary of the respective database fields."""
-
-    return {
-        field.db_column: (attribute, field) for attribute, field in
-        iterfields(model, primary_key=primary_key, foreign_keys=foreign_keys)}
+            yield (key, attribute, field)
 
 
 def field_to_json(field, value):
@@ -191,7 +189,9 @@ def deserialize(target, dictionary, strict=True, allow=None):
     else:
         raise TypeError('Cannot apply dictionary to: {}.'.format(target))
 
-    field_map = map_fields(model, primary_key=False, foreign_keys=False)
+    field_map = {
+        key: (attribute, field) for key, attribute, field in iterfields(
+            model, primary_key=False, foreign_keys=False)}
     allowed_keys = set(chain(field_map, allow or ()))
     invalid_keys = set(key for key in dictionary if not key in allowed_keys)
 
@@ -200,9 +200,9 @@ def deserialize(target, dictionary, strict=True, allow=None):
 
     record = target if patch else model()
 
-    for db_column, (attribute, field) in field_map.items():
+    for key, (attribute, field) in field_map.items():
         try:
-            value = dictionary[db_column]
+            value = dictionary[key]
         except KeyError:
             if not patch and not field.null and field.default is None:
                 raise FieldNotNullable(model, attribute, field)
@@ -227,21 +227,23 @@ def serialize(record, only=None, ignore=None, null=False, primary_key=True,
 
     only = None if only is None else FieldList(only)
     ignore = None if ignore is None else FieldList(ignore)
-    field_map = map_fields(
-        record.__class__, primary_key=primary_key, foreign_keys=foreign_keys)
+    field_map = {
+        key: (attribute, field) for key, attribute, field in iterfields(
+            record.__class__, primary_key=primary_key,
+            foreign_keys=foreign_keys)}
     dictionary = {}
 
-    for db_column, (attribute, field) in field_map.items():
-        if only is not None and (db_column, attribute, field) not in only:
+    for key, (attribute, field) in field_map.items():
+        if only is not None and (key, attribute, field) not in only:
             continue
 
-        if ignore is not None and (db_column, attribute, field) in ignore:
+        if ignore is not None and (key, attribute, field) in ignore:
             continue
 
         value = getattr(record, attribute)
 
         if value is not None or null:
-            dictionary[field.db_column] = field_to_json(field, value)
+            dictionary[key] = field_to_json(field, value)
 
     return dictionary
 
