@@ -204,7 +204,7 @@ def deserialize(target, dictionary, strict=True, allow=None):
         try:
             value = dictionary[key]
         except KeyError:
-            if not patch and not field.null and field.default is None:
+            if not patch and field.default is None and not field.null:
                 raise FieldNotNullable(model, attribute, field)
 
             continue
