@@ -17,7 +17,7 @@ def getitem(enable=True):
 
         try:
             record_with_pk_12 = Model[12]
-        except DoesNotExist:
+        except Model.DoesNotExist:
             print('No record with primary key 12.')
     """
 
