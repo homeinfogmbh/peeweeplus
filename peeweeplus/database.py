@@ -17,5 +17,12 @@ class MySQLDatabase(_MySQLDatabase):
         """Conditionally execute the SQL query in an
         execution context iff closing is enabled.
         """
-        # TODO: Ensure execution context again.
+        if self.closing:
+            try:
+                return super().execute_sql(*args, **kwargs)
+            except Exception:
+                raise
+            finally:
+                self.close()
+
         return super().execute_sql(*args, **kwargs)
