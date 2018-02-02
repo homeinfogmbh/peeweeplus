@@ -43,7 +43,7 @@ class FieldValueError(ValueError):
     def __str__(self):
         """Returns the respective error message."""
         return (
-            '<{field.__class__.__name__} {field.db_column}> at <{model.'
+            '<{field.__class__.__name__} {field.column_name}> at <{model.'
             '__class__.__name__}.{attr}> cannot store {typ}: {value}.').format(
                 field=self.field, model=self.model, attr=self.attr,
                 typ=type(self.value), value=self.value)
@@ -54,7 +54,7 @@ class FieldValueError(ValueError):
             'model': self.model.__name__,
             'attr': self.attr,
             'field': self.field.__class__.__name__,
-            'db_column': self.field.db_column,
+            'column_name': self.field.column_name,
             'value': str(self.value),
             'type': str(type(self.value))}
 
@@ -71,7 +71,7 @@ class FieldNotNullable(FieldValueError):
     def __str__(self):
         """Returns the respective error message."""
         return (
-            '<{field.__class__.__name__} {field.db_column}> at '
+            '<{field.__class__.__name__} {field.column_name}> at '
             '<{model.__class__.__name__}.{attr}> must not be NULL.').format(
                 field=self.field, model=self.model, attr=self.attr)
 
@@ -265,9 +265,9 @@ class FieldList:
         """Determines whether the list contains either
         the DB column's name, attribute or field.
         """
-        db_column, attribute, field = item
+        column_name, attribute, field = item
 
-        if db_column in self.strings or attribute in self.strings:
+        if column_name in self.strings or attribute in self.strings:
             return True
 
         return isinstance(field, self.fields)
