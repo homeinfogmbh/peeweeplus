@@ -94,19 +94,14 @@ def iterfields(model, protected=False, primary_key=True, foreign_keys=False):
     instance for each field  of the model.
     """
 
-    for attribute, field in model._meta.fields.items():
-        if protected or not attribute.startswith('_'):
+    for name, field in model._meta.fields.items():
+        if protected or not name.startswith('_'):
             if not primary_key and isinstance(field, PrimaryKeyField):
                 continue
             if not foreign_keys and isinstance(field, ForeignKeyField):
                 continue
 
-            try:
-                key = field.json_key
-            except AttributeError:
-                key = field.db_column
-
-            yield (key, attribute, field)
+            yield (field.column_name, name, field)
 
 
 def field_to_json(field, value):
@@ -116,7 +111,7 @@ def field_to_json(field, value):
         return None
     elif isinstance(field, ForeignKeyField):
         try:
-            return value._get_pk_value()
+            return value.get_id()
         except AttributeError:
             return value
     elif isinstance(field, DecimalField):
