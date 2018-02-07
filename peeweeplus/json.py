@@ -169,7 +169,7 @@ def value_to_field(value, field):
     return value
 
 
-def deserialize(target, dictionary, strict=True, allow=None):
+def deserialize(target, dictionary, *, strict=True, allow=None):
     """Applies the provided dictionary onto the target.
     The target can either be a Model subclass (deserialization)
     or a Model instance (patching).
@@ -216,7 +216,7 @@ def deserialize(target, dictionary, strict=True, allow=None):
     return record
 
 
-def serialize(record, only=None, ignore=None, null=False, primary_key=True,
+def serialize(record, *, only=None, ignore=None, null=False, primary_key=True,
               foreign_keys=False):
     """Returns a JSON-ish dictionary with the record's values."""
 
