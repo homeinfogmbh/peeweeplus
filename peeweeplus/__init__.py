@@ -4,13 +4,14 @@ from peeweeplus.converters import dec2dom, dec2dict, dec2orm, date2orm, \
     datetime2orm
 from peeweeplus.database import MySQLDatabase
 from peeweeplus.fields import InvalidEnumerationValue, EnumField
-from peeweeplus.json import FieldValueError, FieldNotNullable, iterfields, \
-    deserialize, serialize, JSONModel
+from peeweeplus.json import FieldValueError, FieldNotNullable, InvalidKeys, \
+    iterfields, deserialize, serialize, JSONModel
 
 __all__ = [
     'FieldValueError',
     'FieldNotNullable',
     'InvalidEnumerationValue',
+    'InvalidKeys',
     'dec2dom',
     'dec2dict',
     'dec2orm',

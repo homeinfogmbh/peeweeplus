@@ -188,7 +188,7 @@ def deserialize(target, dictionary, *, strict=True, allow=None):
         key: (attribute, field) for key, attribute, field in iterfields(
             model, primary_key=False, foreign_keys=False)}
     allowed_keys = set(chain(field_map, allow or ()))
-    invalid_keys = set(key for key in dictionary if not key in allowed_keys)
+    invalid_keys = set(key for key in dictionary if key not in allowed_keys)
 
     if invalid_keys and strict:
         raise InvalidKeys(invalid_keys)
