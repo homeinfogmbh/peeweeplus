@@ -89,6 +89,15 @@ class InvalidKeys(ValueError):
         yield from self.invalid_keys
 
 
+def _issubclass(cls, classes):
+    """Safe subclass check."""
+
+    try:
+        return issubclass(cls, classes)
+    except TypeError:
+        return False
+
+
 def iterfields(model, protected=False, primary_key=True, foreign_keys=False):
     """Yields JSON-key, attribute name and field
     instance for each field  of the model.
@@ -249,21 +258,23 @@ class FieldList:
     def __init__(self, items):
         """Splits into a list of strings and fields."""
         self.strings = set()
-        fields = set()
+        fields = []
+        field_types = []
 
         for item in items:
             if isinstance(item, Field):
-                fields.add(item.__class__)
+                fields.append(item.__class__)
                 continue
 
             with suppress(TypeError):
                 if issubclass(item, Field):
-                    fields.add(item)
+                    field_types.append(item)
                     continue
 
             self.strings.add(item)
 
-        self.fields = tuple(fields)     # Need tuple for isinstance().
+        self.fields = tuple(fields)             # Need tuple for isinstance().
+        self.field_types = tuple(field_types)   # Need tuple for issubclass().
 
     def __contains__(self, item):
         """Determines whether the list contains either
@@ -273,8 +284,10 @@ class FieldList:
 
         if column_name in self.strings or attribute in self.strings:
             return True
+        elif isinstance(field, self.fields):
+            return True
 
-        return isinstance(field, self.fields)
+        return _issubclass(field, self.field_types)
 
 
 class JSONModel(Model):
