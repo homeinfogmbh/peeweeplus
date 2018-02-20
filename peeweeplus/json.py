@@ -252,6 +252,10 @@ class FieldList:
         fields = set()
 
         for item in items:
+            if isinstance(item, Field):
+                fields.add(item.__class__)
+                continue
+
             with suppress(TypeError):
                 if issubclass(item, Field):
                     fields.add(item)
