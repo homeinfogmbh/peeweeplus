@@ -2,9 +2,9 @@
 
 from contextlib import suppress
 
-from peewee import CharField
+from peewee import CharField, ForeignKeyField
 
-__all__ = ['InvalidEnumerationValue', 'EnumField']
+__all__ = ['InvalidEnumerationValue', 'EnumField', 'CascadingFKField']
 
 
 class InvalidEnumerationValue(ValueError):
@@ -69,3 +69,13 @@ class EnumField(CharField):
                 return enum
 
         raise InvalidEnumerationValue(value)
+
+
+class CascadingFKField(ForeignKeyField):
+    """A ForeignKeyField with default cascading."""
+
+    def __init__(self, *args, on_delete='CASCADE', on_update='CASCADE',
+                 **kwargs):
+        """Delegates to ForeignKeyField.__init__."""
+        super().__init__(
+            *args, on_delete=on_delete, on_update=on_update, **kwargs)
