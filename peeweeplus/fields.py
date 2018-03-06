@@ -36,7 +36,7 @@ class EnumField(CharField):
         return max(len(value) for value in self.values if value is not None)
 
     @max_length.setter
-    def max_length(self, _):
+    def max_length(self, max_length):
         """Mockup to comply with super class' __init__."""
         if max_length is not None:
             raise AttributeError('Cannot set max_length property.')
