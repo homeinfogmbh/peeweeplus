@@ -19,9 +19,9 @@ class EnumField(CharField):
 
     def __init__(self, enum, *args, **kwargs):
         """Initializes the enumeration field with the enumeration enum.
-        The keywords max_length and null are not supported.
+        The keyword max_length is not supported.
         """
-        super().__init__(*args, max_length=None, null=None, **kwargs)
+        super().__init__(*args, max_length=None, **kwargs)
         self.enum = enum
 
     @property
@@ -36,7 +36,7 @@ class EnumField(CharField):
         return max(len(value) for value in self.values if value is not None)
 
     @max_length.setter
-    def max_length(self, max_length):
+    def max_length(self, _):
         """Mockup to comply with super class' __init__."""
         if max_length is not None:
             raise AttributeError('Cannot set max_length property.')
@@ -44,13 +44,12 @@ class EnumField(CharField):
     @property
     def null(self):
         """Determines nullability by enum values."""
-        return any(value is None for value in self.values)
+        return self.__null or any(value is None for value in self.values)
 
     @null.setter
     def null(self, null):
         """Mockup to comply with super class' __init__."""
-        if null is not None:
-            raise AttributeError('Cannot set null property.')
+        self.__null = null
 
     def db_value(self, value):
         """Coerce enumeration value for database."""
