@@ -3,7 +3,6 @@
 from base64 import b64decode, b64encode
 from contextlib import suppress
 from datetime import datetime, date, time
-from itertools import chain
 
 from peewee import Model, Field, PrimaryKeyField, ForeignKeyField, \
     BooleanField, IntegerField, FloatField, DecimalField, DateTimeField, \
@@ -98,18 +97,18 @@ def _issubclass(cls, classes):
         return False
 
 
-def iterfields(model, protected=False, primary_key=True, foreign_keys=False):
+def iterfields(model, primary_key=True):
     """Yields JSON-key, attribute name and field
     instance for each field  of the model.
     """
 
-    for name, field in model._meta.fields.items():
-        if protected or not name.startswith('_'):
-            if not primary_key and isinstance(field, PrimaryKeyField):
-                continue
-            if not foreign_keys and isinstance(field, ForeignKeyField):
-                continue
+    if primary_key:
+        invalid_fields = ForeignKeyField
+    else:
+        invalid_fields = (PrimaryKeyField, ForeignKeyField)
 
+    for name, field in model._meta.fields.items():
+        if not name.startswith('_') and not isinstance(field, invalid_fields):
             yield (field.column_name, name, field)
 
 
@@ -118,11 +117,6 @@ def field_to_json(field, value):
 
     if value is None:
         return None
-    elif isinstance(field, ForeignKeyField):
-        try:
-            return value.get_id()
-        except AttributeError:
-            return value
     elif isinstance(field, DecimalField):
         return float(value)
     elif isinstance(field, (DateTimeField, DateField, TimeField)):
@@ -178,7 +172,7 @@ def value_to_field(value, field):
     return value
 
 
-def deserialize(target, dictionary, *, strict=True, allow=None):
+def deserialize(target, dictionary, *, strict=True, allow=()):
     """Applies the provided dictionary onto the target.
     The target can either be a Model subclass (deserialization)
     or a Model instance (patching).
@@ -193,10 +187,8 @@ def deserialize(target, dictionary, *, strict=True, allow=None):
     else:
         raise TypeError('Cannot apply dictionary to: {}.'.format(target))
 
-    field_map = {
-        key: (attribute, field) for key, attribute, field in iterfields(
-            model, primary_key=False, foreign_keys=False)}
-    allowed_keys = set(chain(field_map, allow or ()))
+    allowed_keys = {key for key, *_ in iterfields(model, primary_key=False)}
+    allowed_keys.update(allow)
     invalid_keys = set(key for key in dictionary if key not in allowed_keys)
 
     if invalid_keys and strict:
@@ -204,7 +196,7 @@ def deserialize(target, dictionary, *, strict=True, allow=None):
 
     record = target if patch else model()
 
-    for key, (attribute, field) in field_map.items():
+    for key, attribute, field in iterfields(model, primary_key=False):
         try:
             value = dictionary[key]
         except KeyError:
@@ -225,19 +217,10 @@ def deserialize(target, dictionary, *, strict=True, allow=None):
     return record
 
 
-def serialize(record, *, only=None, ignore=None, null=False, primary_key=True,
-              foreign_keys=False):
-    """Returns a JSON-ish dictionary with the record's values."""
+def _dict_items(record, fields, only, ignore, null):
+    """Yields the respective dictionary items."""
 
-    only = None if only is None else FieldList(only)
-    ignore = None if ignore is None else FieldList(ignore)
-    field_map = {
-        key: (attribute, field) for key, attribute, field in iterfields(
-            record.__class__, primary_key=primary_key,
-            foreign_keys=foreign_keys)}
-    dictionary = {}
-
-    for key, (attribute, field) in field_map.items():
+    for key, attribute, field in fields:
         if only is not None and (key, attribute, field) not in only:
             continue
 
@@ -247,9 +230,20 @@ def serialize(record, *, only=None, ignore=None, null=False, primary_key=True,
         value = getattr(record, attribute)
 
         if value is not None or null:
-            dictionary[key] = field_to_json(field, value)
+            yield (key, field_to_json(field, value))
 
-    return dictionary
+
+def serialize(record, *, only=None, ignore=None, null=False, primary_key=True):
+    """Returns a JSON-ish dictionary with the record's values."""
+
+    if only is not None:
+        only = FieldList(only)
+
+    if ignore is not None:
+        ignore = FieldList(ignore)
+
+    fields = iterfields(record.__class__, primary_key=primary_key)
+    return dict(_dict_items(record, fields, only, ignore, null))
 
 
 class FieldList:
