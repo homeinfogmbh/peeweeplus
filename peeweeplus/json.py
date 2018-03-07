@@ -18,7 +18,7 @@ __all__ = [
     'FieldNotNullable',
     'InvalidKeys',
     'iterfields',
-    'fieldset',
+    'fieldtuple',
     'deserialize',
     'serialize',
     'JSONModel']
@@ -115,10 +115,10 @@ def iterfields(model, primary_key=True):
 
 
 @lru_cache()
-def fieldset(model, primary_key=True):
+def fieldtuple(model, primary_key=True):
     """Returns a set of the model's respective fields."""
 
-    return set(iterfields(model, primary_key=primary_key))
+    return tuple(iterfields(model, primary_key=primary_key))
 
 
 def field_to_json(field, value):
@@ -196,7 +196,7 @@ def deserialize(target, dictionary, *, strict=True, allow=()):
     else:
         raise TypeError('Cannot apply dictionary to: {}.'.format(target))
 
-    json_fields = fieldset(model, primary_key=False)
+    json_fields = fieldtuple(model, primary_key=False)
     allowed_keys = {key for key, *_ in json_fields}
     allowed_keys.update(allow)
     invalid_keys = set(key for key in dictionary if key not in allowed_keys)
@@ -244,10 +244,10 @@ def _dict_items_gen(record, fields, only, ignore, null):
 
 
 @lru_cache()
-def _dict_items_set(record, fields, only, ignore, null):
+def _dict_items_tuple(record, fields, only, ignore, null):
     """Returns the respective set of dictionary items."""
 
-    return set(_dict_items_gen(record, fields, only, ignore, null))
+    return tuple(_dict_items_gen(record, fields, only, ignore, null))
 
 
 def serialize(record, *, only=None, ignore=None, null=False, primary_key=True):
@@ -259,8 +259,8 @@ def serialize(record, *, only=None, ignore=None, null=False, primary_key=True):
     if ignore is not None:
         ignore = FieldList(ignore)
 
-    json_fields = fieldset(record.__class__, primary_key=primary_key)
-    return dict(_dict_items_set(record, json_fields, only, ignore, null))
+    json_fields = fieldtuple(record.__class__, primary_key=primary_key)
+    return dict(_dict_items_tuple(record, json_fields, only, ignore, null))
 
 
 class FieldList:
