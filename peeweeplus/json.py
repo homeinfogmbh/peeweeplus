@@ -3,7 +3,6 @@
 from base64 import b64decode, b64encode
 from contextlib import suppress
 from datetime import datetime, date, time
-from functools import lru_cache
 
 from peewee import Model, Field, PrimaryKeyField, ForeignKeyField, \
     BooleanField, IntegerField, FloatField, DecimalField, DateTimeField, \
@@ -18,7 +17,6 @@ __all__ = [
     'FieldNotNullable',
     'InvalidKeys',
     'iterfields',
-    'fieldtuple',
     'deserialize',
     'serialize',
     'JSONModel']
@@ -114,13 +112,6 @@ def iterfields(model, primary_key=True):
             yield (field.column_name, name, field)
 
 
-@lru_cache()
-def fieldtuple(model, primary_key=True):
-    """Returns a set of the model's respective fields."""
-
-    return tuple(iterfields(model, primary_key=primary_key))
-
-
 def field_to_json(field, value):
     """Converts the given field's value into JSON-ish data."""
 
@@ -196,8 +187,7 @@ def deserialize(target, dictionary, *, strict=True, allow=()):
     else:
         raise TypeError('Cannot apply dictionary to: {}.'.format(target))
 
-    json_fields = fieldtuple(model, primary_key=False)
-    allowed_keys = {key for key, *_ in json_fields}
+    allowed_keys = {key for key, *_ in iterfields(model, primary_key=False)}
     allowed_keys.update(allow)
     invalid_keys = set(key for key in dictionary if key not in allowed_keys)
 
@@ -206,7 +196,7 @@ def deserialize(target, dictionary, *, strict=True, allow=()):
 
     record = target if patch else model()
 
-    for key, attribute, field in json_fields:
+    for key, attribute, field in iterfields(model, primary_key=False):
         try:
             value = dictionary[key]
         except KeyError:
@@ -227,7 +217,7 @@ def deserialize(target, dictionary, *, strict=True, allow=()):
     return record
 
 
-def _dict_items_gen(record, fields, only, ignore, null):
+def _dict_items(record, fields, only, ignore, null):
     """Yields the respective dictionary items."""
 
     for key, attribute, field in fields:
@@ -243,13 +233,6 @@ def _dict_items_gen(record, fields, only, ignore, null):
             yield (key, field_to_json(field, value))
 
 
-@lru_cache()
-def _dict_items_tuple(record, fields, only, ignore, null):
-    """Returns the respective set of dictionary items."""
-
-    return tuple(_dict_items_gen(record, fields, only, ignore, null))
-
-
 def serialize(record, *, only=None, ignore=None, null=False, primary_key=True):
     """Returns a JSON-ish dictionary with the record's values."""
 
@@ -259,8 +242,8 @@ def serialize(record, *, only=None, ignore=None, null=False, primary_key=True):
     if ignore is not None:
         ignore = FieldList(ignore)
 
-    json_fields = fieldtuple(record.__class__, primary_key=primary_key)
-    return dict(_dict_items_tuple(record, json_fields, only, ignore, null))
+    json_fields = iterfields(record.__class__, primary_key=primary_key)
+    return dict(_dict_items(record, json_fields, only, ignore, null))
 
 
 class FieldList:
