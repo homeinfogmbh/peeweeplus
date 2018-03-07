@@ -18,6 +18,7 @@ __all__ = [
     'FieldNotNullable',
     'InvalidKeys',
     'iterfields',
+    'fieldset',
     'deserialize',
     'serialize',
     'JSONModel']
