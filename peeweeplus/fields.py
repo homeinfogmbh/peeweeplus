@@ -67,6 +67,9 @@ class EnumField(CharField):
             if enum.value == value:
                 return enum
 
+        if value is None and self.null:
+            return value
+
         raise InvalidEnumerationValue(value)
 
 
