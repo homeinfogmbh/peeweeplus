@@ -56,7 +56,7 @@ class EnumField(CharField):
         with suppress(AttributeError):
             value = value.value
 
-        if value in self.values:
+        if value in self.values or value is None and self.null:
             return value
 
         raise InvalidEnumerationValue(value)
