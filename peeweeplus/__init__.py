@@ -1,5 +1,6 @@
 """Practical extensions of the peewee ORM framework."""
 
+from peeweeplus.contextmanagers import ChangedConnection
 from peeweeplus.converters import dec2dom, dec2dict, dec2orm, date2orm, \
     datetime2orm
 from peeweeplus.database import MySQLDatabase
@@ -20,6 +21,7 @@ __all__ = [
     'datetime2orm',
     'deserialize',
     'serialize',
+    'ChangedConnection',
     'MySQLDatabase',
     'JSONModel',
     'EnumField',
