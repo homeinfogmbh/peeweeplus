@@ -7,3 +7,4 @@ setup.cfg
 dist
 MANIFEST
 MANIFEST.in
+.buildconfig
