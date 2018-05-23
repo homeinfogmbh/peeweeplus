@@ -14,11 +14,22 @@ class MySQLDatabase(_MySQLDatabase):
         self.closing = closing
 
     @classmethod
-    def from_config(cls, config, closing=True):
+    def from_config(cls, config, default_closing=True):
         """Creates a database from the respective configuration."""
+        try:
+            database = config['db']
+        except KeyError:
+            database = config['database']
+
+        try:
+            passwd = config['passwd']
+        except KeyError:
+            passwd = config['password']
+
+        closing = config.get('closing', default_closing)
         return cls(
-            config['db'], host=config['host'], user=config['user'],
-            passwd=config['passwd'], closing=config.get('closing', closing))
+            database, host=config['host'], user=config['user'], passwd=passwd,
+            closing=closing)
 
     def execute_sql(self, *args, **kwargs):
         """Conditionally execute the SQL query in an
