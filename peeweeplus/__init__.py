@@ -19,6 +19,7 @@ __all__ = [
     'dec2orm',
     'date2orm',
     'datetime2orm',
+    'iterfields',
     'deserialize',
     'serialize',
     'ChangedConnection',
