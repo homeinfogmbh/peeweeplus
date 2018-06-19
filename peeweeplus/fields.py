@@ -91,9 +91,6 @@ class CascadingFKField(ForeignKeyField):
 class TokenField(CharField):
     """A UUID4 token field."""
 
-    def __init__(self, null=False, default=None, **kwargs):
+    def __init__(self, default=lambda: str(uuid4()), **kwargs):
         """Initializes the char field."""
-        if not null and default is None:
-            default = lambda: str(uuid4())
-
         super().__init__(max_length=64, null=null, default=default, **kwargs)
