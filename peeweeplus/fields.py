@@ -3,7 +3,7 @@
 from contextlib import suppress
 from uuid import uuid4
 
-from peewee import CharField, ForeignKeyField
+from peewee import CharField, FixedCharField, ForeignKeyField
 
 __all__ = [
     'InvalidEnumerationValue',
@@ -88,7 +88,7 @@ class CascadingFKField(ForeignKeyField):
             *args, on_delete=on_delete, on_update=on_update, **kwargs)
 
 
-class TokenField(CharField):
+class TokenField(FixedCharField):
     """A UUID4 token field."""
 
     def __init__(self, default=lambda: str(uuid4()), **kwargs):
