@@ -5,7 +5,7 @@ from peeweeplus.converters import dec2dom, dec2dict, dec2orm, date2orm, \
     datetime2orm
 from peeweeplus.database import MySQLDatabase
 from peeweeplus.fields import InvalidEnumerationValue, EnumField, \
-    CascadingFKField
+    CascadingFKField, TokenField
 from peeweeplus.json import FieldValueError, FieldNotNullable, InvalidKeys, \
     iterfields, deserialize, serialize, JSONModel
 
@@ -26,4 +26,5 @@ __all__ = [
     'MySQLDatabase',
     'JSONModel',
     'EnumField',
-    'CascadingFKField']
+    'CascadingFKField',
+    'TokenField']

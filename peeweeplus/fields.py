@@ -1,10 +1,15 @@
 """Additional field definitions."""
 
 from contextlib import suppress
+from uuid import uuid4
 
 from peewee import CharField, ForeignKeyField
 
-__all__ = ['InvalidEnumerationValue', 'EnumField', 'CascadingFKField']
+__all__ = [
+    'InvalidEnumerationValue',
+    'EnumField',
+    'CascadingFKField',
+    'TokenField']
 
 
 class InvalidEnumerationValue(ValueError):
@@ -81,3 +86,14 @@ class CascadingFKField(ForeignKeyField):
         """Delegates to ForeignKeyField.__init__."""
         super().__init__(
             *args, on_delete=on_delete, on_update=on_update, **kwargs)
+
+
+class TokenField(CharField):
+    """A UUID4 token field."""
+
+    def __init__(self, null=False, default=None, **kwargs):
+        """Initializes the char field."""
+        if not null and default is None:
+            default = lambda: str(uuid4())
+
+        super().__init__(max_length=64, null=null, default=default, **kwargs)
