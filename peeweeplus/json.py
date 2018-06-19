@@ -10,7 +10,7 @@ from peewee import Model, Field, PrimaryKeyField, ForeignKeyField, \
 
 from timelib import strpdatetime, strpdate, strptime
 
-from peeweeplus.fields import EnumField
+from peeweeplus.fields import EnumField, UUID4Field
 
 __all__ = [
     'FieldValueError',
@@ -125,6 +125,8 @@ def field_to_json(field, value):
         return b64encode(value)
     elif isinstance(field, EnumField):
         return value.value
+    elif isinstance(field, UUID4Field):
+        return value.hex
 
     return value
 
