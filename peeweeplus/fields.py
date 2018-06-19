@@ -9,7 +9,7 @@ __all__ = [
     'InvalidEnumerationValue',
     'EnumField',
     'CascadingFKField',
-    'TokenField']
+    'UUID4Field']
 
 
 class InvalidEnumerationValue(ValueError):
@@ -88,9 +88,9 @@ class CascadingFKField(ForeignKeyField):
             *args, on_delete=on_delete, on_update=on_update, **kwargs)
 
 
-class TokenField(FixedCharField):
+class UUID4Field(FixedCharField):
     """A UUID4 token field."""
 
-    def __init__(self, default=lambda: str(uuid4()), **kwargs):
+    def __init__(self, default=uuid4, **kwargs):
         """Initializes the char field."""
-        super().__init__(max_length=64, default=default, **kwargs)
+        super().__init__(max_length=32, default=default, **kwargs)
