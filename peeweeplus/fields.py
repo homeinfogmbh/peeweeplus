@@ -93,4 +93,4 @@ class TokenField(CharField):
 
     def __init__(self, default=lambda: str(uuid4()), **kwargs):
         """Initializes the char field."""
-        super().__init__(max_length=64, null=null, default=default, **kwargs)
+        super().__init__(max_length=64, default=default, **kwargs)
