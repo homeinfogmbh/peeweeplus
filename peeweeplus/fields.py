@@ -1,7 +1,7 @@
 """Additional field definitions."""
 
 from contextlib import suppress
-from uuid import uuid4
+from uuid import uuid4, UUID
 
 from peewee import CharField, FixedCharField, ForeignKeyField
 
@@ -94,3 +94,17 @@ class UUID4Field(FixedCharField):
     def __init__(self, default=uuid4, **kwargs):
         """Initializes the char field."""
         super().__init__(max_length=32, default=default, **kwargs)
+
+    def db_value(self, value):
+        try:
+            return value.hex
+        except AttributeError:
+            return value
+
+    def python_value(self, value):
+        if value is None:
+            return None
+        elif isinstance(value, UUID):
+            return value
+
+        return UUID(value)
