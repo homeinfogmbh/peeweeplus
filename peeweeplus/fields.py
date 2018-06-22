@@ -55,7 +55,7 @@ class EnumField(CharField):
         if value in self.values or value is None and self.null:
             return value
 
-        raise InvalidEnumerationValue(value)
+        raise InvalidEnumerationValue(value, self.enum)
 
     def python_value(self, value):
         """Coerce enumeration value for python."""
@@ -66,7 +66,7 @@ class EnumField(CharField):
         if value is None and self.null:
             return value
 
-        raise InvalidEnumerationValue(value)
+        raise InvalidEnumerationValue(value, self.enum)
 
 
 class CascadingFKField(ForeignKeyField):

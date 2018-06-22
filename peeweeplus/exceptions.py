@@ -91,5 +91,14 @@ class InvalidKeys(ValueError):
 class InvalidEnumerationValue(ValueError):
     """Indicates that an invalid enumeration value has been specified."""
 
-    def __init__(self, value):
+    def __init__(self, value, enum):
+        """Sets the respective enumeration and invalid value."""
         super().__init__('Invalid enum value: "{}".'.format(value))
+        self.value = value
+        self.enum = enum
+
+    def to_dict(self):
+        """Returns a JSON-ish dictionary."""
+        return {
+            'invalid': self.value,
+            'allowed': [value.value for value in self.enum]}
