@@ -18,18 +18,13 @@ class _ModelAttrFieldError(ValueError):
         self.attr = attr
         self.field = field
 
-    def to_dict(self, brief=False):
+    def to_dict(self):
         """Returns a JSON-ish representation of this error."""
-        dictionary = {
+        return {
             'model': self.model.__name__,
+            'attr': self.attr,
             'field': self.field.__class__.__name__,
             'column_name': self.field.column_name}
-
-        if brief:
-            return dictionary
-
-        dictionary['attr'] = self.attr
-        return dictionary
 
 
 class FieldValueError(_ModelAttrFieldError):
@@ -48,9 +43,9 @@ class FieldValueError(_ModelAttrFieldError):
                 field=self.field, model=self.model, attr=self.attr,
                 typ=type(self.value), value=self.value)
 
-    def to_dict(self, brief=False):
+    def to_dict(self):
         """Returns a JSON-ish representation of this error."""
-        dictionary = super().to_dict(brief=brief)
+        dictionary = super().to_dict()
         dictionary.update({
             'value': str(self.value),
             'type': type(self.value).__name__})
