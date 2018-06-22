@@ -87,6 +87,10 @@ class InvalidKeys(ValueError):
         """Yields the invalid keys."""
         yield from self.invalid_keys
 
+    def to_dict(self):
+        """Returns a JSON-ish dictionary."""
+        return {'keys': self.invalid_keys}
+
 
 class InvalidEnumerationValue(ValueError):
     """Indicates that an invalid enumeration value has been specified."""
