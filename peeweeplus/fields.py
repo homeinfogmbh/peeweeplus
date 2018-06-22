@@ -5,18 +5,9 @@ from uuid import uuid4, UUID
 
 from peewee import CharField, FixedCharField, ForeignKeyField
 
-__all__ = [
-    'InvalidEnumerationValue',
-    'EnumField',
-    'CascadingFKField',
-    'UUID4Field']
+from peeweeplus.exceptions import InvalidEnumerationValue
 
-
-class InvalidEnumerationValue(ValueError):
-    """Indicates that an invalid enumeration value has been specified."""
-
-    def __init__(self, value):
-        super().__init__('Invalid enum value: "{}".'.format(value))
+__all__ = ['EnumField', 'CascadingFKField', 'UUID4Field']
 
 
 class EnumField(CharField):

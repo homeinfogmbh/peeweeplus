@@ -4,16 +4,17 @@ from peeweeplus.contextmanagers import ChangedConnection
 from peeweeplus.converters import dec2dom, dec2dict, dec2orm, date2orm, \
     datetime2orm
 from peeweeplus.database import MySQLDatabase
-from peeweeplus.fields import InvalidEnumerationValue, EnumField, \
-    CascadingFKField, UUID4Field
-from peeweeplus.json import FieldValueError, FieldNotNullable, InvalidKeys, \
-    iterfields, deserialize, serialize, JSONModel
+from peeweeplus.exceptions import FieldValueError, FieldNotNullable, \
+    MissingKeyError, InvalidKeys, InvalidEnumerationValue
+from peeweeplus.fields import EnumField, CascadingFKField, UUID4Field
+from peeweeplus.json import iterfields, deserialize, serialize, JSONModel
 
 __all__ = [
     'FieldValueError',
     'FieldNotNullable',
-    'InvalidEnumerationValue',
+    'MissingKeyError',
     'InvalidKeys',
+    'InvalidEnumerationValue',
     'dec2dom',
     'dec2dict',
     'dec2orm',

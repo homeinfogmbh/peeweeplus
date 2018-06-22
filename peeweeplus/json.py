@@ -10,82 +10,17 @@ from peewee import Model, Field, PrimaryKeyField, ForeignKeyField, \
 
 from timelib import strpdatetime, strpdate, strptime
 
+from peeweeplus.exceptions import FieldValueError, FieldNotNullable, \
+    MissingKeyError, InvalidKeys
 from peeweeplus.fields import EnumField, UUID4Field
 
-__all__ = [
-    'FieldValueError',
-    'FieldNotNullable',
-    'InvalidKeys',
-    'iterfields',
-    'deserialize',
-    'serialize',
-    'JSONModel']
+__all__ = ['iterfields', 'deserialize', 'serialize', 'JSONModel']
 
 
-class NullError(TypeError):
+class _NullError(TypeError):
     """Indicates that the respective field cannot be null."""
 
     pass
-
-
-class FieldValueError(ValueError):
-    """Indicates that the field cannot store data of the provided type."""
-
-    def __init__(self, model, attr, field, value):
-        """Sets the field and value."""
-        super().__init__(model, attr, field, value)
-        self.model = model
-        self.attr = attr
-        self.field = field
-        self.value = value
-
-    def __str__(self):
-        """Returns the respective error message."""
-        return (
-            '<{field.__class__.__name__} {field.column_name}> at <{model.'
-            '__class__.__name__}.{attr}> cannot store {typ}: {value}.').format(
-                field=self.field, model=self.model, attr=self.attr,
-                typ=type(self.value), value=self.value)
-
-    def to_dict(self):
-        """Returns a JSON-ish representation of this error."""
-        return {
-            'model': self.model.__name__,
-            'attr': self.attr,
-            'field': self.field.__class__.__name__,
-            'column_name': self.field.column_name,
-            'value': str(self.value),
-            'type': str(type(self.value))}
-
-
-class FieldNotNullable(FieldValueError):
-    """Indicates that the field was assigned
-    a NULL value which it cannot store.
-    """
-
-    def __init__(self, model, attr, field):
-        """Sets the field."""
-        super().__init__(model, attr, field, None)
-
-    def __str__(self):
-        """Returns the respective error message."""
-        return (
-            '<{field.__class__.__name__} {field.column_name}> at '
-            '<{model.__class__.__name__}.{attr}> must not be NULL.').format(
-                field=self.field, model=self.model, attr=self.attr)
-
-
-class InvalidKeys(ValueError):
-    """Indicates that the respective keys can not be consumed by the model."""
-
-    def __init__(self, invalid_keys):
-        """Sets the respective invalid keys."""
-        super().__init__(invalid_keys)
-        self.invalid_keys = invalid_keys
-
-    def __iter__(self):
-        """Yields the invalid keys."""
-        yield from self.invalid_keys
 
 
 def _issubclass(cls, classes):
@@ -136,7 +71,7 @@ def value_to_field(value, field):
 
     if value is None:
         if not field.null:
-            raise NullError()
+            raise _NullError()
 
         return None
     elif isinstance(field, BooleanField):
@@ -203,13 +138,13 @@ def deserialize(target, dictionary, *, strict=True, allow=()):
             value = dictionary[key]
         except KeyError:
             if not patch and field.default is None and not field.null:
-                raise FieldNotNullable(model, attribute, field)
+                raise MissingKeyError(model, attribute, field)
 
             continue
 
         try:
             field_value = value_to_field(value, field)
-        except NullError:
+        except _NullError:
             raise FieldNotNullable(model, attribute, field)
         except (TypeError, ValueError):
             raise FieldValueError(model, attribute, field, value)
