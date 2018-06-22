@@ -22,9 +22,8 @@ class _ModelAttrFieldError(ValueError):
         """Returns a JSON-ish representation of this error."""
         return {
             'model': self.model.__name__,
-            'attr': self.attr,
             'field': self.field.__class__.__name__,
-            'column_name': self.field.column_name}
+            'key': self.field.column_name}
 
 
 class FieldValueError(_ModelAttrFieldError):
