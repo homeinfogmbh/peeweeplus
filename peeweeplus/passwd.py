@@ -13,7 +13,7 @@ PASSWORD_HASHER = PasswordHasher()
 MIN_LEN = 8
 
 
-def is_hash(value, hasher):
+def is_hash(value, hasher=PASSWORD_HASHER):
     """Determines whether value is a valid Argon2 hash for hasher."""
 
     try:
@@ -50,7 +50,7 @@ class Argon2FieldAccessor(FieldAccessor):
         if not isinstance(value, str):
             raise TypeError('Need {}, not {}.'.format(str, type(value)))
 
-        if not is_hash(value, self.field.hasher):
+        if not is_hash(value, hasher=self.field.hasher):
             if len(value) < MIN_LEN:
                 raise PasswordTooShortError(MIN_LEN, len(value))
 
