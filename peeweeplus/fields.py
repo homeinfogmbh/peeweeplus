@@ -6,6 +6,7 @@ from uuid import uuid4, UUID
 from peewee import CharField, FixedCharField, ForeignKeyField
 
 from peeweeplus.exceptions import InvalidEnumerationValue
+from peeweeplus.passwd import HASH_SIZE, Argon2Hash, Argon2FieldAccessor
 
 __all__ = ['EnumField', 'CascadingFKField', 'UUID4Field']
 
@@ -82,20 +83,49 @@ class CascadingFKField(ForeignKeyField):
 class UUID4Field(FixedCharField):
     """A UUID4 token field."""
 
-    def __init__(self, default=uuid4, **kwargs):
+    def __init__(self, max_length=32, default=uuid4, **kwargs):
         """Initializes the char field."""
-        super().__init__(max_length=32, default=default, **kwargs)
+        super().__init__(max_length=max_length, default=default, **kwargs)
 
     def db_value(self, value):
+        """Returns the hexadecimal string representation of the UUID."""
+        if value is None:
+            return None
+
         try:
             return value.hex
         except AttributeError:
-            return value
+            return UUID(value).hex
 
     def python_value(self, value):
+        """Returns a UUID object or None."""
         if value is None:
             return None
         elif isinstance(value, UUID):
             return value
 
         return UUID(value)
+
+
+class Argon2Field(FixedCharField):
+    """An Argon2 password field."""
+
+    accessor_class = Argon2FieldAccessor
+
+    def __init__(self, max_length=HASH_SIZE, **kwargs):
+        """Initializes the char field."""
+        super().__init__(max_length=max_length, **kwargs)
+
+    def db_value(self, value):
+        """Returns the password hash as a string."""
+        if value is None:
+            return None
+
+        return str(value)
+
+    def python_value(self, value):
+        """Returns a string-like Argon2Hash object."""
+        if value is None:
+            return None
+
+        return Argon2Hash(value)
