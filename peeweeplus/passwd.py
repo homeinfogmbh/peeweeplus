@@ -30,6 +30,10 @@ class Argon2Hash(str):
     def __new__(cls, value, hasher):
         """Override str constructor."""
         string = str.__new__(cls, value)
+
+        if not is_hash(string, hasher):
+            raise ValueError(string)
+
         string.hasher = hasher
         return string
 
