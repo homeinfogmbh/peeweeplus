@@ -117,14 +117,14 @@ class Argon2Field(FixedCharField):
         super().__init__(max_length=max_length, **kwargs)
 
     def db_value(self, value):
-        """Returns the password hash as a string."""
+        """Returns the password hash as a string or None."""
         if value is None:
             return None
 
         return str(value)
 
     def python_value(self, value):
-        """Returns a string-like Argon2Hash object."""
+        """Returns a string-like Argon2Hash object or None."""
         if value is None:
             return None
 
