@@ -5,7 +5,8 @@ __all__ = [
     'FieldNotNullable',
     'MissingKeyError',
     'InvalidKeys',
-    'InvalidEnumerationValue']
+    'InvalidEnumerationValue',
+    'PasswordTooShortError']
 
 
 class _ModelAttrFieldError(ValueError):
@@ -106,3 +107,18 @@ class InvalidEnumerationValue(ValueError):
         return {
             'invalid': self.value,
             'allowed': [value.value for value in self.enum]}
+
+
+class PasswordTooShortError(Exception):
+    """Indicates that the provided password was too short."""
+
+    def __init__(self, minlen, pwlen):
+        """Sets minimum length and actual password length."""
+        super().__init__(self, minlen, pwlen)
+        self.minlen = minlen
+        self.pwlen = pwlen
+
+    def __str__(self):
+        """Returns the respective error message."""
+        return 'Password too short ({} / {} characters).'.format(
+            self.pwlen, self.minlen)
