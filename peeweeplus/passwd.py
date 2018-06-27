@@ -1,7 +1,5 @@
 """Argon2-based password hashing."""
 
-from contextlib import suppress
-
 from argon2 import PasswordHasher
 from argon2.exceptions import VerificationError, VerifyMismatchError
 from peewee import FieldAccessor
@@ -13,6 +11,17 @@ __all__ = ['PASSWORD_HASHER', 'Argon2Hash', 'Argon2FieldAccessor']
 
 PASSWORD_HASHER = PasswordHasher()
 MIN_LEN = 8
+
+
+def is_hash(value, hasher):
+    """Determines whether value is a valid Argon2 hash for hasher."""
+
+    try:
+        return hasher.verify(value, '')
+    except VerifyMismatchError:
+        return True
+    except VerificationError:
+        return False
 
 
 class Argon2Hash(str):
@@ -37,15 +46,7 @@ class Argon2FieldAccessor(FieldAccessor):
         if not isinstance(value, str):
             raise TypeError('Need {}, not {}.'.format(str, type(value)))
 
-        is_hash = True
-
-        try:
-            with suppress(VerifyMismatchError):
-                self.field.hasher.verify(value, '')
-        except VerificationError:
-            is_hash = False
-
-        if not is_hash:
+        if not is_hash(value, self.field.hasher):
             if len(value) < MIN_LEN:
                 raise PasswordTooShortError(MIN_LEN, len(value))
 
