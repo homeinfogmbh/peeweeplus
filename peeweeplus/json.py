@@ -109,7 +109,7 @@ def value_to_field(value, field):
     return value
 
 
-def deserialize(target, dictionary, *, strict=True, allow=()):
+def deserialize(target, dictionary, *, strict=True, allow=(), deny=()):
     """Applies the provided dictionary onto the target.
     The target can either be a Model subclass (deserialization)
     or a Model instance (patching).
@@ -125,7 +125,8 @@ def deserialize(target, dictionary, *, strict=True, allow=()):
         raise TypeError('Cannot apply dictionary to: {}.'.format(target))
 
     allowed_keys = {key for key, *_ in iterfields(model, primary_key=False)}
-    allowed_keys.update(allow)
+    allowed_keys |= set(allow)
+    allowed_keys -= set(deny)
     invalid_keys = set(key for key in dictionary if key not in allowed_keys)
 
     if invalid_keys and strict:
