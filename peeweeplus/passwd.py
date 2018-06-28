@@ -34,8 +34,12 @@ class Argon2Hash(str):
         if not is_hash(string, hasher):
             raise ValueError(string)
 
-        string.hasher = hasher
         return string
+
+    def __init__(self, value, hasher):
+        """Sets the hasher."""
+        super().__init__(value)
+        self.hasher = hasher
 
     def verify(self, passwd):
         """Validates the plain text password against this hash."""
@@ -46,7 +50,7 @@ class Argon2FieldAccessor(FieldAccessor):
     """Accessor class for Argon2Field."""
 
     def __set__(self, instance, value):
-        """Sets the hashed password."""
+        """Sets the password hash or hashes the password."""
         if not isinstance(value, str):
             raise TypeError('Need {}, not {}.'.format(str, type(value)))
 
@@ -55,6 +59,5 @@ class Argon2FieldAccessor(FieldAccessor):
                 raise PasswordTooShortError(MIN_LEN, len(value))
 
             value = self.field.hasher.hash(value)
-            value = Argon2Hash(value, self.field.hasher)
 
         super().__set__(instance, value)
