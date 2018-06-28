@@ -54,5 +54,7 @@ class Argon2FieldAccessor(FieldAccessor):
 
     def __set__(self, instance, value):
         """Sets the password hash or hashes the password."""
-        value = _Argon2Hash(value, self.field.hasher)
+        if value is not None:
+            value = _Argon2Hash(value, self.field.hasher)
+
         super().__set__(instance, value)
