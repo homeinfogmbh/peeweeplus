@@ -32,10 +32,10 @@ class _Argon2Hash(str):
         string = str.__new__(cls, value)
 
         if not _is_hash(string, hasher):
-            if len(value) < MIN_LEN:
-                raise PasswordTooShortError(MIN_LEN, len(value))
+            if len(string) < MIN_LEN:
+                raise PasswordTooShortError(MIN_LEN, len(string))
 
-            return hasher.hash(value)
+            return hasher.hash(string)
 
         return string
 
