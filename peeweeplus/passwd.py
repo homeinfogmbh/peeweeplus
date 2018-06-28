@@ -36,9 +36,9 @@ class Argon2Hash(str):
 
         return string
 
-    def __init__(self, value, hasher):
+    def __init__(self, _, hasher):
         """Sets the hasher."""
-        super().__init__(value)
+        super().__init__()
         self.hasher = hasher
 
     def verify(self, passwd):
