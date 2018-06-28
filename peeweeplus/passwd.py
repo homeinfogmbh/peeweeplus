@@ -54,7 +54,9 @@ class Argon2FieldAccessor(FieldAccessor):
         if not isinstance(value, str):
             raise TypeError(type(value))
 
-        if not _is_hash(value, hasher=self.field.hasher):
+        try:
+            value = _Argon2Hash(value, self.field.hasher)
+        except ValueError:
             if len(value) < MIN_LEN:
                 raise PasswordTooShortError(MIN_LEN, len(value))
 
