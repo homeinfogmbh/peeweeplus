@@ -52,7 +52,7 @@ class Argon2FieldAccessor(FieldAccessor):
     def __set__(self, instance, value):
         """Sets the password hash or hashes the password."""
         if not isinstance(value, str):
-            raise TypeError('Need {}, not {}.'.format(str, type(value)))
+            raise TypeError(type(value))
 
         if not is_hash(value, hasher=self.field.hasher):
             if len(value) < MIN_LEN:
