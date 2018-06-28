@@ -121,7 +121,9 @@ class Argon2Field(PasswordField):
     accessor_class = Argon2FieldAccessor
 
     def __init__(self, max_length=None, hasher=PASSWORD_HASHER, **kwargs):
-        """Initializes the char field."""
+        """Initializes the char field, defaulting
+        max_length to the respective hash length.
+        """
         if max_length is None:
             max_length = len(hasher.hash(''))
 
