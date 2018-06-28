@@ -10,7 +10,7 @@ __all__ = ['PASSWORD_HASHER', 'Argon2FieldAccessor']
 
 
 PASSWORD_HASHER = PasswordHasher()
-MIN_LEN = 8
+_MIN_PASSWORD_LENGTH = 8
 
 
 def _is_hash(value, hasher=PASSWORD_HASHER):
@@ -32,8 +32,8 @@ class _Argon2Hash(str):
         string = str.__new__(cls, value)
 
         if not _is_hash(string, hasher):
-            if len(string) < MIN_LEN:
-                raise PasswordTooShortError(MIN_LEN, len(string))
+            if len(string) < _MIN_PASSWORD_LENGTH:
+                raise PasswordTooShortError(_MIN_PASSWORD_LENGTH, len(string))
 
             return hasher.hash(string)
 
