@@ -1,6 +1,5 @@
 """Additional field definitions."""
 
-from contextlib import suppress
 from uuid import uuid4, UUID
 
 from peewee import CharField, FixedCharField, ForeignKeyField
@@ -50,11 +49,12 @@ class EnumField(CharField):
 
     def db_value(self, value):
         """Coerce enumeration value for database."""
-        with suppress(AttributeError):
-            value = value.value
-
-        if value in self.values or value is None and self.null:
+        if value in self.enum:
+            return value.value
+        elif value in self.values:
             return value
+        elif value is None and self.null:
+            return None
 
         raise InvalidEnumerationValue(value, self.enum)
 
@@ -65,7 +65,7 @@ class EnumField(CharField):
                 return enum
 
         if value is None and self.null:
-            return value
+            return None
 
         raise InvalidEnumerationValue(value, self.enum)
 
