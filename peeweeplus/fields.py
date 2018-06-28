@@ -120,9 +120,12 @@ class Argon2Field(PasswordField):
 
     accessor_class = Argon2FieldAccessor
 
-    def __init__(self, hasher=PASSWORD_HASHER, **kwargs):
+    def __init__(self, max_length=None, hasher=PASSWORD_HASHER, **kwargs):
         """Initializes the char field."""
-        super().__init__(max_length=len(hasher.hash('')), **kwargs)
+        if max_length is None:
+            max_length = len(hasher.hash(''))
+
+        super().__init__(max_length=max_length, **kwargs)
         self.hasher = hasher
 
     def db_value(self, value):
