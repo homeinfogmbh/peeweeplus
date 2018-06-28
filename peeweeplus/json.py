@@ -124,7 +124,7 @@ def deserialize(target, dictionary, *, strict=True, allow=(), deny=()):
         model = target
         patch = False
     else:
-        raise TypeError('Cannot apply dictionary to: {}.'.format(target))
+        raise TypeError(target)
 
     allowed_keys = {key for key, *_ in iterfields(model, primary_key=False)}
     allowed_keys |= set(allow)
