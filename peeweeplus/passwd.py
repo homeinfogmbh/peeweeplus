@@ -6,14 +6,14 @@ from peewee import FieldAccessor
 
 from peeweeplus.exceptions import PasswordTooShortError
 
-__all__ = ['PASSWORD_HASHER', 'Argon2Hash', 'Argon2FieldAccessor']
+__all__ = ['PASSWORD_HASHER', 'Argon2FieldAccessor']
 
 
 PASSWORD_HASHER = PasswordHasher()
 MIN_LEN = 8
 
 
-def is_hash(value, hasher=PASSWORD_HASHER):
+def _is_hash(value, hasher=PASSWORD_HASHER):
     """Determines whether value is a valid Argon2 hash for hasher."""
 
     try:
@@ -24,14 +24,14 @@ def is_hash(value, hasher=PASSWORD_HASHER):
         return False
 
 
-class Argon2Hash(str):
+class _Argon2Hash(str):
     """An Argon2 hash."""
 
     def __new__(cls, value, hasher):
         """Override str constructor."""
         string = str.__new__(cls, value)
 
-        if not is_hash(string, hasher):
+        if not _is_hash(string, hasher):
             raise ValueError(string)
 
         return string
@@ -39,11 +39,11 @@ class Argon2Hash(str):
     def __init__(self, _, hasher):
         """Sets the hasher."""
         super().__init__()
-        self.hasher = hasher
+        self._hasher = hasher
 
     def verify(self, passwd):
         """Validates the plain text password against this hash."""
-        return self.hasher.verify(self, passwd)
+        return self._hasher.verify(self, passwd)
 
 
 class Argon2FieldAccessor(FieldAccessor):
@@ -54,10 +54,11 @@ class Argon2FieldAccessor(FieldAccessor):
         if not isinstance(value, str):
             raise TypeError(type(value))
 
-        if not is_hash(value, hasher=self.field.hasher):
+        if not _is_hash(value, hasher=self.field.hasher):
             if len(value) < MIN_LEN:
                 raise PasswordTooShortError(MIN_LEN, len(value))
 
             value = self.field.hasher.hash(value)
+            value = _Argon2Hash(value, self.field.hasher)
 
         super().__set__(instance, value)

@@ -5,7 +5,7 @@ from uuid import uuid4, UUID
 from peewee import CharField, FixedCharField, ForeignKeyField
 
 from peeweeplus.exceptions import InvalidEnumerationValue
-from peeweeplus.passwd import PASSWORD_HASHER, Argon2Hash, Argon2FieldAccessor
+from peeweeplus.passwd import PASSWORD_HASHER, Argon2FieldAccessor
 
 __all__ = ['EnumField', 'CascadingFKField', 'UUID4Field']
 
@@ -129,17 +129,3 @@ class Argon2Field(PasswordField):
 
         super().__init__(max_length=max_length, **kwargs)
         self.hasher = hasher
-
-    def db_value(self, value):
-        """Returns the password hash as a string or None."""
-        if value is None:
-            return None
-
-        return str(value)
-
-    def python_value(self, value):
-        """Returns a string-like Argon2Hash object or None."""
-        if value is None:
-            return None
-
-        return Argon2Hash(value, self.hasher)
