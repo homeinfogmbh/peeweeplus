@@ -107,7 +107,15 @@ class UUID4Field(FixedCharField):
         return UUID(value)
 
 
-class Argon2Field(FixedCharField):
+class PasswordField(FixedCharField):
+    """Common base class for password
+    fields to identify them as such.
+    """
+
+    pass
+
+
+class Argon2Field(PasswordField):
     """An Argon2 password field."""
 
     accessor_class = Argon2FieldAccessor

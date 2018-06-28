@@ -12,7 +12,7 @@ from timelib import strpdatetime, strpdate, strptime
 
 from peeweeplus.exceptions import FieldValueError, FieldNotNullable, \
     MissingKeyError, InvalidKeys
-from peeweeplus.fields import EnumField, UUID4Field
+from peeweeplus.fields import EnumField, UUID4Field, PasswordField
 
 __all__ = ['iterfields', 'deserialize', 'serialize', 'JSONModel']
 
@@ -37,10 +37,12 @@ def iterfields(model, primary_key=True):
     instance for each field  of the model.
     """
 
-    if primary_key:
-        invalid_fields = ForeignKeyField
-    else:
-        invalid_fields = (PrimaryKeyField, ForeignKeyField)
+    invalid_fields = [PasswordField, ForeignKeyField]
+
+    if not primary_key:
+        invalid_fields.append(PrimaryKeyField)
+
+    invalid_fields = tuple(invalid_fields)
 
     for name, field in model._meta.fields.items():
         if not name.startswith('_') and not isinstance(field, invalid_fields):
