@@ -32,7 +32,10 @@ class _Argon2Hash(str):
         string = str.__new__(cls, value)
 
         if not _is_hash(string, hasher):
-            raise ValueError(string)
+            if len(value) < MIN_LEN:
+                raise PasswordTooShortError(MIN_LEN, len(value))
+
+            return hasher.hash(value)
 
         return string
 
@@ -51,16 +54,5 @@ class Argon2FieldAccessor(FieldAccessor):
 
     def __set__(self, instance, value):
         """Sets the password hash or hashes the password."""
-        if not isinstance(value, str):
-            raise TypeError(type(value))
-
-        try:
-            value = _Argon2Hash(value, self.field.hasher)
-        except ValueError:
-            if len(value) < MIN_LEN:
-                raise PasswordTooShortError(MIN_LEN, len(value))
-
-            value = self.field.hasher.hash(value)
-            value = _Argon2Hash(value, self.field.hasher)
-
+        value = _Argon2Hash(value, self.field.hasher)
         super().__set__(instance, value)
