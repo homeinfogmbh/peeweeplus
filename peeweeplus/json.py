@@ -4,9 +4,9 @@ from base64 import b64decode, b64encode
 from contextlib import suppress
 from datetime import datetime, date, time
 
-from peewee import Model, Field, PrimaryKeyField, ForeignKeyField, \
-    BooleanField, IntegerField, FloatField, DecimalField, DateTimeField, \
-    DateField, TimeField, BlobField
+from peewee import Model, Field, AutoField, ForeignKeyField, BooleanField, \
+    IntegerField, FloatField, DecimalField, DateTimeField, DateField, \
+    TimeField, BlobField
 
 from timelib import strpdatetime, strpdate, strptime
 
@@ -32,15 +32,15 @@ def _issubclass(cls, classes):
         return False
 
 
-def iterfields(model, primary_key=True):
+def iterfields(model, autofields=True):
     """Yields JSON-key, attribute name and field
     instance for each field  of the model.
     """
 
     invalid_fields = [PasswordField, ForeignKeyField]
 
-    if not primary_key:
-        invalid_fields.append(PrimaryKeyField)
+    if not autofields:
+        invalid_fields.append(AutoField)
 
     invalid_fields = tuple(invalid_fields)
 
@@ -126,7 +126,7 @@ def deserialize(target, dictionary, *, strict=True, allow=(), deny=()):
     else:
         raise TypeError(target)
 
-    allowed_keys = {key for key, *_ in iterfields(model, primary_key=False)}
+    allowed_keys = {key for key, *_ in iterfields(model, autofields=False)}
     allowed_keys |= set(allow)
     allowed_keys -= set(deny)
     invalid_keys = set(key for key in dictionary if key not in allowed_keys)
@@ -136,7 +136,7 @@ def deserialize(target, dictionary, *, strict=True, allow=(), deny=()):
 
     record = target if patch else model()
 
-    for key, attribute, field in iterfields(model, primary_key=False):
+    for key, attribute, field in iterfields(model, autofields=False):
         try:
             value = dictionary[key]
         except KeyError:
@@ -173,7 +173,7 @@ def _dict_items(record, fields, only, ignore, null):
             yield (key, field_to_json(field, value))
 
 
-def serialize(record, *, only=None, ignore=None, null=False, primary_key=True):
+def serialize(record, *, only=None, ignore=None, null=False, autofields=True):
     """Returns a JSON-ish dictionary with the record's values."""
 
     if only is not None:
@@ -182,7 +182,7 @@ def serialize(record, *, only=None, ignore=None, null=False, primary_key=True):
     if ignore is not None:
         ignore = FieldList(ignore)
 
-    json_fields = iterfields(record.__class__, primary_key=primary_key)
+    json_fields = iterfields(record.__class__, autofields=autofields)
     return dict(_dict_items(record, json_fields, only, ignore, null))
 
 
