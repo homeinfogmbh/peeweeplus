@@ -1,13 +1,19 @@
 """Additional field definitions."""
 
+from ipaddress import IPv4Address
 from uuid import uuid4, UUID
 
-from peewee import CharField, FixedCharField, ForeignKeyField
+from peewee import CharField, FixedCharField, ForeignKeyField, BigIntegerField
 
 from peeweeplus.exceptions import InvalidEnumerationValue
 from peeweeplus.passwd import PASSWORD_HASHER, Argon2FieldAccessor
 
-__all__ = ['EnumField', 'CascadingFKField', 'UUID4Field']
+__all__ = [
+    'EnumField',
+    'CascadingFKField',
+    'UUID4Field',
+    'Argon2Field',
+    'IPv4AddressField']
 
 
 class EnumField(CharField):
@@ -51,9 +57,11 @@ class EnumField(CharField):
         """Coerce enumeration value for database."""
         if value in self.enum:
             return value.value
-        elif value in self.values:
+
+        if value in self.values:
             return value
-        elif value is None and self.null:
+
+        if value is None and self.null:
             return None
 
         raise InvalidEnumerationValue(value, self.enum)
@@ -101,7 +109,8 @@ class UUID4Field(FixedCharField):
         """Returns a UUID object or None."""
         if value is None:
             return None
-        elif isinstance(value, UUID):
+
+        if isinstance(value, UUID):
             return value
 
         return UUID(value)
@@ -129,3 +138,18 @@ class Argon2Field(PasswordField):
 
         super().__init__(max_length=max_length, **kwargs)
         self.hasher = hasher
+
+
+class IPv4AddressField(BigIntegerField):
+    """Field to store IPv4 addresses."""
+
+    def db_value(self, value):
+        """Returns the IPv4 address's interger value or None."""
+        if value is None:
+            return None
+
+        return int(value)
+
+    def python_value(self, value):
+        """Returns the IPv4 address object or None."""
+        return IPv4Address(value)

@@ -8,7 +8,7 @@ from peeweeplus.exceptions import FieldValueError, FieldNotNullable, \
     MissingKeyError, InvalidKeys, InvalidEnumerationValue, \
     PasswordTooShortError
 from peeweeplus.fields import EnumField, CascadingFKField, UUID4Field, \
-    Argon2Field
+    Argon2Field, IPv4AddressField
 from peeweeplus.json import iterfields, deserialize, serialize, JSONModel
 
 __all__ = [
@@ -32,4 +32,5 @@ __all__ = [
     'EnumField',
     'CascadingFKField',
     'UUID4Field',
-    'Argon2Field']
+    'Argon2Field',
+    'IPv4AddressField']
