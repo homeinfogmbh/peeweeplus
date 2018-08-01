@@ -38,8 +38,8 @@ class FieldValueError(_ModelAttrFieldError):
     def __str__(self):
         """Returns the respective error message."""
         return (
-            '<{field.__class__.__name__} {field.column_name}> at <{model.'
-            '__class__.__name__}.{attr}> cannot store {typ}: {value}.').format(
+            '<{field.__class__.__name__} {field.column_name}> at '
+            '<{model.__name__}.{attr}> cannot store {typ}: {value}.').format(
                 field=self.field, model=self.model, attr=self.attr,
                 typ=type(self.value), value=self.value)
 
@@ -61,7 +61,7 @@ class FieldNotNullable(_ModelAttrFieldError):
         """Returns the respective error message."""
         return (
             '<{field.__class__.__name__} {field.column_name}> at '
-            '<{model.__class__.__name__}.{attr}> must not be NULL.').format(
+            '<{model.__name__}.{attr}> must not be NULL.').format(
                 field=self.field, model=self.model, attr=self.attr)
 
 
@@ -71,8 +71,8 @@ class MissingKeyError(_ModelAttrFieldError):
     def __str__(self):
         """Returns the respective error message."""
         return (
-            'Valaue for <{field.__class__.__name__} {field.column_name}> at '
-            '<{model.__class__.__name__}.{attr}> is missing.').format(
+            'Value for <{field.__class__.__name__} {field.column_name}> at '
+            '<{model.__name__}.{attr}> is missing.').format(
                 field=self.field, model=self.model, attr=self.attr)
 
 
