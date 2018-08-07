@@ -198,32 +198,32 @@ def serialize(record, *, only=None, ignore=None, null=False, autofields=True):
     """Returns a JSON-ish dictionary with the record's values."""
 
     if only is not None:
-        only = FieldList(only)
+        only = _FieldList(only)
 
     if ignore is not None:
-        ignore = FieldList(ignore)
+        ignore = _FieldList(ignore)
 
     json_fields_ = _json_fields(record.__class__, autofields=autofields)
     return dict(_dict_items(record, json_fields_, only, ignore, null))
 
 
-class FieldList:
+class _FieldList:
     """A list of DB columns, attributes or fields."""
 
     def __init__(self, items):
         """Splits into a list of strings and fields."""
         self.strings = set()
-        fields = []
-        field_types = []
+        self.fields = []
+        self.field_types = []
 
         for item in items:
             if isinstance(item, Field):
-                fields.append(item.__class__)
+                self.fields.append(item.__class__)
                 continue
 
             with suppress(TypeError):
                 if issubclass(item, Field):
-                    field_types.append(item)
+                    self.field_types.append(item)
                     continue
 
             self.strings.add(item)
