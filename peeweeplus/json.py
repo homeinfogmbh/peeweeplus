@@ -3,6 +3,7 @@
 from base64 import b64decode, b64encode
 from contextlib import suppress
 from datetime import datetime, date, time
+from ipaddress import IPv4Address
 
 from peewee import Model, Field, AutoField, BooleanField, IntegerField, \
     FloatField, DecimalField, DateTimeField, DateField, TimeField, BlobField
@@ -11,7 +12,7 @@ from timelib import strpdatetime, strpdate, strptime
 
 from peeweeplus.exceptions import FieldValueError, FieldNotNullable, \
     MissingKeyError, InvalidKeys
-from peeweeplus.fields import EnumField, UUID4Field
+from peeweeplus.fields import EnumField, UUID4Field, IPv4AddressField
 
 
 __all__ = ['json_fields', 'deserialize', 'serialize', 'JSONModel']
@@ -68,6 +69,9 @@ def _field_to_json(field, value):
     if isinstance(field, UUID4Field):
         return value.hex
 
+    if isinstance(field, IPv4AddressField):
+        return str(value)
+
     return value
 
 
@@ -85,6 +89,9 @@ def _value_to_field(value, field):
             return bool(value)
 
         raise ValueError(value)
+
+    if isinstance(field, IPv4AddressField):
+        return IPv4Address(value)
 
     if isinstance(field, IntegerField):
         return int(value)
