@@ -12,7 +12,7 @@ from peewee import Model, Field, AutoField, ForeignKeyField, BooleanField, \
 from timelib import strpdatetime, strpdate, strptime
 
 from peeweeplus.exceptions import FieldValueError, FieldNotNullable, \
-    MissingKeyError, InvalidKeys
+    MissingKeyError, InvalidKeys, NotAField
 from peeweeplus.fields import EnumField, UUID4Field, PasswordField, \
     IPv4AddressField
 
@@ -26,14 +26,23 @@ class _NullError(TypeError):
     pass
 
 
+def _json_key(field):
+    """Returns the key for JSON serialization."""
+
+    try:
+        return field.json_key
+    except AttributeError:
+        return field.column_name
+
+
 def _json_fields(model, autofields=True):
     """Yields JSON name, attribute name and field
     instance for each field  of the model.
     """
 
-    for name, field in model._meta.fields.items():
+    for attribute, field in model._meta.fields.items():
         # Skip hidden fields.
-        if name.startswith('_'):
+        if attribute.startswith('_'):
             continue
 
         # Forbidden fields.
@@ -43,12 +52,7 @@ def _json_fields(model, autofields=True):
         if not autofields and isinstance(field, AutoField):
             continue
 
-        try:
-            json_name = field.json_name
-        except AttributeError:
-            json_name = field.column_name
-
-        yield (json_name, name, field)
+        yield (attribute, field)
 
 
 def _field_to_json(field, value):
@@ -135,7 +139,9 @@ def _value_to_field(value, field):
 def _dict_items(record, fields, only, ignore, null):
     """Yields the respective dictionary items."""
 
-    for key, attribute, field in fields:
+    for attribute, field in fields:
+        key = _json_key(field)
+
         if only is not None and (key, attribute, field) not in only:
             continue
 
@@ -163,7 +169,8 @@ def deserialize(target, dictionary, *, strict=True, allow=(), deny=()):
     else:
         raise TypeError(target)
 
-    allowed_keys = {key for key, *_ in _json_fields(model, autofields=False)}
+    allowed_keys = {
+        _json_key(field) for _, field in _json_fields(model, autofields=False)}
     allowed_keys |= set(allow)
     allowed_keys -= set(deny)
     invalid_keys = set(key for key in dictionary if key not in allowed_keys)
@@ -173,21 +180,23 @@ def deserialize(target, dictionary, *, strict=True, allow=(), deny=()):
 
     record = target if patch else model()
 
-    for key, attribute, field in _json_fields(model, autofields=False):
+    for attribute, field in _json_fields(model, autofields=False):
+        key = _json_key(field)
+
         try:
             value = dictionary[key]
         except KeyError:
             if not patch and field.default is None and not field.null:
-                raise MissingKeyError(model, attribute, field)
+                raise MissingKeyError(model, attribute, field, key)
 
             continue
 
         try:
             field_value = _value_to_field(value, field)
         except _NullError:
-            raise FieldNotNullable(model, attribute, field)
+            raise FieldNotNullable(model, attribute, field, key)
         except (TypeError, ValueError):
-            raise FieldValueError(model, attribute, field, value)
+            raise FieldValueError(model, attribute, field, key, value)
 
         setattr(record, attribute, field_value)
 
@@ -205,6 +214,30 @@ def serialize(record, *, only=None, ignore=None, null=False, autofields=True):
 
     json_fields_ = _json_fields(record.__class__, autofields=autofields)
     return dict(_dict_items(record, json_fields_, only, ignore, null))
+
+
+def json_names(dictionary):
+    """Decorator factory to serialize fields to the provided names."""
+
+    def decorator(model):
+        """The actual decorator."""
+        keys = set()
+
+        for attribute, key in dictionary.items():
+            if key in keys:
+                raise KeyError('Duplicate JSON key: {}.'.format(key))
+
+            keys.add(key)
+            field = getattr(model, attribute)
+
+            if not isinstance(field, Field):
+                raise NotAField(model, field)
+
+            field.json_key = key
+
+        return model
+
+    return decorator
 
 
 class _FieldList:
