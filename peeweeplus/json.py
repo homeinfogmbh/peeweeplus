@@ -17,7 +17,7 @@ from peeweeplus.fields import EnumField, UUID4Field, PasswordField, \
     IPv4AddressField
 
 
-__all__ = ['deserialize', 'serialize', 'JSONModel']
+__all__ = ['json_names', 'deserialize', 'serialize', 'JSONModel']
 
 
 class _NullError(TypeError):
