@@ -4,17 +4,17 @@ from base64 import b64decode, b64encode
 from contextlib import suppress
 from datetime import datetime, date, time
 
-from peewee import Model, Field, AutoField, ForeignKeyField, BooleanField, \
-    IntegerField, FloatField, DecimalField, DateTimeField, DateField, \
-    TimeField, BlobField
+from peewee import Model, Field, AutoField, BooleanField, IntegerField, \
+    FloatField, DecimalField, DateTimeField, DateField, TimeField, BlobField
 
 from timelib import strpdatetime, strpdate, strptime
 
 from peeweeplus.exceptions import FieldValueError, FieldNotNullable, \
     MissingKeyError, InvalidKeys
-from peeweeplus.fields import EnumField, UUID4Field, PasswordField
+from peeweeplus.fields import EnumField, UUID4Field
 
-__all__ = ['iterfields', 'deserialize', 'serialize', 'JSONModel']
+
+__all__ = ['json_fields', 'deserialize', 'serialize', 'JSONModel']
 
 
 class _NullError(TypeError):
@@ -32,43 +32,46 @@ def _issubclass(cls, classes):
         return False
 
 
-def iterfields(model, autofields=True):
-    """Yields JSON-key, attribute name and field
+def _json_fields(model, autofields=True):
+    """Yields JSON name, attribute name and field
     instance for each field  of the model.
     """
 
-    invalid_fields = [PasswordField, ForeignKeyField]
-
-    if not autofields:
-        invalid_fields.append(AutoField)
-
-    invalid_fields = tuple(invalid_fields)
-
     for name, field in model._meta.fields.items():
-        if not name.startswith('_') and not isinstance(field, invalid_fields):
-            yield (field.column_name, name, field)
+        if not hasattr(field, 'json_name'):
+            continue
+
+        if not autofields and isinstance(field, AutoField):
+            continue
+
+        yield (field.json_name or field.column_name, name, field)
 
 
-def field_to_json(field, value):
+def _field_to_json(field, value):
     """Converts the given field's value into JSON-ish data."""
 
     if value is None:
         return None
-    elif isinstance(field, DecimalField):
+
+    if isinstance(field, DecimalField):
         return float(value)
-    elif isinstance(field, (DateTimeField, DateField, TimeField)):
+
+    if isinstance(field, (DateTimeField, DateField, TimeField)):
         return value.isoformat()
-    elif isinstance(field, BlobField):
+
+    if isinstance(field, BlobField):
         return b64encode(value)
-    elif isinstance(field, EnumField):
+
+    if isinstance(field, EnumField):
         return value.value
-    elif isinstance(field, UUID4Field):
+
+    if isinstance(field, UUID4Field):
         return value.hex
 
     return value
 
 
-def value_to_field(value, field):
+def _value_to_field(value, field):
     """Converts a value for the provided field."""
 
     if value is None:
@@ -76,39 +79,82 @@ def value_to_field(value, field):
             raise _NullError()
 
         return None
-    elif isinstance(field, BooleanField):
+
+    if isinstance(field, BooleanField):
         if isinstance(value, (bool, int)):
             return bool(value)
 
         raise ValueError(value)
-    elif isinstance(field, IntegerField):
+
+    if isinstance(field, IntegerField):
         return int(value)
-    elif isinstance(field, FloatField):
+
+    if isinstance(field, FloatField):
         return float(value)
-    elif isinstance(field, DecimalField):
+
+    if isinstance(field, DecimalField):
         return float(value)
-    elif isinstance(field, DateTimeField):
+
+    if isinstance(field, DateTimeField):
         if isinstance(value, datetime):
             return value
 
         return strpdatetime(value)
-    elif isinstance(field, DateField):
+
+    if isinstance(field, DateField):
         if isinstance(value, date):
             return value
 
         return strpdate(value)
-    elif isinstance(field, TimeField):
+
+    if isinstance(field, TimeField):
         if isinstance(value, time):
             return value
 
         return strptime(value)
-    elif isinstance(field, BlobField):
+
+    if isinstance(field, BlobField):
         if isinstance(value, bytes):
             return value
 
         return b64decode(value)
 
     return value
+
+
+def _dict_items(record, fields, only, ignore, null):
+    """Yields the respective dictionary items."""
+
+    for key, attribute, field in fields:
+        if only is not None and (key, attribute, field) not in only:
+            continue
+
+        if ignore is not None and (key, attribute, field) in ignore:
+            continue
+
+        value = getattr(record, attribute)
+
+        if value is not None or null:
+            yield (key, _field_to_json(field, value))
+
+
+def json_fields(mapping):
+    """Decorator factory to map JSON fields."""
+
+    def decorator(model):
+        """The actual decorator."""
+        for attribute, json_name in mapping.items():
+            field = getattr(model, attribute)
+
+            if not isinstance(field, Field):
+                raise AttributeError('Model {} has no field {}.'.format(
+                    model, field))
+
+            field.json_name = json_name
+
+        return model
+
+    return decorator
 
 
 def deserialize(target, dictionary, *, strict=True, allow=(), deny=()):
@@ -126,7 +172,7 @@ def deserialize(target, dictionary, *, strict=True, allow=(), deny=()):
     else:
         raise TypeError(target)
 
-    allowed_keys = {key for key, *_ in iterfields(model, autofields=False)}
+    allowed_keys = {key for key, *_ in _json_fields(model, autofields=False)}
     allowed_keys |= set(allow)
     allowed_keys -= set(deny)
     invalid_keys = set(key for key in dictionary if key not in allowed_keys)
@@ -136,7 +182,7 @@ def deserialize(target, dictionary, *, strict=True, allow=(), deny=()):
 
     record = target if patch else model()
 
-    for key, attribute, field in iterfields(model, autofields=False):
+    for key, attribute, field in _json_fields(model, autofields=False):
         try:
             value = dictionary[key]
         except KeyError:
@@ -146,7 +192,7 @@ def deserialize(target, dictionary, *, strict=True, allow=(), deny=()):
             continue
 
         try:
-            field_value = value_to_field(value, field)
+            field_value = _value_to_field(value, field)
         except _NullError:
             raise FieldNotNullable(model, attribute, field)
         except (TypeError, ValueError):
@@ -155,22 +201,6 @@ def deserialize(target, dictionary, *, strict=True, allow=(), deny=()):
         setattr(record, attribute, field_value)
 
     return record
-
-
-def _dict_items(record, fields, only, ignore, null):
-    """Yields the respective dictionary items."""
-
-    for key, attribute, field in fields:
-        if only is not None and (key, attribute, field) not in only:
-            continue
-
-        if ignore is not None and (key, attribute, field) in ignore:
-            continue
-
-        value = getattr(record, attribute)
-
-        if value is not None or null:
-            yield (key, field_to_json(field, value))
 
 
 def serialize(record, *, only=None, ignore=None, null=False, autofields=True):
@@ -182,8 +212,8 @@ def serialize(record, *, only=None, ignore=None, null=False, autofields=True):
     if ignore is not None:
         ignore = FieldList(ignore)
 
-    json_fields = iterfields(record.__class__, autofields=autofields)
-    return dict(_dict_items(record, json_fields, only, ignore, null))
+    json_fields_ = _json_fields(record.__class__, autofields=autofields)
+    return dict(_dict_items(record, json_fields_, only, ignore, null))
 
 
 class FieldList:
@@ -218,7 +248,8 @@ class FieldList:
 
         if column_name in self.strings or attribute in self.strings:
             return True
-        elif isinstance(field, self.fields):
+
+        if isinstance(field, self.fields):
             return True
 
         return _issubclass(field, self.field_types)
