@@ -5,17 +5,19 @@ from contextlib import suppress
 from datetime import datetime, date, time
 from ipaddress import IPv4Address
 
-from peewee import Model, Field, AutoField, BooleanField, IntegerField, \
-    FloatField, DecimalField, DateTimeField, DateField, TimeField, BlobField
+from peewee import Model, Field, AutoField, ForeignKeyField, BooleanField, \
+    IntegerField, FloatField, DecimalField, DateTimeField, DateField, \
+    TimeField, BlobField
 
 from timelib import strpdatetime, strpdate, strptime
 
 from peeweeplus.exceptions import FieldValueError, FieldNotNullable, \
     MissingKeyError, InvalidKeys
-from peeweeplus.fields import EnumField, UUID4Field, IPv4AddressField
+from peeweeplus.fields import EnumField, UUID4Field, PasswordField, \
+    IPv4AddressField
 
 
-__all__ = ['json_fields', 'deserialize', 'serialize', 'JSONModel']
+__all__ = ['deserialize', 'serialize', 'JSONModel']
 
 
 class _NullError(TypeError):
@@ -39,7 +41,8 @@ def _json_fields(model, autofields=True):
     """
 
     for name, field in model._meta.fields.items():
-        if not hasattr(field, 'json_name'):
+        # Forbidden fields.
+        if isinstance(field, (ForeignKeyField, PasswordField)):
             continue
 
         if not autofields and isinstance(field, AutoField):
@@ -143,37 +146,6 @@ def _dict_items(record, fields, only, ignore, null):
 
         if value is not None or null:
             yield (key, _field_to_json(field, value))
-
-
-def json_fields(*fields):
-    """Decorator factory to map JSON fields."""
-
-    def decorator(model):
-        """The actual decorator."""
-
-        mapping = {}
-
-        for field in fields:
-            if isinstance(field, str):
-                mapping[field] = None
-            elif isinstance(field, dict):
-                mapping.update(field)
-            else:
-                for name in field:
-                    mapping[name] = None
-
-        for attribute, json_name in mapping.items():
-            field = getattr(model, attribute)
-
-            if not isinstance(field, Field):
-                raise AttributeError('Model {} has no field {}.'.format(
-                    model, field))
-
-            field.json_name = json_name
-
-        return model
-
-    return decorator
 
 
 def deserialize(target, dictionary, *, strict=True, allow=(), deny=()):
