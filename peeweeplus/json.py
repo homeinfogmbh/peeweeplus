@@ -138,11 +138,23 @@ def _dict_items(record, fields, only, ignore, null):
             yield (key, _field_to_json(field, value))
 
 
-def json_fields(mapping):
+def json_fields(*fields):
     """Decorator factory to map JSON fields."""
 
     def decorator(model):
         """The actual decorator."""
+
+        mapping = {}
+
+        for field in fields:
+            if isinstance(field, str):
+                mapping[field] = None
+            elif isinstance(field, dict):
+                mapping.update(field)
+            else:
+                for name in field:
+                    mapping[name] = None
+
         for attribute, json_name in mapping.items():
             field = getattr(model, attribute)
 
