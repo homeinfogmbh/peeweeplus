@@ -41,6 +41,10 @@ def _json_fields(model, autofields=True):
     """
 
     for name, field in model._meta.fields.items():
+        # Skip hidden fields.
+        if name.startswith('_'):
+            continue
+
         # Forbidden fields.
         if isinstance(field, (ForeignKeyField, PasswordField)):
             continue
@@ -48,7 +52,12 @@ def _json_fields(model, autofields=True):
         if not autofields and isinstance(field, AutoField):
             continue
 
-        yield (field.json_name or field.column_name, name, field)
+        try:
+            json_name = field.json_name
+        except AttributeError:
+            json_name = field.column_name
+
+        yield (json_name, name, field)
 
 
 def _field_to_json(field, value):
