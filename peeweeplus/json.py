@@ -26,15 +26,6 @@ class _NullError(TypeError):
     pass
 
 
-def _issubclass(cls, classes):
-    """Safe subclass check."""
-
-    try:
-        return issubclass(cls, classes)
-    except TypeError:
-        return False
-
-
 def _json_fields(model, autofields=True):
     """Yields JSON name, attribute name and field
     instance for each field  of the model.
@@ -237,9 +228,6 @@ class FieldList:
 
             self.strings.add(item)
 
-        self.fields = tuple(fields)             # Need tuple for isinstance().
-        self.field_types = tuple(field_types)   # Need tuple for issubclass().
-
     def __contains__(self, item):
         """Determines whether the list contains either
         the DB column's name, attribute or field.
@@ -249,10 +237,10 @@ class FieldList:
         if column_name in self.strings or attribute in self.strings:
             return True
 
-        if isinstance(field, self.fields):
+        if isinstance(field, tuple(self.fields)):
             return True
 
-        return _issubclass(field, self.field_types)
+        return issubclass(field, tuple(self.field_types))
 
 
 class JSONModel(Model):
