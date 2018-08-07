@@ -9,7 +9,7 @@ from peeweeplus.exceptions import FieldValueError, FieldNotNullable, \
     PasswordTooShortError
 from peeweeplus.fields import EnumField, CascadingFKField, UUID4Field, \
     Argon2Field, IPv4AddressField
-from peeweeplus.json import iterfields, deserialize, serialize, JSONModel
+from peeweeplus.json import deserialize, serialize, JSONModel
 
 __all__ = [
     'FieldValueError',
@@ -23,7 +23,6 @@ __all__ = [
     'dec2orm',
     'date2orm',
     'datetime2orm',
-    'iterfields',
     'deserialize',
     'serialize',
     'ChangedConnection',
