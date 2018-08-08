@@ -6,6 +6,7 @@ from peewee import FieldAccessor
 
 from peeweeplus.exceptions import PasswordTooShortError
 
+
 __all__ = ['PASSWORD_HASHER', 'Argon2FieldAccessor']
 
 
@@ -13,7 +14,7 @@ PASSWORD_HASHER = PasswordHasher()
 _MIN_PW_LEN = 8
 
 
-def _is_hash(value, hasher=PASSWORD_HASHER):
+def is_hash(value, hasher=PASSWORD_HASHER):
     """Determines whether value is a valid Argon2 hash for hasher."""
 
     try:
@@ -24,19 +25,14 @@ def _is_hash(value, hasher=PASSWORD_HASHER):
         return False
 
 
-class _Argon2Hash(str):
+class Argon2Hash(str):
     """An Argon2 hash."""
 
-    def __new__(cls, value, hasher):
+    def __new__(cls, _, value):
         """Override str constructor."""
-        string = str.__new__(cls, value)
+        return str.__new__(cls, value)
 
-        if not _is_hash(string, hasher):
-            raise ValueError(string)
-
-        return string
-
-    def __init__(self, _, hasher):
+    def __init__(self, hasher, _):
         """Sets the hasher."""
         super().__init__()
         self._hasher = hasher
@@ -57,23 +53,17 @@ class Argon2FieldAccessor(FieldAccessor):
             if value is None:
                 return None
 
-            if isinstance(value, _Argon2Hash):
-                return value
-
-            return _Argon2Hash(value, self.field.hasher)
+            return Argon2Hash(self.field.hasher, value)
 
         return value
 
     def __set__(self, instance, value):
-        """Sets the password hash or hashes the password."""
-        if value is not None:
-            try:
-                value = _Argon2Hash(value, self.field.hasher)
-            except ValueError:
-                if len(value) < _MIN_PW_LEN:
-                    raise PasswordTooShortError(len(value), _MIN_PW_LEN)
+        """Sets the password hash."""
+        if value is not None and not is_hash(self.field.hasher, value):
+            # If value is a plain text password, hash it.
+            if len(value) < _MIN_PW_LEN:
+                raise PasswordTooShortError(len(value), _MIN_PW_LEN)
 
-                value = self.field.hasher.hash(value)
-                value = _Argon2Hash(value, self.field.hasher)
+            value = self.field.hasher.hash(value)
 
         super().__set__(instance, value)
