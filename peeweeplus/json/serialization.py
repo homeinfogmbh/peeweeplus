@@ -21,7 +21,7 @@ _CONVERTER = FieldConverter(
     (IPv4AddressField, str))
 
 
-def _filter(record, fk_fields=True, allow=(), deny=(), null=False,
+def _filter(record, allow=(), deny=(), null=False, fk_fields=True,
             autofields=True):
     """Yields the respective dictionary items in the form of
     (<key>, <field>, <value>).
@@ -43,7 +43,7 @@ def _filter(record, fk_fields=True, allow=(), deny=(), null=False,
             yield (key, field, value)
 
 
-def serialize(record, *, fk_fields=True, allow=(), deny=(), null=False,
+def serialize(record, *, allow=(), deny=(), null=False, fk_fields=True,
               autofields=True):
     """Returns a JSON-ish dictionary with the record's values."""
 
