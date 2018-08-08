@@ -83,6 +83,10 @@ class FieldList:
 class FieldMap(tuple):
     """Maps conversion functions to field classes in preserved order."""
 
+    def __new__ (cls, *items):
+        """Creates a new tuple."""
+        return super().__new__(items)
+
     def convert(self, field, value, check_null=False):
         """Converts the respective value to the field."""
         if value is None:
