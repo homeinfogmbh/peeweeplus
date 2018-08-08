@@ -24,7 +24,7 @@ def json_fields(model, autofields=True):
         # Forbid FK fields, since it is not generally clear whether
         # to cascade the FK model or just yield the FK ID.
         # Override JSONModel.to_dict() if needed.
-        # Also forbit password fields because of obvious data leakage.
+        # Also forbid password fields because of obvious data leakage.
         if isinstance(field, (ForeignKeyField, PasswordField)):
             continue
 
