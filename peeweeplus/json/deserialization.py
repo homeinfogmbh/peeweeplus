@@ -68,7 +68,7 @@ def deserialize(target, dictionary, *, strict=True, allow=(), deny=()):
             continue
 
         try:
-            field_value = _FIELD_MAP.convert(field, value)
+            field_value = _FIELD_MAP.convert(field, value, check_null=True)
         except NullError:
             raise FieldNotNullable(model, attribute, field, key)
         except (TypeError, ValueError):
