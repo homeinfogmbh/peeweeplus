@@ -5,13 +5,13 @@ from base64 import b64encode
 from peewee import DecimalField, DateTimeField, DateField, TimeField, \
     BlobField
 from peeweeplus.fields import EnumField, UUID4Field, IPv4AddressField
-from peeweeplus.json.misc import json_fields, json_key, FieldMap
+from peeweeplus.json.misc import json_fields, json_key, FieldConverter
 
 
 __all__ = ['serialize']
 
 
-_FIELD_MAP = FieldMap(
+_CONVERTER = FieldConverter(
     (DecimalField, float),
     ((DateTimeField, DateField, TimeField), lambda value: value.isoformat()),
     (BlobField, b64encode),
@@ -44,5 +44,5 @@ def serialize(record, *, allow=(), deny=(), null=False, autofields=True):
     """Returns a JSON-ish dictionary with the record's values."""
 
     return {
-        key: _FIELD_MAP.convert(field, value) for key, field, value in _filter(
+        key: _CONVERTER(field, value) for key, field, value in _filter(
             record, allow=allow, deny=deny, null=null, autofields=autofields)}

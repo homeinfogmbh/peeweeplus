@@ -9,7 +9,7 @@ from peewee import Model, BooleanField, IntegerField, FloatField, \
 from peeweeplus.exceptions import NullError, FieldNotNullable, InvalidKeys, \
     MissingKeyError, FieldValueError
 from peeweeplus.fields import UUID4Field, IPv4AddressField
-from peeweeplus.json.misc import json_fields, json_key, FieldMap
+from peeweeplus.json.misc import json_fields, json_key, FieldConverter
 from peeweeplus.json.parsers import parse_bool, parse_datetime, parse_date, \
     parse_time, parse_blob
 
@@ -17,7 +17,7 @@ from peeweeplus.json.parsers import parse_bool, parse_datetime, parse_date, \
 __all__ = ['deserialize']
 
 
-_FIELD_MAP = FieldMap(
+_CONVERTER = FieldConverter(
     (BooleanField, parse_bool),
     (UUID4Field, UUID),
     (IPv4AddressField, IPv4Address),
@@ -92,7 +92,7 @@ def deserialize(target, dictionary, *, allow=(), deny=(), strict=True):
     for attribute, field, key, value in _filter(
             model, dictionary, patch, allow=allow, deny=deny, strict=strict):
         try:
-            field_value = _FIELD_MAP.convert(field, value, check_null=True)
+            field_value = _CONVERTER(field, value, check_null=True)
         except NullError:
             raise FieldNotNullable(model, attribute, field, key)
         except (TypeError, ValueError):

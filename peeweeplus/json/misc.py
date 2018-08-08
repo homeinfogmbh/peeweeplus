@@ -6,7 +6,7 @@ from peeweeplus.exceptions import NullError
 from peeweeplus.fields import PasswordField
 
 
-__all__ = ['json_fields', 'json_key', 'FieldMap']
+__all__ = ['json_fields', 'json_key', 'FieldConverter']
 
 
 def json_fields(model, autofields=True):
@@ -42,14 +42,14 @@ def json_key(field):
         return field.column_name
 
 
-class FieldMap(tuple):
+class FieldConverter(tuple):
     """Maps conversion functions to field classes in preserved order."""
 
     def __new__(cls, *items):
         """Creates a new tuple."""
         return super().__new__(cls, items)
 
-    def convert(self, field, value, check_null=False):
+    def __call__(self, field, value, check_null=False):
         """Converts the respective value to the field."""
         if value is None:
             if check_null and not field.null:
