@@ -85,7 +85,7 @@ class FieldMap(tuple):
 
     def __new__ (cls, *items):
         """Creates a new tuple."""
-        return super().__new__(items)
+        return super().__new__(cls, items)
 
     def convert(self, field, value, check_null=False):
         """Converts the respective value to the field."""
