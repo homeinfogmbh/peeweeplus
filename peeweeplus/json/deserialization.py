@@ -3,8 +3,8 @@
 from ipaddress import IPv4Address
 from uuid import UUID
 
-from peewee import Model, BooleanField, IntegerField, FloatField, \
-    DecimalField, DateTimeField, DateField, TimeField, BlobField
+from peewee import Model, ForeignKeyField, BooleanField, IntegerField, \
+    FloatField, DecimalField, DateTimeField, DateField, TimeField, BlobField
 
 from peeweeplus.exceptions import NullError, FieldNotNullable, InvalidKeys, \
     MissingKeyError, FieldValueError
@@ -18,6 +18,7 @@ __all__ = ['deserialize']
 
 
 _CONVERTER = FieldConverter(
+    (ForeignKeyField, int),
     (BooleanField, parse_bool),
     (UUID4Field, UUID),
     (IPv4AddressField, IPv4Address),
@@ -30,7 +31,8 @@ _CONVERTER = FieldConverter(
     (BlobField, parse_blob))
 
 
-def _filter(model, dictionary, patch, allow=(), deny=(), strict=True):
+def _filter(model, dictionary, patch, fk_fields=True, allow=(), deny=(),
+            strict=True):
     """Filters the respective fields, yielding
         (<attribute>, <field>, <key>, <value>)
     tuples.
@@ -39,7 +41,8 @@ def _filter(model, dictionary, patch, allow=(), deny=(), strict=True):
     invalid_keys = set()
     allowed_keys = set()
 
-    for attribute, field in json_fields(model, autofields=False):
+    for attribute, field in json_fields(
+            model, fk_fields=fk_fields, autofields=False):
         key = json_key(field)
 
         if allow and key not in allow:
@@ -72,7 +75,8 @@ def _filter(model, dictionary, patch, allow=(), deny=(), strict=True):
             raise InvalidKeys(unprocessed)
 
 
-def deserialize(target, dictionary, *, allow=(), deny=(), strict=True):
+def deserialize(target, dictionary, *, fk_fields=True, allow=(), deny=(),
+                strict=True):
     """Applies the provided dictionary onto the target.
     The target can either be a Model subclass (deserialization)
     or a Model instance (patching).
@@ -90,7 +94,8 @@ def deserialize(target, dictionary, *, allow=(), deny=(), strict=True):
     record = target if patch else model()
 
     for attribute, field, key, value in _filter(
-            model, dictionary, patch, allow=allow, deny=deny, strict=strict):
+            model, dictionary, patch, fk_fields=fk_fields, allow=allow,
+            deny=deny, strict=strict):
         try:
             field_value = _CONVERTER(field, value, check_null=True)
         except NullError:

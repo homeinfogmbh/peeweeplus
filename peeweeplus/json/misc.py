@@ -9,7 +9,7 @@ from peeweeplus.fields import PasswordField
 __all__ = ['json_fields', 'json_key', 'FieldConverter']
 
 
-def json_fields(model, autofields=True):
+def json_fields(model, fk_fields=True, autofields=True):
     """Yields JSON name, attribute name and field
     instance for each field  of the model.
     """
@@ -19,14 +19,13 @@ def json_fields(model, autofields=True):
         if attribute.startswith('_') and not hasattr(field, 'json_key'):
             continue
 
-        # Forbid FK fields, since it is not generally clear whether
-        # to cascade the FK model or just yield the FK ID.
-        # Override JSONModel.to_dict() if needed.
-        # Also forbid password fields because of obvious data leakage.
-        if isinstance(field, (ForeignKeyField, PasswordField)):
+        # Forbid password fields because of obvious data leakage.
+        if isinstance(field, PasswordField):
             continue
 
-        # We generally do not want AutoFields (PK fields) on deserialization.
+        if not fk_fields and isinstance(field, ForeignKeyField):
+            continue
+
         if not autofields and isinstance(field, AutoField):
             continue
 

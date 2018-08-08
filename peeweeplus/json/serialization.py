@@ -2,8 +2,8 @@
 
 from base64 import b64encode
 
-from peewee import DecimalField, DateTimeField, DateField, TimeField, \
-    BlobField
+from peewee import ForeignKeyField, DecimalField, DateTimeField, DateField, \
+    TimeField, BlobField
 from peeweeplus.fields import EnumField, UUID4Field, IPv4AddressField
 from peeweeplus.json.misc import json_fields, json_key, FieldConverter
 
@@ -12,6 +12,7 @@ __all__ = ['serialize']
 
 
 _CONVERTER = FieldConverter(
+    (ForeignKeyField, lambda model: model._pk),     # pylint: disable=W0212
     (DecimalField, float),
     ((DateTimeField, DateField, TimeField), lambda value: value.isoformat()),
     (BlobField, b64encode),
@@ -20,12 +21,14 @@ _CONVERTER = FieldConverter(
     (IPv4AddressField, str))
 
 
-def _filter(record, allow=(), deny=(), null=False, autofields=True):
+def _filter(record, fk_fields=True, allow=(), deny=(), null=False,
+            autofields=True):
     """Yields the respective dictionary items in the form of
     (<key>, <field>, <value>).
     """
 
-    for attribute, field in json_fields(type(record), autofields=autofields):
+    for attribute, field in json_fields(
+            type(record), fk_fields=fk_fields, autofields=autofields):
         key = json_key(field)
 
         if allow and key not in allow:
@@ -40,9 +43,11 @@ def _filter(record, allow=(), deny=(), null=False, autofields=True):
             yield (key, field, value)
 
 
-def serialize(record, *, allow=(), deny=(), null=False, autofields=True):
+def serialize(record, *, fk_fields=True, allow=(), deny=(), null=False,
+              autofields=True):
     """Returns a JSON-ish dictionary with the record's values."""
 
     return {
         key: _CONVERTER(field, value) for key, field, value in _filter(
-            record, allow=allow, deny=deny, null=null, autofields=autofields)}
+            record, fk_fields=fk_fields, allow=allow, deny=deny, null=null,
+            autofields=autofields)}
