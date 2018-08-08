@@ -1,6 +1,7 @@
 """Exceptions."""
 
 __all__ = [
+    'NullError',
     'FieldValueError',
     'FieldNotNullable',
     'MissingKeyError',
@@ -8,6 +9,12 @@ __all__ = [
     'NotAField',
     'InvalidEnumerationValue',
     'PasswordTooShortError']
+
+
+class NullError(TypeError):
+    """Indicates that the respective field cannot be null."""
+
+    pass
 
 
 class _ModelAttrFieldKeyError(ValueError):

@@ -10,6 +10,6 @@ setup(
     author_email='<info at homeinfo dot de>',
     maintainer='Richard Neumann',
     maintainer_email='<r dot neumann at homeinfo priod de>',
-    packages=['peeweeplus'],
+    packages=['peeweeplus', 'peeweeplus.json'],
     license='GPLv3',
     description='Practical extensions for the peewee ORM framework.')
