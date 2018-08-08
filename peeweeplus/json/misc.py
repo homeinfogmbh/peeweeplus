@@ -1,14 +1,17 @@
 """Miscellaneous stuff."""
 
-from contextlib import suppress
+from peewee import AutoField, ForeignKeyField
 
-from peewee import Field, AutoField, ForeignKeyField
-
-from peeweeplus.exceptions import NullError
+from peeweeplus.exceptions import NullError, MissingKeyError, InvalidKeys
 from peeweeplus.fields import PasswordField
 
 
-__all__ = ['json_fields', 'json_key', 'FieldList', 'FieldMap']
+__all__ = [
+    'json_fields',
+    'json_key',
+    'deserialization_filter',
+    'serialization_filter',
+    'FieldMap']
 
 
 def json_fields(model, autofields=True):
@@ -44,46 +47,74 @@ def json_key(field):
         return field.column_name
 
 
-class FieldList:
-    """A list of DB columns, attributes or fields."""
+def deserialization_filter(
+        model, dictionary, patch, allow=(), deny=(), strict=True):
+    """Filters the respective fields, yielding
+        (<attribute>, <field>, <key>, <value>)
+    tuples.
+    """
 
-    def __init__(self, items):
-        """Splits into a list of strings and fields."""
-        self.strings = set()
-        self.fields = []
-        self.field_types = []
+    invalid_keys = set()
+    allowed_keys = set()
 
-        for item in items:
-            if isinstance(item, Field):
-                self.fields.append(item.__class__)
-                continue
+    for attribute, field in json_fields(model, autofields=False):
+        key = json_key(field)
 
-            with suppress(TypeError):
-                if issubclass(item, Field):
-                    self.field_types.append(item)
-                    continue
+        if allow and key not in allow:
+            invalid_keys.add(key)
+            continue
 
-            self.strings.add(item)
+        if deny and key in deny:
+            invalid_keys.add(key)
+            continue
 
-    def __contains__(self, item):
-        """Determines whether the list contains either
-        the DB column's name, attribute or field.
-        """
-        column_name, attribute, field = item
+        allowed_keys.add(key)
 
-        if column_name in self.strings or attribute in self.strings:
-            return True
+        try:
+            value = dictionary[key]
+        except KeyError:
+            if not patch and field.default is None and not field.null:
+                raise MissingKeyError(model, attribute, field, key)
 
-        if isinstance(field, tuple(self.fields)):
-            return True
+            continue
 
-        return issubclass(field, tuple(self.field_types))
+        yield (attribute, field, key, value)
+
+    if strict:
+        if invalid_keys:
+            raise InvalidKeys(invalid_keys)
+
+        unprocessed = {key for key in dictionary if key not in allowed_keys}
+
+        if unprocessed:
+            raise InvalidKeys(unprocessed)
+
+
+def serialization_filter(
+        record, allow=(), deny=(), null=False, autofields=True):
+    """Yields the respective dictionary items in the form of
+    (<key>, <field>, <value>).
+    """
+
+    for attribute, field in json_fields(type(record), autofields=autofields):
+        key = json_key(field)
+
+        if allow and key not in allow:
+            continue
+
+        if deny and key in deny:
+            continue
+
+        value = getattr(record, attribute)
+
+        if value is not None or null:
+            yield (key, field, value)
 
 
 class FieldMap(tuple):
     """Maps conversion functions to field classes in preserved order."""
 
-    def __new__ (cls, *items):
+    def __new__(cls, *items):
         """Creates a new tuple."""
         return super().__new__(cls, items)
 
