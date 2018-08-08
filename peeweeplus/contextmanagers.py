@@ -16,14 +16,22 @@ class ChangedConnection:
 
     def __enter__(self):
         """Alters the connection parameters."""
-        self._connection_parameters = self.target._meta.database.connect_params
-        params = {
-            key: value for key, value in
-            self.target._meta.database.connect_params.items()}
-        params.update(self.source._meta.database.connect_params)
-        self.target._meta.database.connect_params = params
+        self._connection_parameters = self.target_db.connect_params
+        params = dict(self.target_db.connect_params)    # Copy dictionary.
+        params.update(self.source_db.connect_params)
+        self.target_db.connect_params = params
         return self
 
     def __exit__(self, *_):
         """Resets the connection parameters."""
-        self.target._meta.database.connect_params = self._connection_parameters
+        self.target_db.connect_params = self._connection_parameters
+
+    @property
+    def target_db(self):
+        """Returns the target's database."""
+        return self.target._meta.database   # pylint: disable=W0212
+
+    @property
+    def source_db(self):
+        """Returns the source's database."""
+        return self.source._meta.database   # pylint: disable=W0212

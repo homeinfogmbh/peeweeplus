@@ -56,7 +56,8 @@ class Argon2FieldAccessor(FieldAccessor):
         if instance is not None:
             if value is None:
                 return None
-            elif isinstance(value, _Argon2Hash):
+
+            if isinstance(value, _Argon2Hash):
                 return value
 
             return _Argon2Hash(value, self.field.hasher)
