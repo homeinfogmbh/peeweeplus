@@ -38,22 +38,22 @@ def _filter(model, dictionary, patch, allow=(), deny=(), fk_fields=True,
     tuples.
     """
 
-    invalid_keys = set()
-    allowed_keys = set()
+    invalid_keys = {
+        key for key in dictionary if (allow and key not in allow)
+        or (deny and key in deny)}
+    processed_keys = set()
 
     for attribute, field in json_fields(
             model, fk_fields=fk_fields, autofields=False):
         key = json_key(field)
 
         if allow and key not in allow:
-            invalid_keys.add(key)
             continue
 
         if deny and key in deny:
-            invalid_keys.add(key)
             continue
 
-        allowed_keys.add(key)
+        processed_keys.add(key)
 
         try:
             value = dictionary[key]
@@ -69,10 +69,11 @@ def _filter(model, dictionary, patch, allow=(), deny=(), fk_fields=True,
         if invalid_keys:
             raise InvalidKeys(invalid_keys)
 
-        unprocessed = {key for key in dictionary if key not in allowed_keys}
+        unprocessed_keys = {
+            key for key in dictionary if key not in processed_keys}
 
-        if unprocessed:
-            raise InvalidKeys(unprocessed)
+        if unprocessed_keys:
+            raise InvalidKeys(unprocessed_keys)
 
 
 def deserialize(target, dictionary, *, allow=(), deny=(), fk_fields=True,
