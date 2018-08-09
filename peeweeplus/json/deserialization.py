@@ -66,14 +66,12 @@ def _filter(model, dictionary, patch, allow=(), deny=(), fk_fields=True,
         yield (attribute, field, key, value)
 
     if strict:
-        if invalid_keys:
-            raise InvalidKeys(invalid_keys)
-
         unprocessed_keys = {
             key for key in dictionary if key not in processed_keys}
+        invalid_keys |= unprocessed_keys
 
-        if unprocessed_keys:
-            raise InvalidKeys(unprocessed_keys)
+        if invalid_keys:
+            raise InvalidKeys(invalid_keys)
 
 
 def deserialize(target, dictionary, *, allow=(), deny=(), fk_fields=True,
