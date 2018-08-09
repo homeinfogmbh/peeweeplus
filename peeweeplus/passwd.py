@@ -1,16 +1,12 @@
 """Argon2-based password hashing."""
 
-from argon2 import PasswordHasher
 from argon2.exceptions import VerificationError, VerifyMismatchError
 from peewee import FieldAccessor
 
 from peeweeplus.exceptions import PasswordTooShortError
 
 
-__all__ = ['PASSWORD_HASHER', 'is_hash', 'Argon2Hash', 'Argon2FieldAccessor']
-
-
-PASSWORD_HASHER = PasswordHasher()
+__all__ = ['is_hash', 'Argon2Hash', 'Argon2FieldAccessor']
 
 
 def is_hash(hasher, value):

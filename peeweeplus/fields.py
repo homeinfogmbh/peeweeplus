@@ -3,10 +3,11 @@
 from ipaddress import IPv4Address
 from uuid import uuid4, UUID
 
+from argon2 import PasswordHasher
 from peewee import CharField, FixedCharField, ForeignKeyField, BigIntegerField
 
 from peeweeplus.exceptions import InvalidEnumerationValue
-from peeweeplus.passwd import PASSWORD_HASHER, Argon2Hash, Argon2FieldAccessor
+from peeweeplus.passwd import Argon2Hash, Argon2FieldAccessor
 
 __all__ = [
     'EnumField',
@@ -129,7 +130,7 @@ class Argon2Field(PasswordField):
 
     accessor_class = Argon2FieldAccessor
 
-    def __init__(self, max_length=None, hasher=PASSWORD_HASHER, min_pw_len=8,
+    def __init__(self, max_length=None, hasher=PasswordHasher(), min_pw_len=8,
                  **kwargs):
         """Initializes the char field, defaulting
         max_length to the respective hash length.
