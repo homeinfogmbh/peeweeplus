@@ -141,11 +141,11 @@ class InvalidEnumerationValue(ValueError):
 class PasswordTooShortError(Exception):
     """Indicates that the provided password was too short."""
 
-    def __init__(self, minlen, pwlen):
+    def __init__(self, pwlen, minlen):
         """Sets minimum length and actual password length."""
-        super().__init__(self, minlen, pwlen)
-        self.minlen = minlen
+        super().__init__(self)
         self.pwlen = pwlen
+        self.minlen = minlen
 
     def __str__(self):
         """Returns the respective error message."""
