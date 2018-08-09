@@ -41,11 +41,6 @@ class Argon2Hash(str):
 
         self._hasher = hasher
 
-    @classmethod
-    def create(cls, hasher, passwd):
-        """Creates a hash from the respective hasher and password."""
-        return cls(hasher, hasher.hash(passwd))
-
     def verify(self, passwd):
         """Validates the plain text password against this hash."""
         return self._hasher.verify(self, passwd)
