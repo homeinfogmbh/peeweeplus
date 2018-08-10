@@ -68,7 +68,7 @@ def _filter(model, dictionary, patch, allow=(), deny=(), fk_fields=True,
     if strict:
         unprocessed_keys = {
             key for key in dictionary if key not in processed_keys}
-        invalid_keys |= {key for key in unprocessed_keys if key not in allow}
+        invalid_keys |= unprocessed_keys
 
         if invalid_keys:
             raise InvalidKeys(invalid_keys)
