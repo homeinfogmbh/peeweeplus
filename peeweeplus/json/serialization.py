@@ -2,10 +2,10 @@
 
 from base64 import b64encode
 
-from peewee import ForeignKeyField, DecimalField, DateTimeField, DateField, \
-    TimeField, BlobField
+from peewee import AutoField, ForeignKeyField, DecimalField, DateTimeField, \
+    DateField, TimeField, BlobField
 from peeweeplus.fields import EnumField, UUID4Field, IPv4AddressField
-from peeweeplus.json.misc import json_fields, json_key, FieldConverter
+from peeweeplus.json.fields import json_fields, FieldConverter
 
 
 __all__ = ['serialize']
@@ -21,33 +21,33 @@ _CONVERTER = FieldConverter(
     (IPv4AddressField, str))
 
 
-def _filter(record, allow=(), deny=(), null=False, fk_fields=False,
-            autofields=True):
-    """Yields the respective dictionary items in the form of
-    (<key>, <field>, <value>).
-    """
+def fields(model, fk_fields=False, autofields=True):
+    """Yields the fields for serialization."""
 
-    for attribute, field in json_fields(
-            type(record), fk_fields=fk_fields, autofields=autofields):
-        key = json_key(field)
-
-        if allow and key not in allow:
+    for attribute, field in json_fields(model):
+        if field.serialize is None:
+            if isinstance(field, AutoField) and not autofields:
+                continue
+            elif isinstance(field, ForeignKeyField) and not fk_fields:
+                continue
+        elif not field.serialize:
             continue
 
-        if deny and key in deny:
-            continue
-
-        value = getattr(record, attribute)
-
-        if value is not None or null:
-            yield (key, field, value)
+        yield (attribute, field)
 
 
-def serialize(record, *, allow=(), deny=(), null=False, fk_fields=False,
-              autofields=True):
+def serialize(record, *, null=False, fk_fields=False, autofields=True):
     """Returns a JSON-ish dictionary with the record's values."""
 
-    return {
-        key: _CONVERTER(field, value) for key, field, value in _filter(
-            record, fk_fields=fk_fields, allow=allow, deny=deny, null=null,
-            autofields=autofields)}
+    dictionary = {}
+
+    for attribute, field in fields(type(record), fk_fields, autofields):
+        value = getattr(record, attribute)
+        json_value = _CONVERTER(field, value, check_null=False)
+
+        if json_value is None and not null:
+            continue
+
+        dictionary[field.key] = json_value
+
+    return dictionary
