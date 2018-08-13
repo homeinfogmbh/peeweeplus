@@ -38,8 +38,8 @@ def JSONField(field_type, *args, serialize=None, deserialize=None, key=None,
     """Factory to dynamically create JSON fields."""
 
     cls = _create_json_field(field_type)
-    return cls(
-        *args, serialize=serialize, deserialize=deserialize, key=key, **kwargs)
+    return cls(*args, serialize=serialize, deserialize=deserialize, key=key,
+               **kwargs)
 
 
 class _JSONFieldMixin:
