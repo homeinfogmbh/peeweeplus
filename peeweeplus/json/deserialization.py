@@ -31,7 +31,7 @@ _CONVERTER = FieldConverter(
     (BlobField, parse_blob))
 
 
-def _filter(model, dictionary, patch, allow=(), deny=(), fk_fields=True,
+def _filter(model, dictionary, patch, allow=(), deny=(), fk_fields=False,
             strict=True):
     """Filters the respective fields, yielding
         (<attribute>, <field>, <key>, <value>)
@@ -74,7 +74,7 @@ def _filter(model, dictionary, patch, allow=(), deny=(), fk_fields=True,
             raise InvalidKeys(invalid_keys)
 
 
-def deserialize(target, dictionary, *, allow=(), deny=(), fk_fields=True,
+def deserialize(target, dictionary, *, allow=(), deny=(), fk_fields=False,
                 strict=True):
     """Applies the provided dictionary onto the target.
     The target can either be a Model subclass (deserialization)
