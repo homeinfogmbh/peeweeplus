@@ -8,7 +8,35 @@ from peeweeplus.exceptions import NullError
 __all__ = ['fields', 'json_fields', 'JSONOptions', 'FieldConverter']
 
 
-JSONOptions = namedtuple('JSONOptions', ('key', 'serialize', 'deserialize'))
+class JSONOptions(namedtuple('JSONOptions', 'key serialize deserialize')):
+    """Represents the configuration options of a JSON field."""
+
+    __slots__ = ()
+
+    @classmethod
+    def parse(cls, value):
+        """Parses JSON options from the respective value."""
+
+        serialize = None
+        deserialize = None
+
+        if isinstance(value, (tuple, list)):
+            try:
+                key, serialize, deserialize = value
+            except ValueError:
+                try:
+                    key, serialize = value
+                except ValueError:
+                    try:
+                        key, = value
+                    except ValueError:
+                        raise ValueError(value)
+        elif isinstance(value, str):
+            key = value
+        else:
+            raise ValueError(value)
+
+        return cls(key, serialize, deserialize)
 
 
 def fields(model):
@@ -28,11 +56,11 @@ def json_fields(model):
 
     for attribute, field in fields(model):
         try:
-            options = model.JSON_FIELDS[attribute]
+            value = model.JSON_FIELDS[attribute]
         except KeyError:
             continue
 
-        yield (attribute, field, JSONOptions(*options))
+        yield (attribute, field, JSONOptions.parse(value))
 
 
 class FieldConverter(tuple):
