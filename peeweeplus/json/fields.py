@@ -32,7 +32,7 @@ def json_fields(model):
         except KeyError:
             continue
 
-        yield (attribute, field, JSONOptions(options))
+        yield (attribute, field, JSONOptions(*options))
 
 
 class FieldConverter(tuple):
