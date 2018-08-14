@@ -4,7 +4,7 @@ from base64 import b64encode
 
 from peewee import AutoField, ForeignKeyField, DecimalField, DateTimeField, \
     DateField, TimeField, BlobField
-from peeweeplus.fields import EnumField, UUID4Field, IPv4AddressField
+from peeweeplus.fields import EnumField, UUIDField, IPv4AddressField
 from peeweeplus.json.fields import json_fields, FieldConverter
 
 
@@ -17,7 +17,7 @@ _CONVERTER = FieldConverter(
     ((DateTimeField, DateField, TimeField), lambda value: value.isoformat()),
     (BlobField, b64encode),
     (EnumField, lambda value: value.value),
-    (UUID4Field, lambda value: value.hex),
+    (UUIDField, lambda value: value.hex),
     (IPv4AddressField, str))
 
 

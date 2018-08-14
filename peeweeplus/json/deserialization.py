@@ -9,7 +9,7 @@ from peewee import Model, AutoField, ForeignKeyField, BooleanField, \
 
 from peeweeplus.exceptions import NullError, FieldNotNullable, InvalidKeys, \
     MissingKeyError, FieldValueError
-from peeweeplus.fields import UUID4Field, IPv4AddressField
+from peeweeplus.fields import UUIDField, IPv4AddressField
 from peeweeplus.json.fields import json_fields, FieldConverter
 from peeweeplus.json.parsers import parse_bool, parse_datetime, parse_date, \
     parse_time, parse_blob
@@ -21,7 +21,7 @@ __all__ = ['deserialize']
 _CONVERTER = FieldConverter(
     (ForeignKeyField, int),
     (BooleanField, parse_bool),
-    (UUID4Field, UUID),
+    (UUIDField, UUID),
     (IPv4AddressField, IPv4Address),
     (IntegerField, int),
     (FloatField, float),
