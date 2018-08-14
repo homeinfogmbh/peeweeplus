@@ -1,7 +1,6 @@
 """Additional field definitions."""
 
 from ipaddress import IPv4Address
-from uuid import uuid4, UUID
 
 from argon2 import PasswordHasher
 from peewee import CharField, FixedCharField, ForeignKeyField, BigIntegerField
@@ -12,7 +11,6 @@ from peeweeplus.passwd import Argon2Hash, Argon2FieldAccessor
 __all__ = [
     'EnumField',
     'CascadingFKField',
-    'UUID4Field',
     'Argon2Field',
     'IPv4AddressField']
 
@@ -87,34 +85,6 @@ class CascadingFKField(ForeignKeyField):
         """Delegates to ForeignKeyField.__init__."""
         super().__init__(
             *args, on_delete=on_delete, on_update=on_update, **kwargs)
-
-
-class UUID4Field(FixedCharField):
-    """A UUID4 token field."""
-
-    def __init__(self, max_length=32, default=uuid4, **kwargs):
-        """Initializes the char field."""
-        super().__init__(max_length=max_length, default=default, **kwargs)
-
-    def db_value(self, value):
-        """Returns the hexadecimal string representation of the UUID."""
-        if value is None:
-            return None
-
-        try:
-            return value.hex
-        except AttributeError:
-            return UUID(value).hex
-
-    def python_value(self, value):
-        """Returns a UUID object or None."""
-        if value is None:
-            return None
-
-        if isinstance(value, UUID):
-            return value
-
-        return UUID(value)
 
 
 class PasswordField(FixedCharField):
