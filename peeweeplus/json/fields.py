@@ -53,7 +53,7 @@ class _JSONFieldMixin:
         self.column_name = NotImplemented
 
     @property
-    def json_key(self):
+    def key(self):
         """returns the JSON key."""
         return self._json_key or self.column_name
 
