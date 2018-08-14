@@ -35,17 +35,17 @@ _CONVERTER = FieldConverter(
 def fields(model, fk_fields=False):
     """Yields fields for deserialization."""
 
-    for attribute, field in json_fields(model):
-        if field.deserialize is None:
+    for attribute, field, options in json_fields(model):
+        if options.deserialize is None:
             if isinstance(field, AutoField):
                 continue
 
             if isinstance(field, ForeignKeyField) and not fk_fields:
                 continue
-        elif not field.deserialize:
+        elif not options.deserialize:
             continue
 
-        yield (attribute, field)
+        yield (attribute, field, options.key)
 
 
 def deserialize(target, dictionary, *, fk_fields=False, strict=True):
@@ -66,21 +66,21 @@ def deserialize(target, dictionary, *, fk_fields=False, strict=True):
     record = target if patch else model()
     dictionary = dict(dictionary)   # Shallow copy dictionary.
 
-    for attribute, field in fields(model, fk_fields=fk_fields):
+    for attribute, field, key in fields(model, fk_fields=fk_fields):
         try:
-            value = dictionary.pop(field.key)
+            value = dictionary.pop(key)
         except KeyError:
             if not patch and field.default is None and not field.null:
-                raise MissingKeyError(model, attribute, field, field.key)
+                raise MissingKeyError(model, attribute, field, key)
 
             continue
 
         try:
             field_value = _CONVERTER(field, value, check_null=True)
         except NullError:
-            raise FieldNotNullable(model, attribute, field, field.key)
+            raise FieldNotNullable(model, attribute, field, key)
         except (TypeError, ValueError):
-            raise FieldValueError(model, attribute, field, field.key, value)
+            raise FieldValueError(model, attribute, field, key, value)
 
         setattr(record, attribute, field_value)
 
