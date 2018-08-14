@@ -3,8 +3,8 @@
 from base64 import b64encode
 
 from peewee import AutoField, ForeignKeyField, DecimalField, DateTimeField, \
-    DateField, TimeField, BlobField
-from peeweeplus.fields import EnumField, UUIDField, IPv4AddressField
+    DateField, TimeField, BlobField, UUIDField
+from peeweeplus.fields import EnumField, IPv4AddressField
 from peeweeplus.json.fields import json_fields, FieldConverter
 
 

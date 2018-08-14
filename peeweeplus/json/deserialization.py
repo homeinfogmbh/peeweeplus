@@ -5,11 +5,11 @@ from uuid import UUID
 
 from peewee import Model, AutoField, ForeignKeyField, BooleanField, \
     IntegerField, FloatField, DecimalField, DateTimeField, DateField, \
-    TimeField, BlobField
+    TimeField, BlobField, UUIDField
 
 from peeweeplus.exceptions import NullError, FieldNotNullable, InvalidKeys, \
     MissingKeyError, FieldValueError
-from peeweeplus.fields import UUIDField, IPv4AddressField
+from peeweeplus.fields import IPv4AddressField
 from peeweeplus.json.fields import json_fields, FieldConverter
 from peeweeplus.json.parsers import parse_bool, parse_datetime, parse_date, \
     parse_time, parse_blob
