@@ -5,7 +5,7 @@ from collections import namedtuple
 from peeweeplus.exceptions import NullError
 
 
-__all__ = ['fields', 'json_fields', 'JSONOptions', 'FieldConverter']
+__all__ = ['json_fields', 'JSONOptions', 'FieldConverter']
 
 
 class JSONOptions(namedtuple('JSONOptions', 'key serialize deserialize')):
@@ -39,28 +39,23 @@ class JSONOptions(namedtuple('JSONOptions', 'key serialize deserialize')):
         return cls(key, serialize, deserialize)
 
 
-def fields(model):
-    """Yields fields of the respective model."""
-
-    return model._meta.fields.items()
-
-
 def json_fields(model):
     """Yields JSON name, attribute name and field
     instance for each field  of the model.
     """
 
-    # Check if model class itself has JSON_FIELDS defined.
-    if 'JSON_FIELDS' not in model.__dict__:
-        return
+    fields = {}
 
-    for attribute, field in fields(model):
+    for cls in reversed(model.__mro__):
+        fields.update(cls.__dict__.get('JSON_FIELDS', {}))
+
+    for attribute, field in model._meta.fields.items():
         try:
-            value = model.JSON_FIELDS[attribute]
+            options = fields[field]
         except KeyError:
             continue
 
-        yield (attribute, field, JSONOptions.parse(value))
+        yield (attribute, field, JSONOptions.parse(options))
 
 
 class FieldConverter(tuple):
