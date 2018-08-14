@@ -1,42 +1,26 @@
 """Miscellaneous stuff."""
 
-from collections import namedtuple
+from functools import lru_cache
 
 from peeweeplus.exceptions import NullError
 
 
-__all__ = ['json_fields', 'JSONOptions', 'FieldConverter']
+__all__ = ['json_fields', 'JSONField', 'FieldConverter']
 
 
-class JSONOptions(namedtuple('JSONOptions', 'key serialize deserialize')):
-    """Represents the configuration options of a JSON field."""
+@lru_cache()
+def _create_json_field(field_type):
+    """Creates a JSON field from the given peewee field type."""
 
-    __slots__ = ()
+    def init(self, *args, serialize=None, deserialize=None, key=None,
+             **kwargs):
+        """The JSON field's __init__ method."""
+        _JSONFieldMixin.__init__(
+            self, serialize=serialize, deserialize=deserialize, key=key)
+        field_type.__init__(self, *args, **kwargs)
 
-    @classmethod
-    def parse(cls, value):
-        """Parses JSON options from the respective value."""
-
-        serialize = None
-        deserialize = None
-
-        if isinstance(value, (tuple, list)):
-            try:
-                key, serialize, deserialize = value
-            except ValueError:
-                try:
-                    key, serialize = value
-                except ValueError:
-                    try:
-                        key, = value
-                    except ValueError:
-                        raise ValueError(value)
-        elif isinstance(value, str):
-            key = value
-        else:
-            raise ValueError(value)
-
-        return cls(key, serialize, deserialize)
+    return type('JSON' + field_type.__name__, (field_type, _JSONFieldMixin), {
+        '__init__': init})
 
 
 def json_fields(model):
@@ -44,18 +28,34 @@ def json_fields(model):
     instance for each field  of the model.
     """
 
-    fields = {}
-
-    for cls in reversed(model.__mro__):
-        fields.update(cls.__dict__.get('JSON_FIELDS', {}))
-
     for attribute, field in model._meta.fields.items():
-        try:
-            options = fields[field]
-        except KeyError:
-            continue
+        if isinstance(field, _JSONFieldMixin):
+            yield (attribute, field)
 
-        yield (attribute, field, JSONOptions.parse(options))
+
+def JSONField(field_type, *args, serialize=None, deserialize=None, key=None,
+              **kwargs):
+    """Factory to dynamically create JSON fields."""
+
+    cls = _create_json_field(field_type)
+    return cls(*args, serialize=serialize, deserialize=deserialize, key=key,
+               **kwargs)
+
+
+class _JSONFieldMixin:
+    """Mixin for JSON serializable and deserializable fields."""
+
+    def __init__(self, serialize=None, deserialize=None, key=None):
+        """Sets the serialization and deserialization keys."""
+        self.serialize = serialize
+        self.deserialize = deserialize
+        self._json_key = key
+        self.column_name = NotImplemented
+
+    @property
+    def json_key(self):
+        """returns the JSON key."""
+        return self._json_key or self.column_name
 
 
 class FieldConverter(tuple):
