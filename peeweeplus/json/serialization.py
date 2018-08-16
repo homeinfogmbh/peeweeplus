@@ -11,7 +11,7 @@ from peeweeplus.json.fields import json_fields, FieldConverter
 __all__ = ['serialize']
 
 
-_CONVERTER = FieldConverter(
+CONVERTER = FieldConverter(
     (ForeignKeyField, lambda model: model._pk),     # pylint: disable=W0212
     (DecimalField, float),
     ((DateTimeField, DateField, TimeField), lambda value: value.isoformat()),
@@ -21,33 +21,35 @@ _CONVERTER = FieldConverter(
     (IPv4AddressField, str))
 
 
-def fields(model, fk_fields=False, autofields=True):
+def fields(model, *, skip=frozenset(), fk_fields=True, autofields=True):
     """Yields the fields for serialization."""
 
-    for attribute, field in json_fields(model):
-        if field.serialize is None:
-            if isinstance(field, AutoField) and not autofields:
-                continue
-            elif isinstance(field, ForeignKeyField) and not fk_fields:
-                continue
-        elif not field.serialize:
+    for key, field in json_fields(model):
+        if key in skip or field.name in skip:
+            continue
+        elif not autofields and isinstance(field, AutoField):
+            continue
+        elif not fk_fields and isinstance(field, ForeignKeyField):
             continue
 
-        yield (attribute, field)
+        yield (key, field)
 
 
-def serialize(record, *, null=False, fk_fields=False, autofields=True):
+def serialize(record, *, null=False, skip=frozenset(), fk_fields=True,
+              autofields=True):
     """Returns a JSON-ish dictionary with the record's values."""
 
     dictionary = {}
 
-    for attribute, field in fields(type(record), fk_fields, autofields):
-        value = getattr(record, attribute)
-        json_value = _CONVERTER(field, value, check_null=False)
+    for key, field in fields(
+            type(record), skip=skip, fk_fields=fk_fields,
+            autofields=autofields):
+        value = getattr(record, field.name)
+        json_value = CONVERTER(field, value, check_null=False)
 
         if json_value is None and not null:
             continue
 
-        dictionary[field.key] = json_value
+        dictionary[key] = json_value
 
     return dictionary

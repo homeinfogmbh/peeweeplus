@@ -18,7 +18,7 @@ from peeweeplus.json.parsers import parse_bool, parse_datetime, parse_date, \
 __all__ = ['deserialize']
 
 
-_CONVERTER = FieldConverter(
+CONVERTER = FieldConverter(
     (ForeignKeyField, int),
     (BooleanField, parse_bool),
     (UUIDField, UUID),
@@ -32,23 +32,21 @@ _CONVERTER = FieldConverter(
     (BlobField, parse_blob))
 
 
-def fields(model, fk_fields=False):
+def fields(model, *, skip=frozenset(), fk_fields=False):
     """Yields fields for deserialization."""
 
-    for attribute, field in json_fields(model):
-        if field.deserialize is None:
-            if isinstance(field, AutoField):
-                continue
-
-            if isinstance(field, ForeignKeyField) and not fk_fields:
-                continue
-        elif not field.deserialize:
+    for key, field in json_fields(model).items():
+        if key in skip or field.name in skip:
+            continue
+        elif isinstance(field, AutoField):
+            continue
+        elif not fk_fields and isinstance(field, ForeignKeyField):
             continue
 
-        yield (attribute, field)
+        yield (key, field)
 
 
-def deserialize(target, dictionary, *, fk_fields=False, strict=True):
+def deserialize(target, dictionary, *, skip=frozenset(), fk_fields=False):
     """Applies the provided dictionary onto the target.
     The target can either be a Model subclass (deserialization)
     or a Model instance (patching).
@@ -66,25 +64,25 @@ def deserialize(target, dictionary, *, fk_fields=False, strict=True):
     record = target if patch else model()
     dictionary = dict(dictionary)   # Shallow copy dictionary.
 
-    for attribute, field in fields(model, fk_fields=fk_fields):
+    for key, field in fields(model, skip=skip, fk_fields=fk_fields):
         try:
-            value = dictionary.pop(field.key)
+            value = dictionary.pop(key)
         except KeyError:
             if not patch and field.default is None and not field.null:
-                raise MissingKeyError(model, attribute, field, field.key)
+                raise MissingKeyError(model, field.name, field, key)
 
             continue
 
         try:
-            field_value = _CONVERTER(field, value, check_null=True)
+            field_value = CONVERTER(field, value, check_null=True)
         except NullError:
-            raise FieldNotNullable(model, attribute, field, field.key)
+            raise FieldNotNullable(model, field.name, field, key)
         except (TypeError, ValueError):
-            raise FieldValueError(model, attribute, field, field.key, value)
+            raise FieldValueError(model, field.name, field, key, value)
 
-        setattr(record, attribute, field_value)
+        setattr(record, field.name, field_value)
 
-    if strict and dictionary:
+    if dictionary:
         raise InvalidKeys(dictionary.keys())
 
     return record
