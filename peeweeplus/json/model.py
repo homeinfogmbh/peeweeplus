@@ -12,6 +12,6 @@ __all__ = ['JSONModel']
 class JSONModel(Model):
     """A JSON serializable and deserializable model."""
 
-    deserialize = classmethod(deserialize)
-    patch = deserialize
-    serialize = serialize
+    from_json = classmethod(deserialize)
+    patch_json = deserialize
+    to_json = serialize
