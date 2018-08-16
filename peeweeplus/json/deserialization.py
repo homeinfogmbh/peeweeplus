@@ -85,4 +85,7 @@ def deserialize(target, dictionary, *, skip=None, fk_fields=False):
     if dictionary:
         raise InvalidKeys(dictionary.keys())
 
+    if patch:
+        return None
+
     return record

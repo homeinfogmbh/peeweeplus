@@ -21,7 +21,7 @@ CONVERTER = FieldConverter(
     (IPv4AddressField, str))
 
 
-def fields(model, *, skip=None, fk_fields=True, autofields=True):
+def fields(model, *, skip=None, autofields=True, fk_fields=False):
     """Yields the fields for serialization."""
 
     for field in json_fields(model):

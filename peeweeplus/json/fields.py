@@ -24,6 +24,7 @@ def json_fields(model):
 
     for model in reversed(model.__mro__):   # pylint: disable=R1704
         # Map model fields' column names to the model's fields.
+        # This will ignore hidden fields starting with an underscore.
         fields = model._meta.fields     # pylint: disable=W0212
         field_keys = {
             field: field.column_name for attribute, field in fields.items()
