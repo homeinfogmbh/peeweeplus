@@ -25,14 +25,6 @@ class _ModelFieldError(ValueError):
         self.model = model
         self.field = field
 
-    def to_dict(self):
-        """Returns a JSON-ish representation of this error."""
-        return {
-            'model': self.model.__name__,
-            'attr': self.field.name,
-            'field': self.field.__class__.__name__,
-            'key': self.field.json_key}
-
 
 class FieldValueError(_ModelFieldError):
     """Indicates that the field cannot store data of the provided type."""
@@ -45,18 +37,11 @@ class FieldValueError(_ModelFieldError):
     def __str__(self):
         """Returns the respective error message."""
         return (
-            'Field <{field.__class__.__name__}> from key "{field.json_key}" in'
-            ' column "{field.column_name}" at <{model.__name__}.{field.name}>'
-            ' cannot store {typ}: {value}.').format(
-                field=self.field, model=self.model, typ=type(self.value),
-                value=self.value)
-
-    def to_dict(self):
-        """Returns a JSON-ish representation of this error."""
-        dictionary = super().to_dict()
-        dictionary.update({
-            'value': str(self.value), 'type': type(self.value).__name__})
-        return dictionary
+            'Field <{field.__class__.__name__}> from key'
+            ' "{field.json_key}" in column "{field.column_name}" at'
+            ' <{model.__name__}.{field.name}> cannot store'
+            ' {value.__class__.__name__}: {value}.').format(
+                model=self.model, field=self.field, value=self.value)
 
 
 class FieldNotNullable(_ModelFieldError):
@@ -67,9 +52,10 @@ class FieldNotNullable(_ModelFieldError):
     def __str__(self):
         """Returns the respective error message."""
         return (
-            'Field <{field.__class__.__name__}> from key "{field.json_key}" in'
-            ' column "{field.column_name}" at <{model.__name__}.{field.name}>'
-            ' must not be NULL.').format(field=self.field, model=self.model)
+            'Field <{field.__class__.__name__}> from key "{field.json_key}"'
+            ' in column "{field.column_name}" at'
+            ' <{model.__name__}.{field.name}> must not be NULL.').format(
+            model=self.model, field=self.field)
 
 
 class MissingKeyError(_ModelFieldError):
@@ -96,10 +82,6 @@ class InvalidKeys(ValueError):
         """Yields the invalid keys."""
         yield from self.invalid_keys
 
-    def to_dict(self):
-        """Returns a JSON-ish dictionary."""
-        return {'keys': self.invalid_keys}
-
 
 class InvalidEnumerationValue(ValueError):
     """Indicates that an invalid enumeration value has been specified."""
@@ -109,12 +91,6 @@ class InvalidEnumerationValue(ValueError):
         super().__init__('Invalid enum value: "{}".'.format(value))
         self.value = value
         self.enum = enum
-
-    def to_dict(self):
-        """Returns a JSON-ish dictionary."""
-        return {
-            'invalid': self.value,
-            'allowed': [value.value for value in self.enum]}
 
 
 class PasswordTooShortError(Exception):
