@@ -4,7 +4,7 @@ from base64 import b64encode
 
 from peewee import AutoField, ForeignKeyField, DecimalField, DateTimeField, \
     DateField, TimeField, BlobField, UUIDField
-from peeweeplus.fields import EnumField, IPv4AddressField
+from peeweeplus.fields import EnumField, PasswordField, IPv4AddressField
 from peeweeplus.json.fields import contained, json_fields, FieldConverter
 
 
@@ -26,6 +26,8 @@ def fields(model, *, skip=None, fk_fields=True, autofields=True):
 
     for field in json_fields(model):
         if contained(field, skip):
+            continue
+        elif isinstance(field, PasswordField):
             continue
         elif not autofields and isinstance(field, AutoField):
             continue
