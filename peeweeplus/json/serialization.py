@@ -21,7 +21,7 @@ CONVERTER = FieldConverter(
     (IPv4AddressField, str))
 
 
-def fields(model, *, skip=frozenset(), fk_fields=True, autofields=True):
+def fields(model, *, skip=None, fk_fields=True, autofields=True):
     """Yields the fields for serialization."""
 
     for field in json_fields(model):
@@ -35,7 +35,7 @@ def fields(model, *, skip=frozenset(), fk_fields=True, autofields=True):
         yield field
 
 
-def serialize(record, *, null=False, skip=frozenset(), fk_fields=True,
+def serialize(record, *, null=False, skip=None, fk_fields=True,
               autofields=True):
     """Returns a JSON-ish dictionary with the record's values."""
 

@@ -32,7 +32,7 @@ CONVERTER = FieldConverter(
     (BlobField, parse_blob))
 
 
-def fields(model, *, skip=frozenset(), fk_fields=False):
+def fields(model, *, skip=None, fk_fields=False):
     """Yields fields for deserialization."""
 
     for field in json_fields(model):
@@ -46,7 +46,7 @@ def fields(model, *, skip=frozenset(), fk_fields=False):
         yield field
 
 
-def deserialize(target, dictionary, *, skip=frozenset(), fk_fields=False):
+def deserialize(target, dictionary, *, skip=None, fk_fields=False):
     """Applies the provided dictionary onto the target.
     The target can either be a Model subclass (deserialization)
     or a Model instance (patching).

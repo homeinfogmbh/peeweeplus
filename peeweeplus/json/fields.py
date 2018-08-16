@@ -9,6 +9,9 @@ __all__ = ['contained', 'json_fields', 'FieldConverter']
 def contained(field, iterable):
     """Determines wether the field is contained within the iterable."""
 
+    if not iterable:
+        return False
+
     return (
         field.name in iterable or field.json_key in iterable or
         field in iterable or type(field) in iterable)   # pylint: disable=C0123
