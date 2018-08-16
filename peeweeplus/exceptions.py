@@ -6,7 +6,6 @@ __all__ = [
     'FieldNotNullable',
     'MissingKeyError',
     'InvalidKeys',
-    'NotAField',
     'InvalidEnumerationValue',
     'PasswordTooShortError']
 
@@ -17,42 +16,40 @@ class NullError(TypeError):
     pass
 
 
-class _ModelAttrFieldKeyError(ValueError):
+class _ModelFieldError(ValueError):
     """An error that stores model, attribute and fields."""
 
-    def __init__(self, model, attr, field, key):
+    def __init__(self, model, field):
         """Sets the field."""
         super().__init__()
         self.model = model
-        self.attr = attr
         self.field = field
-        self.key = key
 
     def to_dict(self):
         """Returns a JSON-ish representation of this error."""
         return {
             'model': self.model.__name__,
-            'attr': self.attr,
+            'attr': self.field.name,
             'field': self.field.__class__.__name__,
-            'key': self.key}
+            'key': self.field.json_key}
 
 
-class FieldValueError(_ModelAttrFieldKeyError):
+class FieldValueError(_ModelFieldError):
     """Indicates that the field cannot store data of the provided type."""
 
-    def __init__(self, model, attr, field, key, value):
+    def __init__(self, model, field, value):
         """Sets the field and value."""
-        super().__init__(model, attr, field, key)
+        super().__init__(model, field)
         self.value = value
 
     def __str__(self):
         """Returns the respective error message."""
         return (
-            'Field <{field.__class__.__name__}> from key "{key}" in column '
-            '"{field.column_name}" at <{model.__name__}.{attr}> '
-            'cannot store {typ}: {value}.').format(
-                field=self.field, key=self.key, model=self.model,
-                attr=self.attr, typ=type(self.value), value=self.value)
+            'Field <{field.__class__.__name__}> from key "{field.json_key}" in'
+            ' column "{field.column_name}" at <{model.__name__}.{field.name}>'
+            ' cannot store {typ}: {value}.').format(
+                field=self.field, model=self.model, typ=type(self.value),
+                value=self.value)
 
     def to_dict(self):
         """Returns a JSON-ish representation of this error."""
@@ -62,7 +59,7 @@ class FieldValueError(_ModelAttrFieldKeyError):
         return dictionary
 
 
-class FieldNotNullable(_ModelAttrFieldKeyError):
+class FieldNotNullable(_ModelFieldError):
     """Indicates that the field was assigned
     a NULL value which it cannot store.
     """
@@ -70,24 +67,21 @@ class FieldNotNullable(_ModelAttrFieldKeyError):
     def __str__(self):
         """Returns the respective error message."""
         return (
-            'Field <{field.__class__.__name__}> from key "{key}" in column '
-            '"{field.column_name}" at <{model.__name__}.{attr}> '
-            'must not be NULL.').format(
-                field=self.field, key=self.key, model=self.model,
-                attr=self.attr)
+            'Field <{field.__class__.__name__}> from key "{field.json_key}" in'
+            ' column "{field.column_name}" at <{model.__name__}.{field.name}>'
+            ' must not be NULL.').format(field=self.field, model=self.model)
 
 
-class MissingKeyError(_ModelAttrFieldKeyError):
+class MissingKeyError(_ModelFieldError):
     """Indicates that a key was missing to deserialize the model."""
 
     def __str__(self):
         """Returns the respective error message."""
         return (
-            'Value for field <{field.__class__.__name__}> from key "{key}" in '
-            'column "{field.column_name}" at <{model.__name__}.{attr}> '
-            'is missing.').format(
-                field=self.field, key=self.key, model=self.model,
-                attr=self.attr)
+            'Value for field <{field.__class__.__name__}> from key'
+            ' "{field.json_key}" in column "{field.column_name}" at'
+            ' <{model.__name__}.{field.name}> is missing.').format(
+                field=self.field, model=self.model)
 
 
 class InvalidKeys(ValueError):
@@ -105,21 +99,6 @@ class InvalidKeys(ValueError):
     def to_dict(self):
         """Returns a JSON-ish dictionary."""
         return {'keys': self.invalid_keys}
-
-
-class NotAField(Exception):
-    """Indicates that the respective attribute is not a peewee.Field."""
-
-    def __init__(self, model, attribute):
-        """Sets the model and attribute."""
-        super().__init__()
-        self.model = model
-        self.attribute = attribute
-
-    def __str__(self):
-        """Returns the error message."""
-        return 'Attribute "{}" of model "{}" is not a field.'.format(
-            self.attribute, self.model)
 
 
 class InvalidEnumerationValue(ValueError):

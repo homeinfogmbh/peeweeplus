@@ -35,15 +35,15 @@ CONVERTER = FieldConverter(
 def fields(model, *, skip=frozenset(), fk_fields=False):
     """Yields fields for deserialization."""
 
-    for key, field in json_fields(model).items():
-        if key in skip or field.name in skip:
+    for field in json_fields(model):
+        if field.name in skip or field.json_key in skip:
             continue
         elif isinstance(field, AutoField):
             continue
         elif not fk_fields and isinstance(field, ForeignKeyField):
             continue
 
-        yield (key, field)
+        yield field
 
 
 def deserialize(target, dictionary, *, skip=frozenset(), fk_fields=False):
@@ -64,21 +64,21 @@ def deserialize(target, dictionary, *, skip=frozenset(), fk_fields=False):
     record = target if patch else model()
     dictionary = dict(dictionary)   # Shallow copy dictionary.
 
-    for key, field in fields(model, skip=skip, fk_fields=fk_fields):
+    for field in fields(model, skip=skip, fk_fields=fk_fields):
         try:
-            value = dictionary.pop(key)
+            value = dictionary.pop(field.json_key)
         except KeyError:
             if not patch and field.default is None and not field.null:
-                raise MissingKeyError(model, field.name, field, key)
+                raise MissingKeyError(model, field)
 
             continue
 
         try:
             field_value = CONVERTER(field, value, check_null=True)
         except NullError:
-            raise FieldNotNullable(model, field.name, field, key)
+            raise FieldNotNullable(model, field)
         except (TypeError, ValueError):
-            raise FieldValueError(model, field.name, field, key, value)
+            raise FieldValueError(model, field, value)
 
         setattr(record, field.name, field_value)
 

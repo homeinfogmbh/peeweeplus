@@ -24,15 +24,15 @@ CONVERTER = FieldConverter(
 def fields(model, *, skip=frozenset(), fk_fields=True, autofields=True):
     """Yields the fields for serialization."""
 
-    for key, field in json_fields(model):
-        if key in skip or field.name in skip:
+    for field in json_fields(model):
+        if field.name in skip or field.json_key in skip:
             continue
         elif not autofields and isinstance(field, AutoField):
             continue
         elif not fk_fields and isinstance(field, ForeignKeyField):
             continue
 
-        yield (key, field)
+        yield field
 
 
 def serialize(record, *, null=False, skip=frozenset(), fk_fields=True,
@@ -41,7 +41,7 @@ def serialize(record, *, null=False, skip=frozenset(), fk_fields=True,
 
     dictionary = {}
 
-    for key, field in fields(
+    for field in fields(
             type(record), skip=skip, fk_fields=fk_fields,
             autofields=autofields):
         value = getattr(record, field.name)
@@ -50,6 +50,6 @@ def serialize(record, *, null=False, skip=frozenset(), fk_fields=True,
         if json_value is None and not null:
             continue
 
-        dictionary[key] = json_value
+        dictionary[field.json_key] = json_value
 
     return dictionary

@@ -9,12 +9,23 @@ __all__ = ['json_fields', 'FieldConverter']
 def json_fields(model):
     """Yields the JSON fields of the respective model."""
 
-    fields = {}
+    fields_map = {}
 
     for model in reversed(model.__mro__):   # pylint: disable=R1704
-        fields.update(model.__dict__.get('JSON_FIELDS', {}))
+        # Map model fields' column names to the model's fields.
+        fields = model._meta.fields     # pylint: disable=W0212
+        field_keys = {field: field.column_name for field in fields.items()}
+        # Create map of custom keys for fields.
+        custom_keys = model.__dict__.get('JSON_KEYS', {})
+        custom_keys = {field: key for key, field in custom_keys.items()}
+        # Override column names with custom set field keys.
+        field_keys.update(custom_keys)
+        # Update total fields map.
+        fields_map.update(field_keys)
 
-    return fields
+    for field, key in fields_map.items():
+        field.json_key = key
+        yield field
 
 
 class FieldConverter(tuple):
