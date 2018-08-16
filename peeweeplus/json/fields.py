@@ -25,7 +25,9 @@ def json_fields(model):
     for model in reversed(model.__mro__):   # pylint: disable=R1704
         # Map model fields' column names to the model's fields.
         fields = model._meta.fields     # pylint: disable=W0212
-        field_keys = {field: field.column_name for field in fields.items()}
+        field_keys = {
+            field: field.column_name for attribute, field in fields.items()
+            if not attribute.startswith('_')}
         # Create map of custom keys for fields.
         custom_keys = model.__dict__.get('JSON_KEYS', {})
         custom_keys = {field: key for key, field in custom_keys.items()}
