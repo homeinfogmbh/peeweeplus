@@ -10,7 +10,7 @@ from peewee import Model, AutoField, ForeignKeyField, BooleanField, \
 from peeweeplus.exceptions import NullError, FieldNotNullable, InvalidKeys, \
     MissingKeyError, FieldValueError
 from peeweeplus.fields import IPv4AddressField
-from peeweeplus.json.fields import json_fields, FieldConverter
+from peeweeplus.json.fields import contained, json_fields, FieldConverter
 from peeweeplus.json.parsers import parse_bool, parse_datetime, parse_date, \
     parse_time, parse_blob
 
@@ -36,7 +36,7 @@ def fields(model, *, skip=frozenset(), fk_fields=False):
     """Yields fields for deserialization."""
 
     for field in json_fields(model):
-        if field.name in skip or field.json_key in skip:
+        if contained(field, skip):
             continue
         elif isinstance(field, AutoField):
             continue

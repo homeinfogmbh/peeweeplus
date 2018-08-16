@@ -5,7 +5,7 @@ from base64 import b64encode
 from peewee import AutoField, ForeignKeyField, DecimalField, DateTimeField, \
     DateField, TimeField, BlobField, UUIDField
 from peeweeplus.fields import EnumField, IPv4AddressField
-from peeweeplus.json.fields import json_fields, FieldConverter
+from peeweeplus.json.fields import contained, json_fields, FieldConverter
 
 
 __all__ = ['serialize']
@@ -25,7 +25,7 @@ def fields(model, *, skip=frozenset(), fk_fields=True, autofields=True):
     """Yields the fields for serialization."""
 
     for field in json_fields(model):
-        if field.name in skip or field.json_key in skip:
+        if contained(field, skip):
             continue
         elif not autofields and isinstance(field, AutoField):
             continue

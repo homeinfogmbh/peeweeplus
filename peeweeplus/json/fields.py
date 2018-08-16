@@ -3,7 +3,15 @@
 from peeweeplus.exceptions import NullError
 
 
-__all__ = ['json_fields', 'FieldConverter']
+__all__ = ['contained', 'json_fields', 'FieldConverter']
+
+
+def contained(field, iterable):
+    """Determines wether the field is contained within the iterable."""
+
+    return (
+        field.name in iterable or field.json_key in iterable or
+        field in iterable or type(field) in iterable)   # pylint: disable=C0123
 
 
 def json_fields(model):
