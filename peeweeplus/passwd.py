@@ -25,7 +25,7 @@ class Argon2Hash(str):
 
     def __new__(cls, _, hash_):
         """Override str constructor."""
-        return str.__new__(cls, hash_)
+        return super().__new__(cls, hash_)
 
     def __init__(self, hasher, hash_):
         """Sets the hasher."""
