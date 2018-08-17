@@ -55,7 +55,7 @@ class FieldNotNullable(_ModelFieldError):
             'Field <{field.__class__.__name__}> from key "{field.json_key}"'
             ' in column "{field.column_name}" at'
             ' <{model.__name__}.{field.name}> must not be NULL.').format(
-            model=self.model, field=self.field)
+                model=self.model, field=self.field)
 
 
 class MissingKeyError(_ModelFieldError):
