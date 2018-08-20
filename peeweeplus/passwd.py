@@ -1,5 +1,6 @@
 """Argon2-based password hashing."""
 
+from argon2 import extract_parameters
 from argon2.exceptions import VerificationError, VerifyMismatchError
 from peewee import FieldAccessor
 
@@ -35,6 +36,16 @@ class Argon2Hash(str):
             raise ValueError('Not an Argon2 hash.')
 
         self._hasher = hasher
+
+    @property
+    def needs_rehash(self):
+        """Determines whether the password needs a rehash."""
+        return self._hasher.check_needs_rehash(self)
+
+    @property
+    def parameters(self):
+        """Returns the Argon2 hash parameters."""
+        return extract_parameters(self)
 
     def verify(self, passwd):
         """Validates the plain text password against this hash."""
