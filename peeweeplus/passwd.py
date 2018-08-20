@@ -24,11 +24,11 @@ def is_hash(hasher, value):
 class Argon2Hash(str):
     """An Argon2 hash."""
 
-    def __new__(cls, _, hash_):
+    def __new__(cls, hash_, _):
         """Override str constructor."""
         return super().__new__(cls, hash_)
 
-    def __init__(self, hasher, hash_):
+    def __init__(self, hash_, hasher):
         """Sets the hasher."""
         super().__init__()
 
@@ -63,7 +63,7 @@ class Argon2FieldAccessor(FieldAccessor):
             if value is None:
                 return None
 
-            return Argon2Hash(self.field.hasher, value)
+            return Argon2Hash(value, self.field.hasher)
 
         return value
 

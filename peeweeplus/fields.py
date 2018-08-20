@@ -113,7 +113,7 @@ class Argon2Field(PasswordField):
         if value is None:
             return None
 
-        return Argon2Hash(self.hasher, value)
+        return Argon2Hash(value, self.hasher)
 
 
 class IPv4AddressField(BigIntegerField):
