@@ -44,8 +44,8 @@ def serialize(record, *, null=False, skip=None, fk_fields=True,
     dictionary = {}
 
     for field in fields(
-            type(record), skip=skip, fk_fields=fk_fields,
-            autofields=autofields):
+            type(record), skip=skip, autofields=autofields,
+            fk_fields=fk_fields):
         value = getattr(record, field.name)
         json_value = CONVERTER(field, value, check_null=False)
 
