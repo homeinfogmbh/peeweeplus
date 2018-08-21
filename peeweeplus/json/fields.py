@@ -12,9 +12,7 @@ def contained(field, iterable):
     if not iterable:
         return False
 
-    return (
-        field.name in iterable or field.json_key in iterable or
-        field in iterable or type(field) in iterable)   # pylint: disable=C0123
+    return field.json_key in iterable
 
 
 def json_fields(model):
