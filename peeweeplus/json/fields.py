@@ -20,28 +20,22 @@ def contained(field, iterable):
 def json_fields(model):
     """Yields the JSON fields of the respective model."""
 
-    fields_map = {}
+    field_keys = {
+        field: None for attribute, field in model._meta.fields.items()
+        if not attribute.startswith('_')}
 
-    for model in reversed(model.__mro__):   # pylint: disable=R1704
-        # Map model fields' column names to the model's fields.
-        # This will ignore hidden fields starting with an underscore.
-        try:
-            fields = model._meta.fields     # pylint: disable=W0212
-        except AttributeError:
+    for model in reversed(model.__mro__):
+        # Create map of custom keys for fields.
+        json_keys = model.__dict__.get('JSON_KEYS')
+
+        if not json_keys:
             continue
 
-        field_keys = {
-            field: field.column_name for attribute, field in fields.items()
-            if not attribute.startswith('_')}
-        # Create map of custom keys for fields.
-        custom_keys = model.__dict__.get('JSON_KEYS', {})
-        custom_keys = {field: key for key, field in custom_keys.items()}
+        custom_keys = {field: key for key, field in json_keys.items()}
         # Override column names with custom set field keys.
         field_keys.update(custom_keys)
-        # Update total fields map.
-        fields_map.update(field_keys)
 
-    for field, key in fields_map.items():
+    for field, key in field_keys.items():
         field.json_key = key
         yield field
 
