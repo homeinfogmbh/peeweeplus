@@ -21,7 +21,8 @@ def json_fields(model):
     """Yields the JSON fields of the respective model."""
 
     field_keys = {
-        field: None for attribute, field in model._meta.fields.items()
+        field: field.column_name for attribute, field
+        in model._meta.fields.items()
         if not attribute.startswith('_')}
 
     for model in reversed(model.__mro__):
