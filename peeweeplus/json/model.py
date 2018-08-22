@@ -24,7 +24,7 @@ class JSONModel(Model):
         skip = skip or frozenset()
         select = True
         key_attr_map = {
-            field.json_key: field.name for field in cls.json_fields}
+            field.json_key: field.name for field in cls.json_fields()}
 
         for key, value in json.items():
             if key in skip:
