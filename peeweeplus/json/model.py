@@ -23,12 +23,15 @@ class JSONModel(Model):
         """Selects from the model from the respective JSON dict."""
         skip = skip or frozenset()
         select = True
+        key_attr_map = {
+            field.json_key: field.name for field in json_fields(model)}
 
         for key, value in json.items():
             if key in skip:
                 continue
 
-            field = getattr(cls, key)
+            attribute = key_attr_map[key]
+            field = getattr(cls, attribute)
             value = CONVERTER(field, value, check_null=False)
 
             if value is None:
