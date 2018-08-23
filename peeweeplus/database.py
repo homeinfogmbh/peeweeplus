@@ -15,7 +15,7 @@ class MySQLDatabase(_MySQLDatabase):
         self.retry = retry
 
     @classmethod
-    def from_config(cls, config, default_closing=True):
+    def from_config(cls, config):
         """Creates a database from the respective configuration."""
         try:
             database = config['db']
@@ -27,10 +27,11 @@ class MySQLDatabase(_MySQLDatabase):
         except KeyError:
             passwd = config['password']
 
-        closing = config.get('closing', default_closing)
+        closing = config.get('closing', False)
+        retry = config.get('retry', True)
         return cls(
             database, host=config['host'], user=config['user'], passwd=passwd,
-            closing=closing)
+            closing=closing, retry=retry)
 
     def execute_sql(self, *args, retried=False, **kwargs):
         """Conditionally execute the SQL query in an
