@@ -8,10 +8,11 @@ __all__ = ['MySQLDatabase']
 class MySQLDatabase(_MySQLDatabase):
     """Extension of peewee.MySQLDatabase with closing option."""
 
-    def __init__(self, *args, closing=False, **kwargs):
+    def __init__(self, *args, closing=False, retry=False, **kwargs):
         """Adds closing switch for automatic connection closing."""
         super().__init__(*args, **kwargs)
         self.closing = closing
+        self.retry = retry
 
     @classmethod
     def from_config(cls, config, default_closing=True):
@@ -42,7 +43,7 @@ class MySQLDatabase(_MySQLDatabase):
         try:
             return super().execute_sql(*args, **kwargs)
         except OperationalError:
-            if retried:
+            if not self.retry or retried:
                 raise
 
             if not self.is_closed():
