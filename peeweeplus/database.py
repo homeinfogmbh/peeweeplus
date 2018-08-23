@@ -1,6 +1,6 @@
 """Database enhancements."""
 
-from peewee import MySQLDatabase as _MySQLDatabase
+from peewee import OperationalError, MySQLDatabase as _MySQLDatabase
 
 __all__ = ['MySQLDatabase']
 
@@ -31,7 +31,7 @@ class MySQLDatabase(_MySQLDatabase):
             database, host=config['host'], user=config['user'], passwd=passwd,
             closing=closing)
 
-    def execute_sql(self, *args, **kwargs):
+    def execute_sql(self, *args, retried=False, **kwargs):
         """Conditionally execute the SQL query in an
         execution context iff closing is enabled.
         """
@@ -39,4 +39,13 @@ class MySQLDatabase(_MySQLDatabase):
             with self.connection_context():
                 return super().execute_sql(*args, **kwargs)
 
-        return super().execute_sql(*args, **kwargs)
+        try:
+            return super().execute_sql(*args, **kwargs)
+        except OperationalError:
+            if retried:
+                raise
+
+            if not self.is_closed():
+                self.close()
+
+            return self.execute_sql(*args, retried=True, **kwargs)
