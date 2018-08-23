@@ -27,11 +27,15 @@ class MySQLDatabase(_MySQLDatabase):
         except KeyError:
             passwd = config['password']
 
-        closing = config.get('closing', False)
-        retry = config.get('retry', True)
+        closing = config.get('closing')
+        retry = config.get('retry')
+
+        if closing is None and retry is None:
+            closing = True
+
         return cls(
             database, host=config['host'], user=config['user'], passwd=passwd,
-            closing=closing, retry=retry)
+            closing=closing or False, retry=retry or False)
 
     def execute_sql(self, *args, retried=False, **kwargs):
         """Conditionally execute the SQL query in an
