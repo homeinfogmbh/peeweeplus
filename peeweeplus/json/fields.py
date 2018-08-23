@@ -1,5 +1,7 @@
 """Miscellaneous stuff."""
 
+from functools import lru_cache
+
 from peeweeplus.exceptions import NullError
 
 
@@ -15,7 +17,7 @@ def contained(field, iterable):
     return field.json_key in iterable
 
 
-def json_fields(model):
+def _json_fields(model):
     """Yields the JSON fields of the respective model."""
 
     field_keys = {
@@ -39,6 +41,15 @@ def json_fields(model):
         yield field
 
 
+@lru_cache()
+def json_fields(model):
+    """Returns a cached frozen set of JSON
+    fields of the respective model.
+    """
+
+    return frozenset(_json_fields(model))
+
+
 class FieldConverter(tuple):
     """Maps conversion functions to field classes in preserved order."""
 
@@ -46,6 +57,7 @@ class FieldConverter(tuple):
         """Creates a new tuple."""
         return super().__new__(cls, items)
 
+    @lru_cache()
     def __call__(self, field, value, check_null=False):
         """Converts the respective value to the field."""
         if value is None:
