@@ -46,7 +46,7 @@ def fields(model, *, skip=None, fk_fields=False):
         yield field
 
 
-def deserialize(target, dictionary, *, skip=None, fk_fields=False):
+def deserialize(target, json, *, skip=None, fk_fields=False):
     """Applies the provided dictionary onto the target.
     The target can either be a Model subclass (deserialization)
     or a Model instance (patching).
@@ -62,11 +62,15 @@ def deserialize(target, dictionary, *, skip=None, fk_fields=False):
         raise TypeError(target)
 
     record = target if patch else model()
-    dictionary = dict(dictionary)   # Shallow copy dictionary.
+
+    try:
+        json = dict(json)   # Shallow copy dictionary.
+    except TypeError:
+        raise ValueError('JSON object must be a dictionary.')
 
     for field in fields(model, skip=skip, fk_fields=fk_fields):
         try:
-            value = dictionary.pop(field.json_key)
+            value = json.pop(field.json_key)
         except KeyError:
             if not patch and field.default is None and not field.null:
                 raise MissingKeyError(model, field)
@@ -82,8 +86,8 @@ def deserialize(target, dictionary, *, skip=None, fk_fields=False):
 
         setattr(record, field.name, field_value)
 
-    if dictionary:
-        raise InvalidKeys(dictionary.keys())
+    if json:
+        raise InvalidKeys(json.keys())
 
     if patch:
         return None

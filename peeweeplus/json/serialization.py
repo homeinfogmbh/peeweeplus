@@ -41,7 +41,7 @@ def serialize(record, *, null=False, skip=None, fk_fields=True,
               autofields=True):
     """Returns a JSON-ish dictionary with the record's values."""
 
-    dictionary = {}
+    json = {}
 
     for field in fields(
             type(record), skip=skip, autofields=autofields,
@@ -52,6 +52,6 @@ def serialize(record, *, null=False, skip=None, fk_fields=True,
         if json_value is None and not null:
             continue
 
-        dictionary[field.json_key] = json_value
+        json[field.json_key] = json_value
 
-    return dictionary
+    return json
