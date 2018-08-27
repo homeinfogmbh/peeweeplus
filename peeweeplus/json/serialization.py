@@ -12,7 +12,7 @@ __all__ = ['serialize']
 
 
 CONVERTER = FieldConverter(
-    (ForeignKeyField, lambda value: value._pk),     # pylint: disable=W0212
+    (ForeignKeyField, int),
     (DecimalField, float),
     ((DateTimeField, DateField, TimeField), lambda value: value.isoformat()),
     (BlobField, b64encode),
