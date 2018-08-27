@@ -9,7 +9,7 @@ __all__ = ['contained', 'json_fields', 'FieldConverter']
 
 
 def contained(field, iterable):
-    """Determines wether the field is contained within the iterable."""
+    """Determines whether the field is contained within the iterable."""
 
     if not iterable:
         return False
@@ -22,10 +22,10 @@ def _json_fields(model):
 
     field_keys = {
         field: field.column_name for attribute, field
-        in model._meta.fields.items()
+        in model._meta.fields.items()   # pylint: disable=W0212
         if not attribute.startswith('_')}
 
-    for model in reversed(model.__mro__):
+    for model in reversed(model.__mro__):   # pylint: disable=R1704
         # Create map of custom keys for fields.
         json_keys = model.__dict__.get('JSON_KEYS')
 

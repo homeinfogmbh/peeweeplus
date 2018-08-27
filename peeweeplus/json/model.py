@@ -2,6 +2,7 @@
 
 from peewee import Model
 
+from peeweeplus.exceptions import InvalidKeys
 from peeweeplus.json.deserialization import CONVERTER, deserialize
 from peeweeplus.json.fields import json_fields
 from peeweeplus.json.serialization import serialize
@@ -23,14 +24,19 @@ class JSONModel(Model):
         """Selects from the model from the respective JSON dict."""
         skip = skip or frozenset()
         select = True
-        key_attr_map = {
-            field.json_key: field.name for field in cls.json_fields()}
+        ka_map = {field.json_key: field.name for field in cls.json_fields()}
+        invalid_keys = set()
 
         for key, value in json.items():
             if key in skip:
                 continue
 
-            attribute = key_attr_map[key]
+            try:
+                attribute = ka_map[key]
+            except KeyError:
+                invalid_keys.add(key)
+                continue
+
             field = getattr(cls, attribute)
             value = CONVERTER(field, value, check_null=False)
 
@@ -38,6 +44,9 @@ class JSONModel(Model):
                 select &= field >> None
             else:
                 select &= field == value
+
+        if invalid_keys:
+            raise InvalidKeys(invalid_keys)
 
         return cls.select().where(select)
 
