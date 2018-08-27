@@ -6,13 +6,14 @@ from peewee import AutoField, ForeignKeyField, DecimalField, DateTimeField, \
     DateField, TimeField, BlobField, UUIDField
 from peeweeplus.fields import EnumField, PasswordField, IPv4AddressField
 from peeweeplus.json.fields import contained, json_fields, FieldConverter
+from peeweeplus.json.parsers import get_fk_value
 
 
 __all__ = ['serialize']
 
 
 CONVERTER = FieldConverter(
-    (ForeignKeyField, int),
+    (ForeignKeyField, get_fk_value),
     (DecimalField, float),
     ((DateTimeField, DateField, TimeField), lambda value: value.isoformat()),
     (BlobField, b64encode),
