@@ -27,7 +27,7 @@ def serialize(record, *, null=False, skip=None, fk_fields=True,
 
     json = {}
 
-    for key, field in json_fields(type(record)):
+    for key, attribute, field in json_fields(type(record)):
         if contained(key, skip):
             continue
         elif isinstance(field, PasswordField):
@@ -37,7 +37,7 @@ def serialize(record, *, null=False, skip=None, fk_fields=True,
         elif not fk_fields and isinstance(field, ForeignKeyField):
             continue
 
-        value = getattr(record, field.name)
+        value = getattr(record, attribute)
         json_value = CONVERTER(field, value, check_null=False)
 
         if json_value is None and not null:

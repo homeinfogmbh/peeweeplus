@@ -3,6 +3,8 @@
 from collections import namedtuple
 from functools import lru_cache
 
+from peewee import ForeignKeyField
+
 from functoolsplus import returning
 from peeweeplus.exceptions import NullError
 
@@ -10,7 +12,7 @@ from peeweeplus.exceptions import NullError
 __all__ = ['contained', 'json_fields', 'FieldConverter']
 
 
-JSONField = namedtuple('JSONField', ('key', 'field'))
+JSONField = namedtuple('JSONField', ('key', 'attribute', 'field'))
 
 
 def contained(key, iterable):
@@ -29,10 +31,17 @@ def json_fields(model):
 
     fields = model._meta.fields     # pylint: disable=W0212
     field_keys = {}
+    field_attributes = {}
 
     for attribute, field in fields.items():
         if not attribute.startswith('_'):
             field_keys[field] = field.column_name
+
+            if isinstance(field, ForeignKeyField):
+                id_attr = attribute + '_id'
+
+                if hasattr(model, id_attr):
+                    field_attributes[field] = id_attr
 
     for model in reversed(model.__mro__):   # pylint: disable=R1704
         # Create map of custom keys for fields.
@@ -46,7 +55,8 @@ def json_fields(model):
         field_keys.update(custom_keys)
 
     for field, key in field_keys.items():
-        yield JSONField(key, field)
+        attribute = field_attributes.get(field, field.name)
+        yield JSONField(key, attribute, field)
 
 
 class FieldConverter(tuple):

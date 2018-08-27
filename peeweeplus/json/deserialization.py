@@ -54,7 +54,7 @@ def deserialize(target, json, *, skip=None, fk_fields=False):
     except TypeError:
         raise ValueError('JSON object must be a dictionary.')
 
-    for key, field in json_fields(model):
+    for key, attribute, field in json_fields(model):
         if contained(key, skip):
             continue
         elif isinstance(field, AutoField):
@@ -66,18 +66,18 @@ def deserialize(target, json, *, skip=None, fk_fields=False):
             value = json.pop(key)
         except KeyError:
             if not patch and field.default is None and not field.null:
-                raise MissingKeyError(model, field, key)
+                raise MissingKeyError(model, key, attribute, field)
 
             continue
 
         try:
             field_value = CONVERTER(field, value, check_null=True)
         except NullError:
-            raise FieldNotNullable(model, field, key)
+            raise FieldNotNullable(model, key, attribute, field)
         except (TypeError, ValueError):
-            raise FieldValueError(model, field, key, value)
+            raise FieldValueError(model, key, attribute, field, value)
 
-        setattr(record, field.name, field_value)
+        setattr(record, attribute, field_value)
 
     if json:
         raise InvalidKeys(json.keys())

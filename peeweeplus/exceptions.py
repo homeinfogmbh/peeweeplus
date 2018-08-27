@@ -19,20 +19,21 @@ class NullError(TypeError):
 class _ModelFieldError(ValueError):
     """An error that stores model, attribute and fields."""
 
-    def __init__(self, model, field, key):
+    def __init__(self, model, key, attribute, field):
         """Sets the field."""
         super().__init__()
         self.model = model
-        self.field = field
         self.key = key
+        self.attribute = attribute
+        self.field = field
 
 
 class FieldValueError(_ModelFieldError):
     """Indicates that the field cannot store data of the provided type."""
 
-    def __init__(self, model, field, key, value):
+    def __init__(self, model, key, attribute, field, value):
         """Sets the field and value."""
-        super().__init__(model, field, key)
+        super().__init__(model, key, attribute, field)
         self.value = value
 
     def __str__(self):
@@ -40,10 +41,10 @@ class FieldValueError(_ModelFieldError):
         return (
             'Field <{field_type.__name__}> from key'
             ' "{key}" in column "{field.column_name}" at'
-            ' <{model.__name__}.{field.name}> cannot store'
+            ' <{model.__name__}.{attribute}> cannot store'
             ' {value_type.__name__}: {value}.').format(
-                model=self.model, field=self.field,
-                field_type=type(self.field), key=self.key,
+                model=self.model, key=self.key, attribute=self.attribute,
+                field=self.field, field_type=type(self.field),
                 value=self.value, value_type=type(self.value))
 
 
@@ -57,9 +58,9 @@ class FieldNotNullable(_ModelFieldError):
         return (
             'Field <{field_type.__name__}> from key "{key}"'
             ' in column "{field.column_name}" at'
-            ' <{model.__name__}.{field.name}> must not be NULL.').format(
-                model=self.model, field=self.field,
-                field_type=type(self.field), key=self.key)
+            ' <{model.__name__}.{attribute}> must not be NULL.').format(
+                model=self.model, key=self.key, attribute=self.attribute,
+                field=self.field, field_type=type(self.field))
 
 
 class MissingKeyError(_ModelFieldError):
@@ -70,9 +71,9 @@ class MissingKeyError(_ModelFieldError):
         return (
             'Value for field <{field_type.__name__}> from key'
             ' "{key}" in column "{field.column_name}" at'
-            ' <{model.__name__}.{field.name}> is missing.').format(
-                model=self.model, field=self.field,
-                field_type=type(self.field), key=self.key)
+            ' <{model.__name__}.{attribute}> is missing.').format(
+                model=self.model, key=self.key, attribute=self.attribute,
+                field=self.field, field_type=type(self.field))
 
 
 class InvalidKeys(ValueError):
