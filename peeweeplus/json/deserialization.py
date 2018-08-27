@@ -32,20 +32,6 @@ CONVERTER = FieldConverter(
     (BlobField, parse_blob))
 
 
-def fields(model, *, skip=None, fk_fields=False):
-    """Yields fields for deserialization."""
-
-    for field, attribute, key in json_fields(model):
-        if contained(key, skip):
-            continue
-        elif isinstance(field, AutoField):
-            continue
-        elif not fk_fields and isinstance(field, ForeignKeyField):
-            continue
-
-        yield (field, attribute, key)
-
-
 def deserialize(target, json, *, skip=None, fk_fields=False):
     """Applies the provided dictionary onto the target.
     The target can either be a Model subclass (deserialization)
@@ -68,7 +54,14 @@ def deserialize(target, json, *, skip=None, fk_fields=False):
     except TypeError:
         raise ValueError('JSON object must be a dictionary.')
 
-    for field, attribute, key in fields(model, skip=skip, fk_fields=fk_fields):
+    for field, attribute, key in json_fields(model):
+        if contained(key, skip):
+            continue
+        elif isinstance(field, AutoField):
+            continue
+        elif not fk_fields and isinstance(field, ForeignKeyField):
+            continue
+
         try:
             value = json.pop(key)
         except KeyError:

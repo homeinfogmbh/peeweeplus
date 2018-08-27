@@ -4,6 +4,7 @@ from functools import lru_cache
 
 from peewee import ForeignKeyField
 
+from functoolsplus import returning
 from peeweeplus.exceptions import NullError
 
 
@@ -19,7 +20,9 @@ def contained(key, iterable):
     return key in iterable
 
 
-def _json_fields(model):
+@lru_cache()
+@returning(frozenset)
+def json_fields(model):
     """Yields the JSON fields of the respective model."""
 
     fields = model._meta.fields     # pylint: disable=W0212
@@ -48,16 +51,6 @@ def _json_fields(model):
     for field, key in field_keys.items():
         attribute = field_attributes.get(field, field.name)
         yield (field, attribute, key)
-
-
-@lru_cache()
-def json_fields(model):
-    """Returns a cached frozen set of JSON
-    fields of the respective model.
-    """
-
-    print('json_fields:', json_fields.cache_info(), flush=True)
-    return frozenset(_json_fields(model))
 
 
 class FieldConverter(tuple):
