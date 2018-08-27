@@ -2,6 +2,9 @@
 
 from peewee import OperationalError, MySQLDatabase as _MySQLDatabase
 
+from configlib import parse_bool
+
+
 __all__ = ['MySQLDatabase']
 
 
@@ -27,8 +30,8 @@ class MySQLDatabase(_MySQLDatabase):
         except KeyError:
             passwd = config['password']
 
-        closing = config.get('closing')
-        retry = config.get('retry', True)
+        closing = parse_bool(config.get('closing', True))
+        retry = parse_bool(config.get('retry'))
 
         return cls(
             database, host=config['host'], user=config['user'], passwd=passwd,
