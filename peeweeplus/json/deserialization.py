@@ -35,15 +35,15 @@ CONVERTER = FieldConverter(
 def fields(model, *, skip=None, fk_fields=False):
     """Yields fields for deserialization."""
 
-    for field in json_fields(model):
-        if contained(field, skip):
+    for field, attribute, key in json_fields(model):
+        if contained(key, skip):
             continue
         elif isinstance(field, AutoField):
             continue
         elif not fk_fields and isinstance(field, ForeignKeyField):
             continue
 
-        yield field
+        yield (field, attribute, key)
 
 
 def deserialize(target, json, *, skip=None, fk_fields=False):
@@ -68,9 +68,9 @@ def deserialize(target, json, *, skip=None, fk_fields=False):
     except TypeError:
         raise ValueError('JSON object must be a dictionary.')
 
-    for field in fields(model, skip=skip, fk_fields=fk_fields):
+    for field, attribute, key in fields(model, skip=skip, fk_fields=fk_fields):
         try:
-            value = json.pop(field.json_key)
+            value = json.pop(key)
         except KeyError:
             if not patch and field.default is None and not field.null:
                 raise MissingKeyError(model, field)
@@ -84,7 +84,7 @@ def deserialize(target, json, *, skip=None, fk_fields=False):
         except (TypeError, ValueError):
             raise FieldValueError(model, field, value)
 
-        setattr(record, field.name, field_value)
+        setattr(record, attribute, field_value)
 
     if json:
         raise InvalidKeys(json.keys())

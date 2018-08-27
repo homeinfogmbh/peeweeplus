@@ -2,28 +2,37 @@
 
 from functools import lru_cache
 
+from peewee import ForeignKeyField
+
 from peeweeplus.exceptions import NullError
 
 
 __all__ = ['contained', 'json_fields', 'FieldConverter']
 
 
-def contained(field, iterable):
+def contained(key, iterable):
     """Determines whether the field is contained within the iterable."""
 
     if not iterable:
         return False
 
-    return field.json_key in iterable
+    return key in iterable
 
 
 def _json_fields(model):
     """Yields the JSON fields of the respective model."""
 
-    field_keys = {
-        field: field.column_name for attribute, field
-        in model._meta.fields.items()   # pylint: disable=W0212
-        if not attribute.startswith('_')}
+    fields = model._meta.fields     # pylint: disable=W0212
+    field_keys = {}
+    field_attributes = {}
+
+    for attribute, field in fields.items():
+        if not attribute.startswith('_'):
+            if isinstance(field, ForeignKeyField):
+                # Compensate for fast FK access.
+                field_attributes[field] = attribute + '_id'
+
+            field_keys[field] = field.column_name
 
     for model in reversed(model.__mro__):   # pylint: disable=R1704
         # Create map of custom keys for fields.
@@ -37,8 +46,8 @@ def _json_fields(model):
         field_keys.update(custom_keys)
 
     for field, key in field_keys.items():
-        field.json_key = key
-        yield field
+        attribute = field_attributes.get(field, field.name)
+        yield (field, attribute, key)
 
 
 @lru_cache()
