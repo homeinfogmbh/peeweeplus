@@ -5,14 +5,15 @@ from base64 import b64encode
 from peewee import AutoField, ForeignKeyField, DecimalField, DateTimeField, \
     DateField, TimeField, BlobField, UUIDField
 from peeweeplus.fields import EnumField, PasswordField, IPv4AddressField
-from peeweeplus.json.fields import contained, json_fields, FieldConverter
+from peeweeplus.json.fields import contained, json_fields, get_pk_value, \
+    FieldConverter
 
 
 __all__ = ['serialize']
 
 
 CONVERTER = FieldConverter(
-    (AutoField, lambda value: value._pk),   # pylint: disable=W0212
+    (AutoField, get_pk_value),
     (DecimalField, float),
     ((DateTimeField, DateField, TimeField), lambda value: value.isoformat()),
     (BlobField, b64encode),
