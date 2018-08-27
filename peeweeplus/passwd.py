@@ -70,9 +70,7 @@ class Argon2FieldAccessor(FieldAccessor):
     def __set__(self, instance, value):
         """Sets the password hash."""
         if value is not None:
-            if isinstance(value, Argon2Hash):
-                value = str(value)
-            else:
+            if not isinstance(value, Argon2Hash):
                 # If value is a plain text password, hash it.
                 if len(value) < self.field.min_pw_len:
                     raise PasswordTooShortError(
