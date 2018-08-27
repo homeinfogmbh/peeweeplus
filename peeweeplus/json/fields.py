@@ -56,6 +56,7 @@ def json_fields(model):
     fields of the respective model.
     """
 
+    print('json_fields:', json_fields.cache_info(), flush=True)
     return frozenset(_json_fields(model))
 
 
