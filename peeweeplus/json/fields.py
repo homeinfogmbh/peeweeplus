@@ -7,7 +7,7 @@ from functoolsplus import returning
 from peeweeplus.exceptions import NullError
 
 
-__all__ = ['contained', 'json_fields', 'get_pk_value', 'FieldConverter']
+__all__ = ['contained', 'json_fields', 'FieldConverter']
 
 
 JSONField = namedtuple('JSONField', ('key', 'field'))
@@ -47,15 +47,6 @@ def json_fields(model):
 
     for field, key in field_keys.items():
         yield JSONField(key, field)
-
-
-def get_pk_value(value):
-    """Returns the respective primary key value."""
-
-    try:
-        return value._pk    # pylint: disable=W0212
-    except AttributeError:
-        return int(value)
 
 
 class FieldConverter(tuple):
