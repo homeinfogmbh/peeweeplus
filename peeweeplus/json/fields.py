@@ -1,5 +1,6 @@
 """Miscellaneous stuff."""
 
+from collections import namedtuple
 from functools import lru_cache
 
 from peewee import ForeignKeyField
@@ -9,6 +10,9 @@ from peeweeplus.exceptions import NullError
 
 
 __all__ = ['contained', 'json_fields', 'FieldConverter']
+
+
+JSONField = namedtuple('JSONField', ('field', 'attribute', 'key'))
 
 
 def contained(key, iterable):
@@ -33,7 +37,10 @@ def json_fields(model):
         if not attribute.startswith('_'):
             if isinstance(field, ForeignKeyField):
                 # Compensate for fast FK access.
-                field_attributes[field] = attribute + '_id'
+                id_attribute = attribute + '_id'
+
+                if hasattr(model, id_attribute):
+                    field_attributes[field] = id_attribute
 
             field_keys[field] = field.column_name
 
@@ -50,7 +57,7 @@ def json_fields(model):
 
     for field, key in field_keys.items():
         attribute = field_attributes.get(field, field.name)
-        yield (field, attribute, key)
+        yield JSONField(field, attribute, key)
 
 
 class FieldConverter(tuple):
