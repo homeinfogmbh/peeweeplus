@@ -28,10 +28,7 @@ class MySQLDatabase(_MySQLDatabase):
             passwd = config['password']
 
         closing = config.get('closing')
-        retry = config.get('retry')
-
-        if closing is None and retry is None:
-            closing = True
+        retry = config.get('retry', True)
 
         return cls(
             database, host=config['host'], user=config['user'], passwd=passwd,
