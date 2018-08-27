@@ -24,7 +24,7 @@ class JSONModel(Model):
         """Selects from the model from the respective JSON dict."""
         skip = skip or frozenset()
         select = True
-        ka_map = {field.json_key: field.name for field in cls.json_fields()}
+        ka_map = {key: attribute for _, attribute, key in cls.json_fields()}
         invalid_keys = set()
 
         for key, value in json.items():
