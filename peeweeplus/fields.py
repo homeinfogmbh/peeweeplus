@@ -5,18 +5,18 @@ from ipaddress import IPv4Address
 from argon2 import PasswordHasher
 from peewee import CharField, FixedCharField, ForeignKeyField, BigIntegerField
 
+from peeweeplus.enum import EnumFieldAccessor
 from peeweeplus.exceptions import InvalidEnumerationValue
 from peeweeplus.passwd import Argon2Hash, Argon2FieldAccessor
 
-__all__ = [
-    'EnumField',
-    'CascadingFKField',
-    'Argon2Field',
-    'IPv4AddressField']
+
+__all__ = ['EnumField', 'CascadingFKField', 'Argon2Field', 'IPv4AddressField']
 
 
 class EnumField(CharField):
     """CharField-based enumeration field."""
+
+    accessor_class = EnumFieldAccessor
 
     def __init__(self, enum, *args, **kwargs):
         """Initializes the enumeration field with the enumeration enum.
@@ -42,39 +42,15 @@ class EnumField(CharField):
         if max_length is not None:
             raise AttributeError('Cannot set max_length property.')
 
-    @property
-    def null(self):
-        """Determines nullability by enum values."""
-        return self.__null or any(value is None for value in self.values)
-
-    @null.setter
-    def null(self, null):
-        """Mockup to comply with super class' __init__."""
-        self.__null = null  # pylint: disable=W0201
-
     def db_value(self, value):
         """Coerce enumeration value for database."""
-        if value in self.enum:
-            return value.value
+        if value is None:
+            if self.null:
+                return None
 
-        if value in self.values:
-            return value
+            raise InvalidEnumerationValue(value, self.field.enum)
 
-        if value is None and self.null:
-            return None
-
-        raise InvalidEnumerationValue(value, self.enum)
-
-    def python_value(self, value):
-        """Coerce enumeration value for python."""
-        for enum in self.enum:
-            if enum.value == value:
-                return enum
-
-        if value is None and self.null:
-            return None
-
-        raise InvalidEnumerationValue(value, self.enum)
+        return value.value
 
 
 class CascadingFKField(ForeignKeyField):
