@@ -26,15 +26,9 @@ class EnumField(CharField):
         self.enum = enum
 
     @property
-    def values(self):
-        """Yields the enumeration values."""
-        for enum in self.enum:
-            yield enum.value
-
-    @property
     def max_length(self):
         """Derives the required field size from the enumeration values."""
-        return max(len(value) for value in self.values if value is not None)
+        return max(len(value.value) for value in self.enum)
 
     @max_length.setter
     def max_length(self, max_length):   # pylint: disable=R0201
@@ -48,7 +42,7 @@ class EnumField(CharField):
             if self.null:
                 return None
 
-            raise InvalidEnumerationValue(value, self.field.enum)
+            raise InvalidEnumerationValue(value, self.enum)
 
         return value.value
 
