@@ -5,7 +5,7 @@ from peeweeplus.converters import dec2dom, dec2dict, dec2orm, date2orm, \
     datetime2orm
 from peeweeplus.database import MySQLDatabase
 from peeweeplus.exceptions import FieldValueError, FieldNotNullable, \
-    MissingKeyError, InvalidKeys, InvalidEnumerationValue, \
+    MissingKeyError, InvalidKeys, NonUniqueValue, InvalidEnumerationValue, \
     PasswordTooShortError
 from peeweeplus.fields import EnumField, CascadingFKField, Argon2Field, \
     IPv4AddressField
@@ -16,6 +16,7 @@ __all__ = [
     'FieldNotNullable',
     'MissingKeyError',
     'InvalidKeys',
+    'NonUniqueValue',
     'InvalidEnumerationValue',
     'PasswordTooShortError',
     'dec2dom',
