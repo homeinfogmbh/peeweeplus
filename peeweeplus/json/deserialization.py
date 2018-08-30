@@ -1,6 +1,5 @@
 """JSON deserialization."""
 
-from contextlib import suppress
 from ipaddress import IPv4Address
 from uuid import UUID
 
@@ -79,8 +78,18 @@ def deserialize(target, json, *, skip=None, fk_fields=False):
             raise FieldValueError(model, key, attribute, field, value)
 
         if field.unique:
-            with suppress(model.DoesNotExist):
-                model.get(getattr(model, attribute) == field_value)
+            select = field == field_value
+            primary_key = record._pk    # pylint: disable=W0212
+
+            if primary_key is not None:
+                pk_field = model._meta.primary_key  # pylint: disable=W0212
+                select &= pk_field != primary_key
+
+            try:
+                model.get(select)
+            except model.DoesNotExist:
+                pass
+            else:
                 raise NonUniqueValue(key, value)
 
         setattr(record, attribute, field_value)
