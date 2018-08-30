@@ -6,6 +6,7 @@ __all__ = [
     'FieldNotNullable',
     'MissingKeyError',
     'InvalidKeys',
+    'NonUniqueValue',
     'InvalidEnumerationValue',
     'PasswordTooShortError']
 
@@ -77,7 +78,9 @@ class MissingKeyError(_ModelFieldError):
 
 
 class InvalidKeys(ValueError):
-    """Indicates that the respective keys can not be consumed by the model."""
+    """Indicates that the respective keys
+    can not be consumed by the model.
+    """
 
     def __init__(self, invalid_keys):
         """Sets the respective invalid keys."""
@@ -87,6 +90,19 @@ class InvalidKeys(ValueError):
     def __iter__(self):
         """Yields the invalid keys."""
         yield from self.invalid_keys
+
+
+class NonUniqueValue(ValueError):
+    """Indicates that the respective keys can not
+    be set to the respective values because the
+    respective field is unique but the value is not.
+    """
+
+    def __init__(self, key, value):
+        """Sets the respective invalid key→value mapping."""
+        super().__init__(key, value)
+        self.key = key
+        self.value = value
 
 
 class InvalidEnumerationValue(ValueError):

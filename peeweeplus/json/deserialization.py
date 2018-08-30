@@ -8,7 +8,7 @@ from peewee import Model, AutoField, ForeignKeyField, BooleanField, \
     TimeField, BlobField, UUIDField
 
 from peeweeplus.exceptions import NullError, FieldNotNullable, InvalidKeys, \
-    MissingKeyError, FieldValueError
+    MissingKeyError, FieldValueError, NonUniqueValue
 from peeweeplus.fields import IPv4AddressField
 from peeweeplus.json.fields import contained, json_fields, FieldConverter
 from peeweeplus.json.parsers import parse_bool, parse_datetime, parse_date, \
@@ -76,6 +76,14 @@ def deserialize(target, json, *, skip=None, fk_fields=False):
             raise FieldNotNullable(model, key, attribute, field)
         except (TypeError, ValueError):
             raise FieldValueError(model, key, attribute, field, value)
+
+        if field.unique:
+            try:
+                model.get(getattr(model, attribute) == field_value)
+            except model.DoesNotExist:
+                pass
+            else:
+                raise NonUniqueValue(key, value)
 
         setattr(record, attribute, field_value)
 
