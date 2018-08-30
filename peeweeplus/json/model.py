@@ -3,7 +3,7 @@
 from peewee import Model
 
 from peeweeplus.exceptions import InvalidKeys
-from peeweeplus.json.deserialization import CONVERTER, deserialize
+from peeweeplus.json.deserialization import CONVERTER, deserialize, patch
 from peeweeplus.json.fields import json_fields
 from peeweeplus.json.serialization import serialize
 
@@ -16,7 +16,7 @@ class JSONModel(Model):
 
     json_fields = classmethod(json_fields)
     from_json = classmethod(deserialize)
-    patch_json = deserialize
+    patch_json = patch
     to_json = serialize
 
     @classmethod
