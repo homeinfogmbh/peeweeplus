@@ -112,10 +112,7 @@ def deserialize(model, json, *, skip=None, fk_fields=False):
 
 
 def patch(record, json, *, skip=None, fk_fields=False):
-    """Applies the provided dictionary onto the target.
-    The target can either be a Model subclass (deserialization)
-    or a Model instance (patching).
-    """
+    """Patches an existing record with a JSON-ish dict."""
 
     model = type(record)
     json = copy_dict(json)

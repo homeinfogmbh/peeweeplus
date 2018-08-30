@@ -24,7 +24,7 @@ CONVERTER = FieldConverter(
 
 def serialize(record, *, null=False, skip=None, fk_fields=True,
               autofields=True):
-    """Returns a JSON-ish dictionary with the record's values."""
+    """Returns a JSON-ish dict with the record's fields' values."""
 
     json = {}
 
