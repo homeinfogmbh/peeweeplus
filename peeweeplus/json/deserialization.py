@@ -95,8 +95,11 @@ def deserialize(model, json, *, skip=None, fk_fields=False):
         try:
             json_value = json.pop(key)
         except KeyError:
-            if not field.null and field.default is None:
-                raise MissingKeyError(model, key, attribute, field)
+            # On missing key, skip if field is nullable or field has a default.
+            if field.null or field.default is not None:
+                continue
+
+            raise MissingKeyError(model, key, attribute, field)
 
         orm_value = get_orm_value(model, key, attribute, field, json_value)
 
