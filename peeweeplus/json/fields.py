@@ -51,6 +51,9 @@ def json_fields(model):
         if not json_keys:
             continue
 
+        # Inverse key → field hashing to field → key hashing.
+        # The reason we do this is because during model definition,
+        # keys are not yet bound to the model and cannot be hashed yet.
         custom_keys = {field: key for key, field in json_keys.items()}
         # Override column names with custom set field keys.
         field_keys.update(custom_keys)
