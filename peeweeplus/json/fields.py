@@ -5,7 +5,8 @@ from functools import lru_cache
 
 from peewee import ForeignKeyField
 
-from functoolsplus import returning
+from functoolsplus import coerce
+
 from peeweeplus.exceptions import NullError
 
 
@@ -25,7 +26,7 @@ def contained(key, iterable):
 
 
 @lru_cache()
-@returning(frozenset)
+@coerce(frozenset)
 def json_fields(model):
     """Yields the JSON fields of the respective model."""
 
