@@ -6,6 +6,7 @@ from functools import lru_cache
 from peewee import ForeignKeyField
 
 from functoolsplus import coerce
+from strflib import camel_case
 
 from peeweeplus.exceptions import NullError
 
@@ -36,7 +37,8 @@ def json_fields(model):
 
     for attribute, field in fields.items():
         if not attribute.startswith('_'):
-            field_keys[field] = field.column_name
+            # Default JSON keys are column names in camelCase.
+            field_keys[field] = camel_case(field.column_name)
 
             if isinstance(field, ForeignKeyField):
                 id_attr = attribute + '_id'
