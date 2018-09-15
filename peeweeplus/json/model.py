@@ -8,11 +8,11 @@ from peeweeplus.json.fields import json_fields
 from peeweeplus.json.serialization import serialize
 
 
-__all__ = ['JSONModel']
+__all__ = ['JSONMixin', 'JSONModel']
 
 
-class JSONModel(Model):
-    """A JSON serializable and deserializable model."""
+class JSONMixin:
+    """A JSON serializable and deserializable model mixin."""
 
     json_fields = classmethod(json_fields)
     from_json = classmethod(deserialize)
@@ -54,3 +54,9 @@ class JSONModel(Model):
     def json_get(cls, json, skip=None):
         """Gets the first matched record from the respective JSON dict."""
         return cls.json_select(json, skip=skip).get()
+
+
+class JSONModel(Model, JSONMixin):
+    """A JSON de-/serializable model."""
+
+    pass
