@@ -29,7 +29,7 @@ def serialize(record, *, null=False, skip=None, fk_fields=True,
     json = {}
 
     for key, attribute, field in json_fields(type(record)):
-        if contains(skip, key, attribute, field):
+        if contains(skip, key, attribute):
             continue
         elif isinstance(field, PasswordField):
             continue

@@ -45,7 +45,7 @@ def fields(model, skip=(), fk_fields=False):
     """Filters fields."""
 
     for key, attribute, field in json_fields(model):
-        if contains(skip, key, attribute, field):
+        if contains(skip, key, attribute):
             continue
         elif isinstance(field, AutoField):
             continue

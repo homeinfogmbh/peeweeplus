@@ -17,13 +17,13 @@ __all__ = ['contains', 'json_fields', 'FieldConverter']
 JSONField = namedtuple('JSONField', ('key', 'attribute', 'field'))
 
 
-def contains(iterable, *items):
+def contains(iterable, key, attribute):
     """Determines whether the field is contained within the iterable."""
 
     if not iterable:
         return False
 
-    return any(item in iterable for item in items)
+    return key in iterable or attribute in iterable
 
 
 @lru_cache()
