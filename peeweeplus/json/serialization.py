@@ -5,7 +5,7 @@ from base64 import b64encode
 from peewee import AutoField, ForeignKeyField, DecimalField, DateTimeField, \
     DateField, TimeField, BlobField, UUIDField
 from peeweeplus.fields import EnumField, PasswordField, IPv4AddressField
-from peeweeplus.json.fields import contained, json_fields, FieldConverter
+from peeweeplus.json.fields import contains, json_fields, FieldConverter
 from peeweeplus.json.parsers import get_fk_value
 
 
@@ -29,7 +29,7 @@ def serialize(record, *, null=False, skip=None, fk_fields=True,
     json = {}
 
     for key, attribute, field in json_fields(type(record)):
-        if contained(key, skip):
+        if contains(skip, key, attribute, field):
             continue
         elif isinstance(field, PasswordField):
             continue

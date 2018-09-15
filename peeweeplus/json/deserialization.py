@@ -10,7 +10,7 @@ from peewee import AutoField, ForeignKeyField, BooleanField, IntegerField, \
 from peeweeplus.exceptions import NullError, FieldNotNullable, InvalidKeys, \
     MissingKeyError, FieldValueError, NonUniqueValue
 from peeweeplus.fields import IPv4AddressField
-from peeweeplus.json.fields import contained, json_fields, FieldConverter
+from peeweeplus.json.fields import contains, json_fields, FieldConverter
 from peeweeplus.json.parsers import parse_bool, parse_datetime, parse_date, \
     parse_time, parse_blob
 
@@ -45,7 +45,7 @@ def fields(model, skip=(), fk_fields=False):
     """Filters fields."""
 
     for key, attribute, field in json_fields(model):
-        if contained(key, skip):
+        if contains(skip, key, attribute, field):
             continue
         elif isinstance(field, AutoField):
             continue

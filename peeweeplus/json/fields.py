@@ -11,19 +11,19 @@ from strflib import camel_case
 from peeweeplus.exceptions import NullError
 
 
-__all__ = ['contained', 'json_fields', 'FieldConverter']
+__all__ = ['contains', 'json_fields', 'FieldConverter']
 
 
 JSONField = namedtuple('JSONField', ('key', 'attribute', 'field'))
 
 
-def contained(key, iterable):
+def contains(iterable, *items):
     """Determines whether the field is contained within the iterable."""
 
     if not iterable:
         return False
 
-    return key in iterable
+    return any(item in iterable for item in items)
 
 
 @lru_cache()
