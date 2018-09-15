@@ -98,4 +98,7 @@ class IPv4AddressField(BigIntegerField):
 
     def python_value(self, value):
         """Returns the IPv4 address object or None."""
+        if value is None:
+            return None
+
         return IPv4Address(value)
