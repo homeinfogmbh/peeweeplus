@@ -22,7 +22,7 @@ def async_list(name, query):
 
 
 @coroutine
-def async_lists(queries):
+def async_lists(**queries):
     """Async generation of multiple lists."""
 
     tasks = [async_list(name, query) for name, query in queries.items()]
@@ -42,7 +42,7 @@ def async_return(name, query):
 
 
 @coroutine
-def async_returns(queries):
+def async_returns(**queries):
     """Async generation of multiple lists."""
 
     tasks = [async_return(name, query) for name, query in queries.items()]
@@ -53,7 +53,7 @@ def async_select(**queries):
     """Performs select queries in parallel."""
 
     loop = get_event_loop()
-    tasks, _ = loop.run_until_complete(async_lists(queries))
+    tasks, _ = loop.run_until_complete(async_lists(**queries))
     return dict(task.result() for task in tasks)
 
 
@@ -61,5 +61,5 @@ def async_get(**queries):
     """Performs query.get() on multiple select queries in parallel."""
 
     loop = get_event_loop()
-    tasks, _ = loop.run_until_complete(async_returns(queries))
+    tasks, _ = loop.run_until_complete(async_returns(**queries))
     return dict(task.result() for task in tasks)
