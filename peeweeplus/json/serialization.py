@@ -2,9 +2,15 @@
 
 from base64 import b64encode
 
-from peewee import AutoField, ForeignKeyField, DecimalField, DateTimeField, \
-    DateField, TimeField, BlobField, UUIDField
-from peeweeplus.fields import EnumField, PasswordField, IPv4AddressField
+from peewee import AutoField
+from peewee import BlobField
+from peewee import DateField
+from peewee import DateTimeField
+from peewee import DecimalField
+from peewee import ForeignKeyField
+from peewee import TimeField
+from peewee import UUIDField
+from peeweeplus.fields import EnumField, IPv4AddressField, PasswordField
 from peeweeplus.json.fields import contains, json_fields, FieldConverter
 from peeweeplus.json.parsers import get_fk_value
 

@@ -3,16 +3,31 @@
 from ipaddress import IPv4Address
 from uuid import UUID
 
-from peewee import AutoField, ForeignKeyField, BooleanField, IntegerField, \
-    FloatField, DecimalField, DateTimeField, DateField, TimeField, BlobField, \
-    UUIDField
+from peewee import AutoField
+from peewee import BlobField
+from peewee import BooleanField
+from peewee import DateField
+from peewee import DateTimeField
+from peewee import DecimalField
+from peewee import FloatField
+from peewee import ForeignKeyField
+from peewee import IntegerField
+from peewee import TimeField
+from peewee import UUIDField
 
-from peeweeplus.exceptions import NullError, FieldNotNullable, InvalidKeys, \
-    MissingKeyError, FieldValueError, NonUniqueValue
+from peeweeplus.exceptions import FieldNotNullable
+from peeweeplus.exceptions import FieldValueError
+from peeweeplus.exceptions import InvalidKeys
+from peeweeplus.exceptions import MissingKeyError
+from peeweeplus.exceptions import NonUniqueValue
+from peeweeplus.exceptions import NullError
 from peeweeplus.fields import IPv4AddressField
 from peeweeplus.json.fields import contains, json_fields, FieldConverter
-from peeweeplus.json.parsers import parse_bool, parse_datetime, parse_date, \
-    parse_time, parse_blob
+from peeweeplus.json.parsers import parse_blob
+from peeweeplus.json.parsers import parse_bool
+from peeweeplus.json.parsers import parse_date
+from peeweeplus.json.parsers import parse_datetime
+from peeweeplus.json.parsers import parse_time
 
 
 __all__ = ['deserialize', 'patch']

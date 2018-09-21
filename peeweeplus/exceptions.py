@@ -1,5 +1,6 @@
 """Exceptions."""
 
+
 __all__ = [
     'NullError',
     'FieldValueError',
