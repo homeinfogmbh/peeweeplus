@@ -32,4 +32,5 @@ def async_query(**queries):
 
     loop = get_event_loop()
     tasks, _ = loop.run_until_complete(async_jobs(queries))
+    loop.close()
     return dict(task.result() for task in tasks)
