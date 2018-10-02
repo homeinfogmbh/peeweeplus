@@ -47,15 +47,6 @@ CONVERTER = FieldConverter(
     (BlobField, parse_blob))
 
 
-def copy_dict(dictionary):
-    """Returns a shallow copy of the dictionary."""
-
-    try:
-        return dict(dictionary)
-    except TypeError:
-        raise ValueError('JSON object must be a dictionary.')
-
-
 def fields(model, skip=(), fk_fields=False):
     """Filters fields."""
 
@@ -104,7 +95,7 @@ def deserialize(model, json, *, skip=None, fk_fields=False):
     """Creates a new record from a JSON-ish dict."""
 
     record = model()
-    json = copy_dict(json)
+    json = dict(json)
 
     for key, attribute, field in fields(model, skip=skip, fk_fields=fk_fields):
         try:
@@ -133,7 +124,7 @@ def patch(record, json, *, skip=None, fk_fields=False):
     """Patches an existing record with a JSON-ish dict."""
 
     model = type(record)
-    json = copy_dict(json)
+    json = dict(json)
 
     for key, attribute, field in fields(model, skip=skip, fk_fields=fk_fields):
         try:
