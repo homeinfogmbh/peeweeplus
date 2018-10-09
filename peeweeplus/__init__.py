@@ -19,7 +19,6 @@ from peeweeplus.fields import CascadingFKField
 from peeweeplus.fields import Argon2Field
 from peeweeplus.fields import IPv4AddressField
 from peeweeplus.json import deserialize, serialize, JSONMixin, JSONModel
-from peeweeplus.query import async_select, async_get
 
 
 __all__ = [
@@ -37,8 +36,6 @@ __all__ = [
     'datetime2orm',
     'deserialize',
     'serialize',
-    'async_select',
-    'async_get',
     'ChangedConnection',
     'MySQLDatabase',
     'JSONMixin',
