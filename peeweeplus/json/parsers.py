@@ -3,6 +3,8 @@
 from base64 import b64decode
 from datetime import datetime, date, time
 
+from peewee import Model
+
 from timelib import strpdatetime, strpdate, strptime    # pylint: disable=E0401
 
 
@@ -63,7 +65,10 @@ def parse_blob(value):
 def get_fk_value(value):
     """Returns the foreign key value."""
 
-    try:
-        return value._pk    # pylint: disable=W0212
-    except AttributeError:
-        return int(value)
+    if isinstance(value, int):
+        return value
+
+    if isinstance(value, Model):
+        return value.get_id()
+
+    raise ValueError(value)
