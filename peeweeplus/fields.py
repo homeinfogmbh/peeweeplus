@@ -62,10 +62,8 @@ class PasswordField(FixedCharField):
     fields to identify them as such.
     """
 
-    pass
 
-
-class Argon2Field(PasswordField):
+class Argon2Field(PasswordField):   # pylint: disable=R0901
     """An Argon2 password field."""
 
     accessor_class = Argon2FieldAccessor

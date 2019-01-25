@@ -15,8 +15,6 @@ __all__ = [
 class NullError(TypeError):
     """Indicates that the respective field cannot be null."""
 
-    pass
-
 
 class _ModelFieldError(ValueError):
     """An error that stores model, attribute and fields."""

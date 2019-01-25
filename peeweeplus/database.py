@@ -6,7 +6,7 @@ from peewee import OperationalError, MySQLDatabase as _MySQLDatabase
 __all__ = ['MySQLDatabase']
 
 
-class MySQLDatabase(_MySQLDatabase):
+class MySQLDatabase(_MySQLDatabase):    # pylint: disable=W0223
     """Extension of peewee.MySQLDatabase with closing option."""
 
     def __init__(self, *args, closing=False, retry=False, **kwargs):

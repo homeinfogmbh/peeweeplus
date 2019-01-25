@@ -8,7 +8,7 @@ from peeweeplus.exceptions import InvalidEnumerationValue
 __all__ = ['EnumFieldAccessor']
 
 
-class EnumFieldAccessor(FieldAccessor):
+class EnumFieldAccessor(FieldAccessor):     # pylint: disable=R0903
     """Accessor class for EnumField."""
 
     def __set__(self, instance, value):
