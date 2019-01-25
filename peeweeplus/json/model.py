@@ -2,8 +2,7 @@
 
 from peewee import Model
 
-from peeweeplus.exceptions import InvalidKeys
-from peeweeplus.json.deserialization import CONVERTER, deserialize, patch
+from peeweeplus.json.deserialization import deserialize, patch
 from peeweeplus.json.fields import json_fields
 from peeweeplus.json.serialization import serialize
 
@@ -11,7 +10,7 @@ from peeweeplus.json.serialization import serialize
 __all__ = ['JSONMixin', 'JSONModel']
 
 
-class JSONMixin:
+class JSONMixin:    # pylint: disable=R0903
     """A JSON serializable and deserializable model mixin."""
 
     json_fields = classmethod(json_fields)
@@ -19,44 +18,6 @@ class JSONMixin:
     patch_json = patch
     to_json = serialize
 
-    @classmethod
-    def json_select(cls, json, skip=None):
-        """Selects from the model from the respective JSON dict."""
-        skip = skip or frozenset()
-        select = True
-        ka_map = {key: attribute for _, attribute, key in cls.json_fields()}
-        invalid_keys = set()
-
-        for key, value in json.items():
-            if key in skip:
-                continue
-
-            try:
-                attribute = ka_map[key]
-            except KeyError:
-                invalid_keys.add(key)
-                continue
-
-            field = getattr(cls, attribute)
-            value = CONVERTER(field, value, check_null=False)
-
-            if value is None:
-                select &= field >> None
-            else:
-                select &= field == value
-
-        if invalid_keys:
-            raise InvalidKeys(invalid_keys)
-
-        return cls.select().where(select)
-
-    @classmethod
-    def json_get(cls, json, skip=None):
-        """Gets the first matched record from the respective JSON dict."""
-        return cls.json_select(json, skip=skip).get()
-
 
 class JSONModel(Model, JSONMixin):
     """A JSON de-/serializable model."""
-
-    pass
