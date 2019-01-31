@@ -19,6 +19,7 @@ from peeweeplus.fields import CascadingFKField
 from peeweeplus.fields import Argon2Field
 from peeweeplus.fields import IPv4AddressField
 from peeweeplus.json import deserialize, serialize, JSONMixin, JSONModel
+from peeweeplus.transaction import Transaction
 
 
 __all__ = [
@@ -43,4 +44,5 @@ __all__ = [
     'EnumField',
     'CascadingFKField',
     'Argon2Field',
-    'IPv4AddressField']
+    'IPv4AddressField',
+    'Transaction']
