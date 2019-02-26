@@ -90,6 +90,11 @@ class Argon2Field(PasswordField):   # pylint: disable=R0901
         _, size = field_type(self)
         return size
 
+    @property
+    def size_changed(self):
+        """Determines whether the size has changed."""
+        return self.max_length != self.actual_size
+
 
 class IPv4AddressField(BigIntegerField):
     """Field to store IPv4 addresses."""
