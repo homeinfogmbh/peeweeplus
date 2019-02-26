@@ -7,6 +7,7 @@ from peewee import CharField, FixedCharField, ForeignKeyField, BigIntegerField
 
 from peeweeplus.enum import EnumFieldAccessor
 from peeweeplus.exceptions import InvalidEnumerationValue
+from peeweeplus.functions import field_type
 from peeweeplus.passwd import Argon2Hash, Argon2FieldAccessor
 
 
@@ -100,3 +101,9 @@ class IPv4AddressField(BigIntegerField):
             return None
 
         return IPv4Address(value)
+
+    @property
+    def actual_size(self):
+        """Returns the actual field size."""
+        _, size = field_type(self)
+        return size
