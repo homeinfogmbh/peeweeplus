@@ -1,4 +1,4 @@
-"""Hacks to be used with caution."""
+"""Functions an hacks."""
 
 from re import compile  # pylint: disable=W0622
 
