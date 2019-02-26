@@ -59,22 +59,23 @@ class Argon2FieldAccessor(FieldAccessor):
         """Returns an Argon2 hash."""
         value = super().__get__(instance, instance_type=instance_type)
 
-        if instance is not None:
-            if value is None:
-                return None
+        if instance is None:
+            return value
 
-            return Argon2Hash(value, self.field.hasher)
+        if value is None:
+            return None
 
-        return value
+        return Argon2Hash(value, self.field.hasher)
 
     def __set__(self, instance, value):
         """Sets the password hash."""
         if value is not None:
             if not isinstance(value, Argon2Hash):
+                length = len(value)
+
                 # If value is a plain text password, hash it.
-                if len(value) < self.field.min_pw_len:
-                    raise PasswordTooShortError(
-                        len(value), self.field.min_pw_len)
+                if length < self.field.min_pw_len:
+                    raise PasswordTooShortError(length, self.field.min_pw_len)
 
                 value = self.field.hasher.hash(value)
 
