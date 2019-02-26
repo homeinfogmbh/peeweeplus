@@ -84,6 +84,12 @@ class Argon2Field(PasswordField):   # pylint: disable=R0901
 
         return Argon2Hash(value, self.hasher)
 
+    @property
+    def actual_size(self):
+        """Returns the actual field size."""
+        _, size = field_type(self)
+        return size
+
 
 class IPv4AddressField(BigIntegerField):
     """Field to store IPv4 addresses."""
@@ -101,9 +107,3 @@ class IPv4AddressField(BigIntegerField):
             return None
 
         return IPv4Address(value)
-
-    @property
-    def actual_size(self):
-        """Returns the actual field size."""
-        _, size = field_type(self)
-        return size
