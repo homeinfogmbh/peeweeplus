@@ -9,7 +9,7 @@ __all__ = ['field_type']
 FIELD_TYPE = compile('^([a-z]+)\\((\\d*)\\)$')
 FIELD_TYPE_QUERY = (
     "SELECT COLUMN_TYPE FROM information_schema.COLUMNS WHERE "
-    "TABLE_SCHEMA = ? AND TABLE_NAME = ? AND COLUMN_NAME = ?")
+    "TABLE_SCHEMA = %s AND TABLE_NAME = %s AND COLUMN_NAME = %s")
 
 
 def field_type(field):
