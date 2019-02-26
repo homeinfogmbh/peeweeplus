@@ -87,8 +87,7 @@ class Argon2Field(PasswordField):   # pylint: disable=R0901
     @property
     def actual_size(self):
         """Returns the actual field size."""
-        _, size = field_type(self)
-        return size
+        return field_type(self).size
 
     @property
     def size_changed(self):

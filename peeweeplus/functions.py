@@ -1,5 +1,6 @@
 """Functions an hacks."""
 
+from collections import namedtuple
 from re import compile  # pylint: disable=W0622
 
 
@@ -10,6 +11,7 @@ FIELD_TYPE = compile('^([a-z]+)\\((\\d*)\\)$')
 FIELD_TYPE_QUERY = (
     "SELECT COLUMN_TYPE FROM information_schema.COLUMNS WHERE "
     "TABLE_SCHEMA = %s AND TABLE_NAME = %s AND COLUMN_NAME = %s")
+FieldType = namedtuple('FieldType', ('type', 'size'))
 
 
 def field_type(field):
@@ -23,6 +25,6 @@ def field_type(field):
     cursor = database.execute_sql(FIELD_TYPE_QUERY, values)
     result, *_ = cursor.fetchone()
     match = FIELD_TYPE.fullmatch(result)
-    type_, length = match.groups()
-    length = int(length) if length else None
-    return (type_, length)
+    type_, size = match.groups()
+    size = int(size) if size else None
+    return FieldType(type_, size)
