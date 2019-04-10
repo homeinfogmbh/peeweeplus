@@ -1,10 +1,8 @@
 """Argon2-based password hashing."""
 
 from collections import namedtuple
-from contextlib import suppress
 
 from argon2 import extract_parameters
-from argon2.exceptions import VerifyMismatchError
 from peewee import FieldAccessor
 
 from peeweeplus.exceptions import PasswordTooShortError
@@ -22,12 +20,9 @@ class Argon2Hash(namedtuple('Argon2Hash', ('hash', 'hasher'))):
         return self.hash
 
     @classmethod
-    def from_string(cls, string, hasher):
-        """Returns an Argon2 hash from the respective string and hasher."""
-        with suppress(VerifyMismatchError):
-            hasher.verify(string, '')
-
-        return cls(string, hasher)
+    def from_plaintext(cls, plaintext, hasher):
+        """Creates an Argon2 hash from a plain text password."""
+        return cls(hasher.hash(plaintext), hasher)
 
     @property
     def needs_rehash(self):
@@ -57,6 +52,6 @@ class Argon2FieldAccessor(FieldAccessor):   # pylint: disable=R0903
                 if length < self.field.min_pw_len:
                     raise PasswordTooShortError(length, self.field.min_pw_len)
 
-                value = self.field.hasher.hash(value)
+                value = Argon2Hash.from_plaintext(value, self.field.hasher)
 
         super().__set__(instance, value)
