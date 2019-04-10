@@ -86,7 +86,7 @@ class Argon2Field(PasswordField):   # pylint: disable=R0901
 
     def db_value(self, value):  # pylint: disable=R0201
         """Returns the string value."""
-        return value.string
+        return str(value)
 
     @property
     def actual_size(self):  # pylint: disable=R0201
