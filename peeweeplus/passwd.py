@@ -11,7 +11,6 @@ from peeweeplus.exceptions import PasswordTooShortError
 __all__ = ['Argon2Hash', 'Argon2FieldAccessor']
 
 
-
 class Argon2Hash(namedtuple('Argon2Hash', ('hash', 'hasher'))):
     """An Argon2 hash."""
 
