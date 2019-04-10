@@ -1,71 +1,51 @@
 """Argon2-based password hashing."""
 
+from collections import namedtuple
+from contextlib import suppress
+
 from argon2 import extract_parameters
-from argon2.exceptions import VerificationError, VerifyMismatchError
+from argon2.exceptions import VerifyMismatchError
 from peewee import FieldAccessor
 
 from peeweeplus.exceptions import PasswordTooShortError
 
 
-__all__ = ['is_hash', 'Argon2Hash', 'Argon2FieldAccessor']
+__all__ = ['Argon2Hash', 'Argon2FieldAccessor']
 
 
-def is_hash(hasher, value):
-    """Determines whether value is a valid Argon2 hash for hasher."""
 
-    try:
-        return hasher.verify(value, '')
-    except VerifyMismatchError:
-        return True
-    except VerificationError:
-        return False
-
-
-class Argon2Hash(str):
+class Argon2Hash(namedtuple('Argon2Hash', ('hash', 'hasher'))):
     """An Argon2 hash."""
 
-    def __new__(cls, hash_, _):
-        """Override str constructor."""
-        return super().__new__(cls, hash_)
+    def __str__(self):
+        """Returns the hash string."""
+        return self.hash
 
-    def __init__(self, hash_, hasher):
-        """Sets the hasher."""
-        super().__init__()
+    @classmethod
+    def from_string(cls, string, hasher):
+        """Returns an Argon2 hash from the respective string and hasher."""
+        with suppress(VerifyMismatchError):
+            hasher.verify(string, '')
 
-        if not is_hash(hasher, hash_):
-            raise ValueError('Not an Argon2 hash.')
-
-        self._hasher = hasher
+        return cls(string, hasher)
 
     @property
     def needs_rehash(self):
         """Determines whether the password needs a rehash."""
-        return self._hasher.check_needs_rehash(self)
+        return self.hasher.check_needs_rehash(self.hash)
 
     @property
     def parameters(self):
         """Returns the Argon2 hash parameters."""
-        return extract_parameters(self)
+        return extract_parameters(self.hash)
 
     def verify(self, passwd):
         """Validates the plain text password against this hash."""
-        return self._hasher.verify(self, passwd)
+        return self.hasher.verify(self.hash, passwd)
 
 
-class Argon2FieldAccessor(FieldAccessor):
+class Argon2FieldAccessor(FieldAccessor):   # pylint: disable=R0903
     """Accessor class for Argon2Field."""
-
-    def __get__(self, instance, instance_type=None):
-        """Returns an Argon2 hash."""
-        value = super().__get__(instance, instance_type=instance_type)
-
-        if instance is None:
-            return value
-
-        if value is None:
-            return None
-
-        return Argon2Hash(value, self.field.hasher)
 
     def __set__(self, instance, value):
         """Sets the password hash."""

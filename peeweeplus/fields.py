@@ -48,17 +48,17 @@ class EnumField(CharField):
         return value.value
 
 
-class CascadingFKField(ForeignKeyField):
+class CascadingFKField(ForeignKeyField):    # pylint: disable=R0903
     """A ForeignKeyField with default cascading."""
 
     def __init__(self, *args, on_delete='CASCADE', on_update='CASCADE',
-                 **kwargs):
+                 **kwargs):     # pylint: disable=W0235
         """Delegates to ForeignKeyField.__init__."""
         super().__init__(
             *args, on_delete=on_delete, on_update=on_update, **kwargs)
 
 
-class PasswordField(FixedCharField):
+class PasswordField(FixedCharField):    # pylint: disable=R0903
     """Common base class for password
     fields to identify them as such.
     """
@@ -84,8 +84,12 @@ class Argon2Field(PasswordField):   # pylint: disable=R0901
 
         return Argon2Hash(value, self.hasher)
 
+    def db_value(self, value):  # pylint: disable=R0201
+        """Returns the string value."""
+        return value.string
+
     @property
-    def actual_size(self):
+    def actual_size(self):  # pylint: disable=R0201
         """Returns the actual field size."""
         return field_type(self).size
 
@@ -98,14 +102,14 @@ class Argon2Field(PasswordField):   # pylint: disable=R0901
 class IPv4AddressField(BigIntegerField):
     """Field to store IPv4 addresses."""
 
-    def db_value(self, value):
+    def db_value(self, value):  # pylint: disable=R0201
         """Returns the IPv4 address's interger value or None."""
         if value is None:
             return None
 
         return int(value)
 
-    def python_value(self, value):
+    def python_value(self, value):  # pylint: disable=R0201
         """Returns the IPv4 address object or None."""
         if value is None:
             return None
