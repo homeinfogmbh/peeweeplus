@@ -81,8 +81,17 @@ class FieldConverter(tuple):
 
             return None
 
-        for classes, function in self:
+        for item in self:
+            try:
+                classes, function, wants_field = item
+            except ValueError:
+                classes, function = item
+                wants_field = False
+
             if isinstance(field, classes):
+                if wants_field:
+                    return function(value, field)
+
                 return function(value)
 
         return value

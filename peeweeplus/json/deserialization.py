@@ -21,13 +21,14 @@ from peeweeplus.exceptions import InvalidKeys
 from peeweeplus.exceptions import MissingKeyError
 from peeweeplus.exceptions import NonUniqueValue
 from peeweeplus.exceptions import NullError
-from peeweeplus.fields import IPv4AddressField
+from peeweeplus.fields import EnumField, IPv4AddressField
 from peeweeplus.json.fields import contains, json_fields, FieldConverter
 from peeweeplus.json.parsers import parse_blob
 from peeweeplus.json.parsers import parse_bool
 from peeweeplus.json.parsers import parse_date
 from peeweeplus.json.parsers import parse_datetime
 from peeweeplus.json.parsers import parse_time
+from peeweeplus.json.parsers import parse_enum
 
 
 __all__ = ['deserialize', 'patch']
@@ -44,7 +45,8 @@ CONVERTER = FieldConverter(
     (DateTimeField, parse_datetime),
     (DateField, parse_date),
     (TimeField, parse_time),
-    (BlobField, parse_blob))
+    (BlobField, parse_blob),
+    (EnumField, parse_enum, True))
 
 
 def fields(model, skip=(), fk_fields=False):

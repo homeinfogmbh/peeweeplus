@@ -14,6 +14,7 @@ __all__ = [
     'parse_date',
     'parse_time',
     'parse_blob',
+    'parse_enum',
     'get_fk_value']
 
 
@@ -60,6 +61,15 @@ def parse_blob(value):
         return value
 
     return b64decode(value)
+
+
+def parse_enum(value, field):
+    """Parses an enumeration value."""
+
+    if isinstance(value, field.enum):
+        return value
+
+    return field.enum(value)
 
 
 def get_fk_value(value):
