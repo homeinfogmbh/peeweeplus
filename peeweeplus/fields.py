@@ -5,8 +5,6 @@ from ipaddress import IPv4Address
 from argon2 import PasswordHasher
 from peewee import CharField, FixedCharField, ForeignKeyField, BigIntegerField
 
-from peeweeplus.enum import EnumFieldAccessor
-from peeweeplus.exceptions import InvalidEnumerationValue
 from peeweeplus.functions import field_type
 from peeweeplus.passwd import Argon2Hash, Argon2FieldAccessor
 
@@ -16,8 +14,6 @@ __all__ = ['EnumField', 'CascadingFKField', 'Argon2Field', 'IPv4AddressField']
 
 class EnumField(CharField):
     """CharField-based enumeration field."""
-
-    accessor_class = EnumFieldAccessor
 
     def __init__(self, enum, *args, **kwargs):
         """Initializes the enumeration field with the enumeration enum.
@@ -40,12 +36,16 @@ class EnumField(CharField):
     def db_value(self, value):
         """Coerce enumeration value for database."""
         if value is None:
-            if self.null:
-                return None
-
-            raise InvalidEnumerationValue(value, self.enum)
+            return None
 
         return value.value
+
+    def python_value(self, value):
+        """Returns the respective enumeration."""
+        if value is None:
+            return None
+
+        return self.enum(value)
 
 
 class CascadingFKField(ForeignKeyField):    # pylint: disable=R0903

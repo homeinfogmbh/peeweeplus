@@ -12,7 +12,6 @@ from peeweeplus.exceptions import FieldNotNullable
 from peeweeplus.exceptions import MissingKeyError
 from peeweeplus.exceptions import InvalidKeys
 from peeweeplus.exceptions import NonUniqueValue
-from peeweeplus.exceptions import InvalidEnumerationValue
 from peeweeplus.exceptions import PasswordTooShortError
 from peeweeplus.fields import EnumField
 from peeweeplus.fields import CascadingFKField
@@ -27,7 +26,6 @@ __all__ = [
     'MissingKeyError',
     'InvalidKeys',
     'NonUniqueValue',
-    'InvalidEnumerationValue',
     'PasswordTooShortError',
     'dec2dom',
     'dec2dict',
