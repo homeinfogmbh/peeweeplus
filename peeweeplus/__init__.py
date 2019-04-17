@@ -15,6 +15,7 @@ from peeweeplus.exceptions import NonUniqueValue
 from peeweeplus.exceptions import PasswordTooShortError
 from peeweeplus.fields import EnumField
 from peeweeplus.fields import CascadingFKField
+from peeweeplus.fields import PasswordField
 from peeweeplus.fields import Argon2Field
 from peeweeplus.fields import IPv4AddressField
 from peeweeplus.json import deserialize, serialize, JSONMixin, JSONModel
@@ -40,5 +41,6 @@ __all__ = [
     'JSONModel',
     'EnumField',
     'CascadingFKField',
+    'PasswordField',
     'Argon2Field',
     'IPv4AddressField']

@@ -9,7 +9,12 @@ from peeweeplus.functions import field_type
 from peeweeplus.passwd import Argon2Hash, Argon2FieldAccessor
 
 
-__all__ = ['EnumField', 'CascadingFKField', 'Argon2Field', 'IPv4AddressField']
+__all__ = [
+    'EnumField',
+    'CascadingFKField',
+    'PasswordField',
+    'Argon2Field',
+    'IPv4AddressField']
 
 
 class EnumField(CharField):
