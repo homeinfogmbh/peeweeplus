@@ -3,7 +3,6 @@
 from ipaddress import IPv4Address
 from uuid import UUID
 
-from peewee import AutoField
 from peewee import BlobField
 from peewee import BooleanField
 from peewee import DateField
@@ -22,7 +21,8 @@ from peeweeplus.exceptions import MissingKeyError
 from peeweeplus.exceptions import NonUniqueValue
 from peeweeplus.exceptions import NullError
 from peeweeplus.fields import EnumField, IPv4AddressField
-from peeweeplus.json.fields import contains, json_fields, FieldConverter
+from peeweeplus.json.fields import json_fields, FieldConverter
+from peeweeplus.json.filter import FieldsFilter
 from peeweeplus.json.parsers import parse_blob
 from peeweeplus.json.parsers import parse_bool
 from peeweeplus.json.parsers import parse_date
@@ -47,20 +47,6 @@ CONVERTER = FieldConverter(
     (TimeField, parse_time),
     (BlobField, parse_blob),
     (EnumField, parse_enum, True))
-
-
-def fields(model, skip=(), fk_fields=False):
-    """Filters fields."""
-
-    for key, attribute, field in json_fields(model):
-        if contains(skip, key, attribute):
-            continue
-        elif isinstance(field, AutoField):
-            continue
-        elif not fk_fields and isinstance(field, ForeignKeyField):
-            continue
-
-        yield (key, attribute, field)
 
 
 def get_orm_value(model, key, attribute, field, json_value):
@@ -93,13 +79,15 @@ def is_unique(record, field, orm_value):
     return False
 
 
-def deserialize(model, json, *, skip=None, fk_fields=False):
+def deserialize(model, json, **filters):
     """Creates a new record from a JSON-ish dict."""
 
     record = model()
+    fields = json_fields(model)
     json = dict(json)
+    fields_filter = FieldsFilter.for_deserialization(**filters)
 
-    for key, attribute, field in fields(model, skip=skip, fk_fields=fk_fields):
+    for key, attribute, field in fields_filter.filter(fields):
         try:
             json_value = json.pop(key)
         except KeyError:
@@ -122,13 +110,15 @@ def deserialize(model, json, *, skip=None, fk_fields=False):
     return record
 
 
-def patch(record, json, *, skip=None, fk_fields=False):
+def patch(record, json, **filters):
     """Patches an existing record with a JSON-ish dict."""
 
     model = type(record)
+    fields = json_fields(model)
     json = dict(json)
+    fields_filter = FieldsFilter.for_deserialization(**filters)
 
-    for key, attribute, field in fields(model, skip=skip, fk_fields=fk_fields):
+    for key, attribute, field in fields_filter.filter(fields):
         try:
             json_value = json.pop(key)
         except KeyError:

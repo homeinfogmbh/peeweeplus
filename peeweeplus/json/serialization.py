@@ -11,7 +11,7 @@ from peewee import TimeField
 from peewee import UUIDField
 from peeweeplus.fields import EnumField, IPv4AddressField
 from peeweeplus.json.fields import json_fields, FieldConverter
-from peeweeplus.json.filter import SerializationFilter
+from peeweeplus.json.filter import FieldsFilter
 from peeweeplus.json.parsers import get_fk_value
 
 
@@ -33,10 +33,10 @@ def serialize(record, *, null=False, cascade=False, **filters):
 
     model = type(record)
     fields = json_fields(model)
-    serialization_filter = SerializationFilter.from_kwargs(**filters)
+    fields_filter = FieldsFilter.for_serialization(**filters)
     json = {}
 
-    for key, attribute, field in serialization_filter.filter(fields):
+    for key, attribute, field in fields_filter.filter(fields):
         value = getattr(model, attribute)
 
         if cascade and isinstance(field, ForeignKeyField):

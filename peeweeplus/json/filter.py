@@ -8,10 +8,10 @@ from peeweeplus.fields import PasswordField
 from peeweeplus.json.fields import contains
 
 
-__all__ = ['SerializationFilter']
+__all__ = ['FieldsFilter']
 
 
-class SerializationFilter(NamedTuple):
+class FieldsFilter(NamedTuple):
     """Field filtering settings."""
 
     skip: set
@@ -20,7 +20,17 @@ class SerializationFilter(NamedTuple):
     autofields: bool
 
     @classmethod
-    def from_kwargs(cls, **kwargs):
+    def for_deserialization(cls, **kwargs):
+        """Creates the filter from the respective keyword arguments."""
+        skip = kwargs.get('skip')
+        skip = frozenset(skip) if skip else frozenset()
+        only = kwargs.get('only')
+        only = frozenset(only) if only else frozenset()
+        fk_fields = kwargs.get('fk_fields', False)
+        return cls(skip, only, fk_fields, False)
+
+    @classmethod
+    def for_serialization(cls, **kwargs):
         """Creates the filter from the respective keyword arguments."""
         skip = kwargs.get('skip')
         skip = frozenset(skip) if skip else frozenset()
