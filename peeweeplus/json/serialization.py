@@ -37,7 +37,7 @@ def serialize(record, *, null=False, cascade=False, **filters):
     json = {}
 
     for key, attribute, field in fields_filter.filter(fields):
-        value = getattr(model, attribute)
+        value = getattr(record, attribute)
 
         if cascade and isinstance(field, ForeignKeyField):
             try:
