@@ -44,11 +44,11 @@ def serialize(record, *, null=False, cascade=False, **filters):
             rel_model = field.rel_model
 
             try:
-                record = rel_model[value]
+                rrec = rel_model[value]
             except rel_model.DoesNotExist:
                 pass
             else:
-                value = record.to_json(null=null, cascade=cascade, **filters)
+                value = rrec.to_json(null=null, cascade=cascade, **filters)
 
         if not null and value is None:
             continue
