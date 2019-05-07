@@ -41,15 +41,16 @@ def serialize(record, *, null=False, cascade=False, **filters):
         value = CONVERTER(field, value, check_null=False)
 
         if cascade and isinstance(field, ForeignKeyField):
-            cascade = True if cascade is True else cascade - 1
+            next_cascade = True if cascade is True else cascade - 1
             rel_model = field.rel_model
 
             try:
-                rrec = rel_model[value]
+                rel_record = rel_model[value]
             except rel_model.DoesNotExist:
                 pass
             else:
-                value = rrec.to_json(null=null, cascade=cascade, **filters)
+                value = rel_record.to_json(
+                    null=null, cascade=next_cascade, **filters)
 
         if not null and value is None:
             continue
