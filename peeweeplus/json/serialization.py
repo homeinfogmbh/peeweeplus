@@ -28,26 +28,34 @@ CONVERTER = FieldConverter(
     (IPv4AddressField, str))
 
 
-def serialize(record, *, null=False, skip=None, fk_fields=True,
-              autofields=True):
+def serialize(record, *, skip=None, only=None, fk_fields=True, autofields=True,
+              cascade=False):
     """Returns a JSON-ish dict with the record's fields' values."""
 
+    skip = frozenset(skip) if skip else frozenset()
+    only = frozenset(only) if only else frozenset()
     json = {}
 
     for key, attribute, field in json_fields(type(record)):
-        if contains(skip, key, attribute):
+        if contains(skip, key, attribute, default=False):
+            continue
+        elif not contains(only, key, attribute, default=True):
             continue
         elif isinstance(field, PasswordField):
             continue
-        elif not autofields and isinstance(field, AutoField):
-            continue
         elif not fk_fields and isinstance(field, ForeignKeyField):
+            continue
+        elif not autofields and isinstance(field, AutoField):
             continue
 
         value = getattr(record, attribute)
-        json_value = CONVERTER(field, value, check_null=False)
 
-        if json_value is None and not null:
+        if cascade and isinstance(field, ForeignKeyField):
+            json_value = value.to_json(skip=skip, cascade=cascade)
+        else:
+            json_value = CONVERTER(field, value, check_null=False)
+
+        if json_value is None:
             continue
 
         json[key] = json_value
