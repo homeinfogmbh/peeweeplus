@@ -41,6 +41,7 @@ def serialize(record, *, null=False, cascade=False, **filters):
         value = CONVERTER(field, value, check_null=False)
 
         if cascade and isinstance(field, ForeignKeyField):
+            cascade = True if cascade is True else cascade - 1
             rel_model = field.rel_model
 
             try:
