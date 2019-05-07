@@ -41,15 +41,17 @@ def serialize(record, *, null=False, cascade=False, **filters):
 
         if cascade and isinstance(field, ForeignKeyField):
             try:
-                value = value.to_json(null=null, cascade=cascade, **filters)
+                json_val = value.to_json(null=null, cascade=cascade, **filters)
             except AttributeError:
-                value = CONVERTER(field, value, check_null=False)
-        else:
-            value = CONVERTER(field, value, check_null=False)
+                json_val = CONVERTER(field, value, check_null=False)
 
-        if not null and value is None:
+            json_val = '{} ({}/{})'.format(json_val, value, type(value))
+        else:
+            json_val = CONVERTER(field, value, check_null=False)
+
+        if not null and json_val is None:
             continue
 
-        json[key] = value
+        json[key] = json_val
 
     return json
