@@ -1,9 +1,9 @@
 """Miscellaneous stuff."""
 
-from collections import namedtuple
 from functools import lru_cache
+from typing import NamedTuple
 
-from peewee import ForeignKeyField
+from peewee import Field, ForeignKeyField
 
 from functoolsplus import coerce
 from strflib import camel_case
@@ -14,7 +14,12 @@ from peeweeplus.exceptions import NullError
 __all__ = ['contains', 'json_fields', 'FieldConverter']
 
 
-JSONField = namedtuple('JSONField', ('key', 'attribute', 'field'))
+class JSONField(NamedTuple):
+    """JSON field information tuple."""
+
+    key: str
+    attribute: str
+    field: Field
 
 
 def contains(iterable, key, attribute, *, default=False):

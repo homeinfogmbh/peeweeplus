@@ -2,7 +2,6 @@
 
 from base64 import b64encode
 
-from peewee import AutoField
 from peewee import BlobField
 from peewee import DateField
 from peewee import DateTimeField
@@ -10,8 +9,9 @@ from peewee import DecimalField
 from peewee import ForeignKeyField
 from peewee import TimeField
 from peewee import UUIDField
-from peeweeplus.fields import EnumField, IPv4AddressField, PasswordField
-from peeweeplus.json.fields import contains, json_fields, FieldConverter
+from peeweeplus.fields import EnumField, IPv4AddressField
+from peeweeplus.json.fields import json_fields, FieldConverter
+from peeweeplus.json.filter import SerializationFilter
 from peeweeplus.json.parsers import get_fk_value
 
 
@@ -28,36 +28,28 @@ CONVERTER = FieldConverter(
     (IPv4AddressField, str))
 
 
-def serialize(record, *, skip=None, only=None, fk_fields=True, autofields=True,
-              cascade=False):
+def serialize(record, *, null=False, cascade=False, **filters):
     """Returns a JSON-ish dict with the record's fields' values."""
 
-    skip = frozenset(skip) if skip else frozenset()
-    only = frozenset(only) if only else frozenset()
+    model = type(record)
+    fields = json_fields(model)
+    serialization_filter = SerializationFilter.from_kwargs(**filters)
     json = {}
 
-    for key, attribute, field in json_fields(type(record)):
-        if contains(skip, key, attribute, default=False):
-            continue
-        elif not contains(only, key, attribute, default=True):
-            continue
-        elif isinstance(field, PasswordField):
-            continue
-        elif not fk_fields and isinstance(field, ForeignKeyField):
-            continue
-        elif not autofields and isinstance(field, AutoField):
-            continue
-
-        value = getattr(record, attribute)
+    for key, attribute, field in serialization_filter.filter(fields):
+        value = getattr(model, attribute)
 
         if cascade and isinstance(field, ForeignKeyField):
-            json_value = value.to_json(skip=skip, cascade=cascade)
+            try:
+                value = value.to_json(null=null, cascade=cascade, **filters)
+            except AttributeError:
+                value = CONVERTER(field, value, check_null=False)
         else:
-            json_value = CONVERTER(field, value, check_null=False)
+            value = CONVERTER(field, value, check_null=False)
 
-        if json_value is None:
+        if not null and value is None:
             continue
 
-        json[key] = json_value
+        json[key] = value
 
     return json
