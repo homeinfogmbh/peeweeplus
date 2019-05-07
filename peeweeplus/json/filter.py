@@ -14,8 +14,8 @@ __all__ = ['FieldsFilter']
 class FieldsFilter(NamedTuple):
     """Field filtering settings."""
 
-    skip: set
-    only: set
+    skip: frozenset
+    only: frozenset
     fk_fields: bool
     autofields: bool
 
