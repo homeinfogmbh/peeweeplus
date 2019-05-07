@@ -40,10 +40,8 @@ def serialize(record, *, null=False, cascade=False, **filters):
         value = getattr(record, attribute)
 
         if cascade and isinstance(field, ForeignKeyField):
-            try:
-                value = value.to_json(null=null, cascade=cascade, **filters)
-            except AttributeError:
-                value = CONVERTER(field, value, check_null=False)
+            value = field.rel_model[value].to_json(
+                null=null, cascade=cascade, **filters)
         else:
             value = CONVERTER(field, value, check_null=False)
 

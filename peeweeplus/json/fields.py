@@ -49,7 +49,7 @@ def json_fields(model):
                 id_attr = attribute + '_id'
 
                 if hasattr(model, id_attr):
-                    field_attributes[field] = attribute
+                    field_attributes[field] = id_attr
 
     for model in reversed(model.__mro__):   # pylint: disable=R1704
         # Create map of custom keys for fields.
