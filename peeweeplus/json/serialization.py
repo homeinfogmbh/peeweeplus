@@ -38,12 +38,17 @@ def serialize(record, *, null=False, cascade=False, **filters):
 
     for key, attribute, field in fields_filter.filter(fields):
         value = getattr(record, attribute)
+        value = CONVERTER(field, value, check_null=False)
 
         if cascade and isinstance(field, ForeignKeyField):
-            value = field.rel_model[value].to_json(
-                null=null, cascade=cascade, **filters)
-        else:
-            value = CONVERTER(field, value, check_null=False)
+            rel_model = field.rel_model
+
+            try:
+                record = rel_model[value]
+            except rel_model.DoesNotExist:
+                pass
+            else:
+                value = record.to_json(null=null, cascade=cascade, **filters)
 
         if not null and value is None:
             continue
