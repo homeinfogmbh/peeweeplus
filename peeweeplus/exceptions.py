@@ -114,5 +114,4 @@ class PasswordTooShortError(Exception):
 
     def __str__(self):
         """Returns the respective error message."""
-        return 'Password too short ({} / {} characters).'.format(
-            self.pwlen, self.minlen)
+        return f'Password too short ({self.pwlen} / {self.minlen} characters).'
