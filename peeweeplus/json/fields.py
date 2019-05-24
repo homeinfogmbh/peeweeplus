@@ -25,10 +25,10 @@ class JSONField(NamedTuple):
 def contains(iterable, key, attribute, *, default=False):
     """Determines whether the field is contained within the iterable."""
 
-    if not iterable:
-        return default
+    if iterable:
+        return key in iterable or attribute in iterable
 
-    return key in iterable or attribute in iterable
+    return default
 
 
 @lru_cache()
