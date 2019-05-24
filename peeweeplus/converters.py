@@ -7,7 +7,7 @@ __all__ = ['dec2dom', 'dec2dict', 'dec2orm', 'date2orm', 'datetime2orm']
 
 
 def dec2dom(value):
-    """Converts a decimal into a string."""
+    """Converts a decimal into a DOM compliant value."""
 
     if value is None:
         return None
@@ -16,7 +16,7 @@ def dec2dom(value):
 
 
 def dec2dict(value):
-    """Converts a decimal into a string."""
+    """Converts a decimal-like string into a JSON-compliant value."""
 
     if value is None:
         return None
@@ -31,7 +31,7 @@ def dec2orm(value):
 
 
 def date2orm(value):
-    """Converts a PyXB date object to a datetime.date object."""
+    """Converts a date object to a ORM compliant value."""
 
     if value is None:
         return None
@@ -40,7 +40,7 @@ def date2orm(value):
 
 
 def datetime2orm(value):
-    """Converts a PyXB date object to a datetime.date object."""
+    """Converts a datetime object to a ORM comliant value."""
 
     if value is None:
         return None
