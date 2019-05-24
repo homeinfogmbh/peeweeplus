@@ -18,6 +18,7 @@ class FieldsFilter(NamedTuple):
     only: frozenset
     fk_fields: bool
     autofields: bool
+    passwords: bool
 
     @classmethod
     def for_deserialization(cls, **kwargs):
@@ -27,7 +28,8 @@ class FieldsFilter(NamedTuple):
         only = kwargs.get('only')
         only = frozenset(only) if only else frozenset()
         fk_fields = kwargs.get('fk_fields', False)
-        return cls(skip, only, fk_fields, False)
+        passwords = kwargs.get('passwords', True)
+        return cls(skip, only, fk_fields, False, passwords)
 
     @classmethod
     def for_serialization(cls, **kwargs):
@@ -38,7 +40,7 @@ class FieldsFilter(NamedTuple):
         only = frozenset(only) if only else frozenset()
         fk_fields = kwargs.get('fk_fields', True)
         autofields = kwargs.get('autofields', True)
-        return cls(skip, only, fk_fields, autofields)
+        return cls(skip, only, fk_fields, autofields, False)
 
     def filter(self, fields):
         """Applies this filter to the respective fields."""
@@ -47,7 +49,7 @@ class FieldsFilter(NamedTuple):
                 continue
             elif not contains(self.only, key, attribute, default=True):
                 continue
-            elif isinstance(field, PasswordField):
+            elif not self.passwords and isinstance(field, PasswordField):
                 continue
             elif not self.fk_fields and isinstance(field, ForeignKeyField):
                 continue
