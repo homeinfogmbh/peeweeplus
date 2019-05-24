@@ -5,7 +5,7 @@ from ipaddress import IPv4Address
 from argon2 import PasswordHasher
 from peewee import CharField, FixedCharField, ForeignKeyField, BigIntegerField
 
-from peeweeplus.introspection import field_type
+from peeweeplus.introspection import FieldType
 from peeweeplus.passwd import Argon2Hash, Argon2FieldAccessor
 
 
@@ -96,7 +96,7 @@ class Argon2Field(PasswordField):   # pylint: disable=R0901
     @property
     def actual_size(self):  # pylint: disable=R0201
         """Returns the actual field size."""
-        return field_type(self).size
+        return FieldType.from_field(self).size
 
     @property
     def size_changed(self):
