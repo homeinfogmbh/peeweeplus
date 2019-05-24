@@ -13,6 +13,13 @@ FIELD_TYPE_QUERY = (
     "TABLE_SCHEMA = %s AND TABLE_NAME = %s AND COLUMN_NAME = %s")
 
 
+class FieldType(NamedTuple):
+    """Represents the type of a fields."""
+
+    type: str
+    size: int
+
+
 def field_type(field):
     """Returns the field type."""
 
@@ -27,10 +34,3 @@ def field_type(field):
     type_, size = match.groups()
     size = int(size) if size else None
     return FieldType(type_, size)
-
-
-class FieldType(NamedTuple):
-    """Represents the type of a fields."""
-
-    type: str
-    size: int
