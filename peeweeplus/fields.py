@@ -5,7 +5,7 @@ from ipaddress import IPv4Address
 from argon2 import PasswordHasher
 from peewee import CharField, FixedCharField, ForeignKeyField, BigIntegerField
 
-from peeweeplus.functions import field_type
+from peeweeplus.introspection import field_type
 from peeweeplus.passwd import Argon2Hash, Argon2FieldAccessor
 
 

@@ -1,7 +1,7 @@
-"""Functions an hacks."""
+"""Database introspection."""
 
-from collections import namedtuple
 from re import compile  # pylint: disable=W0622
+from typing import NamedTuple
 
 
 __all__ = ['field_type']
@@ -11,7 +11,6 @@ FIELD_TYPE = compile('^([a-z]+)\\((\\d*)\\)$')
 FIELD_TYPE_QUERY = (
     "SELECT COLUMN_TYPE FROM information_schema.COLUMNS WHERE "
     "TABLE_SCHEMA = %s AND TABLE_NAME = %s AND COLUMN_NAME = %s")
-FieldType = namedtuple('FieldType', ('type', 'size'))
 
 
 def field_type(field):
@@ -28,3 +27,10 @@ def field_type(field):
     type_, size = match.groups()
     size = int(size) if size else None
     return FieldType(type_, size)
+
+
+class FieldType(NamedTuple):
+    """Represents the type of a fields."""
+
+    type: str
+    size: int
