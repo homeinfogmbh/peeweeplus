@@ -5,6 +5,7 @@ from ipaddress import IPv4Address
 from argon2 import PasswordHasher
 from peewee import CharField, FixedCharField, ForeignKeyField, BigIntegerField
 
+from peeweeplus.converters import parse_float
 from peeweeplus.introspection import FieldType
 from peeweeplus.passwd import Argon2Hash, Argon2FieldAccessor
 
@@ -14,7 +15,10 @@ __all__ = [
     'CascadingFKField',
     'PasswordField',
     'Argon2Field',
-    'IPv4AddressField']
+    'IPv4AddressField',
+    'BooleanCharField',
+    'IntegerCharField',
+    'DecimalCharField']
 
 
 class EnumField(CharField):
@@ -120,3 +124,78 @@ class IPv4AddressField(BigIntegerField):
             return None
 
         return IPv4Address(value)
+
+
+class BooleanCharField(CharField):
+    """Stores boolean values as text."""
+
+    def __init__(self, max_length, true='J', false='N', **kwargs):
+        """Invokes super init and stores true and false values."""
+        super().__init__(max_length, **kwargs)
+        self.true = true
+        self.false = false
+
+    def db_value(self, value):
+        """Returns the database value."""
+        if value is None:
+            if self.null:
+                return None
+
+            return ''
+
+        return self.true if value else self.false
+
+    def py_value(self, value):
+        """Returns the python value."""
+        if not value:
+            return None
+
+        if value == self.true:
+            return True
+
+        if value == self.false:
+            return False
+
+        raise ValueError(f'Invalid value for BooleanTextField: "{value}".')
+
+
+class IntegerCharField(CharField):
+    """Integers stored as strings."""
+
+    def db_value(self, value):
+        """Returns a string value for the database."""
+        if value is None:
+            if self.null:
+                return None
+
+            return ''
+
+        return str(value)
+
+    def py_value(self, value):  # pylint: disable=R0201
+        """Returns the stored string as integer."""
+        if not value:
+            return None
+
+        return int(value)
+
+
+class DecimalCharField(CharField):
+    """Decimal values stored as strings."""
+
+    def db_value(self, value):
+        """Converts the value to a string using the first separator."""
+        if value is None:
+            if self.null:
+                return None
+
+            return ''
+
+        return str(value)
+
+    def py_value(self, value):  # pylint: disable=R0201
+        """Returns a float from the database string."""
+        if not value:
+            return None
+
+        return parse_float(value)

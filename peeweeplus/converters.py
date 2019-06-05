@@ -3,7 +3,13 @@
 from timelib import strpdatetime
 
 
-__all__ = ['dec2dom', 'dec2dict', 'dec2orm', 'date2orm', 'datetime2orm']
+__all__ = [
+    'dec2dom',
+    'dec2dict',
+    'dec2orm',
+    'date2orm',
+    'datetime2orm',
+    'parse_float']
 
 
 def dec2dom(value):
@@ -46,3 +52,29 @@ def datetime2orm(value):
         return None
 
     return strpdatetime(value.isoformat())
+
+
+def parse_float(string):
+    """Parses a float from a comma or dot (or both) containing string."""
+
+    if ',' in string and '.' in string:
+        if string.index(',') > string.index('.'):
+            string = string.replace('.', '')
+            string = string.replace(',', '.')
+        else:
+            string = string.replace(',', '')
+
+        return float(string)
+
+    if ',' in string:
+        if sum(char == ',' for char in string) > 1:
+            string = string.replace(',', '')
+        else:
+            string = string.replace(',', '.')
+
+        return float(string)
+
+    if sum(char == '.' for char in string) > 1:
+        string = string.replace('.', '')
+
+    return float(string)
