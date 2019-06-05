@@ -3,16 +3,15 @@
 from ipaddress import IPv4Address
 
 from argon2 import PasswordHasher
-from peewee import CharField, FixedCharField, ForeignKeyField, BigIntegerField
+from peewee import BigIntegerField, CharField, FixedCharField
 
 from peeweeplus.converters import parse_float
 from peeweeplus.introspection import FieldType
-from peeweeplus.passwd import Argon2Hash, Argon2FieldAccessor
+from peeweeplus.passwd import Argon2FieldAccessor, Argon2Hash
 
 
 __all__ = [
     'EnumField',
-    'CascadingFKField',
     'PasswordField',
     'Argon2Field',
     'IPv4AddressField',
@@ -55,16 +54,6 @@ class EnumField(CharField):
             return None
 
         return self.enum(value)
-
-
-class CascadingFKField(ForeignKeyField):    # pylint: disable=R0903
-    """A ForeignKeyField with default cascading."""
-
-    def __init__(self, *args, on_delete='CASCADE', on_update='CASCADE',
-                 **kwargs):     # pylint: disable=W0235
-        """Delegates to ForeignKeyField.__init__."""
-        super().__init__(
-            *args, on_delete=on_delete, on_update=on_update, **kwargs)
 
 
 class PasswordField(FixedCharField):    # pylint: disable=R0903
