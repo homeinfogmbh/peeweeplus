@@ -1,5 +1,6 @@
 """Additional field definitions."""
 
+from datetime import datetime
 from ipaddress import IPv4Address
 
 from argon2 import PasswordHasher
@@ -17,7 +18,8 @@ __all__ = [
     'IPv4AddressField',
     'BooleanCharField',
     'IntegerCharField',
-    'DecimalCharField']
+    'DecimalCharField',
+    'DateTimeCharField']
 
 
 class EnumField(CharField):
@@ -188,3 +190,29 @@ class DecimalCharField(CharField):
             return None
 
         return parse_float(value)
+
+
+class DateTimeCharField(CharField):
+    """A CharField that stores datetime values."""
+
+    def __init__(self, *args, format='%d.%m.%Y', **kwargs):
+        """Invokes super init and sets the format."""
+        super().__init__(*args, **kwargs)
+        self.format = format
+
+    def db_value(self, value):
+        """Returns a string for the database."""
+        if value is None:
+            if self.null:
+                return None
+
+            return ''
+
+        return value.strftime(self.format)
+
+    def py_value(self, value):
+        """Returns a datetime object for python."""
+        if not value:
+            return None
+
+        return datetime.strptime(value, self.format)
