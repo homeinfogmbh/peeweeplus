@@ -195,9 +195,9 @@ class DecimalCharField(CharField):
 class DateTimeCharField(CharField):
     """A CharField that stores datetime values."""
 
-    def __init__(self, *args, format='%d.%m.%Y', **kwargs):
+    def __init__(self, max_length, format, *args, **kwargs):
         """Invokes super init and sets the format."""
-        super().__init__(*args, **kwargs)
+        super().__init__(max_length, *args, **kwargs)
         self.format = format
 
     def db_value(self, value):
