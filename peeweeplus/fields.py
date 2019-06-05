@@ -120,9 +120,9 @@ class IPv4AddressField(BigIntegerField):
 class BooleanCharField(CharField):
     """Stores boolean values as text."""
 
-    def __init__(self, max_length, true='J', false='N', **kwargs):
+    def __init__(self, *args, true='J', false='N', **kwargs):
         """Invokes super init and stores true and false values."""
-        super().__init__(max_length, **kwargs)
+        super().__init__(*args, **kwargs)
         self.true = true
         self.false = false
 
@@ -195,9 +195,9 @@ class DecimalCharField(CharField):
 class DateTimeCharField(CharField):
     """A CharField that stores datetime values."""
 
-    def __init__(self, max_length, format, *args, **kwargs):
+    def __init__(self, *args, format='%c', **kwargs):
         """Invokes super init and sets the format."""
-        super().__init__(max_length, *args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.format = format
 
     def db_value(self, value):
