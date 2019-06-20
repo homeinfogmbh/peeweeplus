@@ -19,7 +19,8 @@ __all__ = [
     'BooleanCharField',
     'IntegerCharField',
     'DecimalCharField',
-    'DateTimeCharField']
+    'DateTimeCharField',
+    'DateCharField']
 
 
 class EnumField(CharField):
@@ -129,10 +130,7 @@ class BooleanCharField(CharField):
     def db_value(self, value):
         """Returns the database value."""
         if value is None:
-            if self.null:
-                return None
-
-            return ''
+            return None if self.null else ''
 
         return self.true if value else self.false
 
@@ -156,19 +154,13 @@ class IntegerCharField(CharField):
     def db_value(self, value):
         """Returns a string value for the database."""
         if value is None:
-            if self.null:
-                return None
-
-            return ''
+            return None if self.null else ''
 
         return str(value)
 
     def py_value(self, value):  # pylint: disable=R0201
         """Returns the stored string as integer."""
-        if not value:
-            return None
-
-        return int(value)
+        return int(value) if value else None
 
 
 class DecimalCharField(CharField):
@@ -177,25 +169,19 @@ class DecimalCharField(CharField):
     def db_value(self, value):
         """Converts the value to a string using the first separator."""
         if value is None:
-            if self.null:
-                return None
-
-            return ''
+            return None if self.null else ''
 
         return str(value)
 
     def py_value(self, value):  # pylint: disable=R0201
         """Returns a float from the database string."""
-        if not value:
-            return None
-
-        return parse_float(value)
+        return parse_float(value) if value else None
 
 
 class DateTimeCharField(CharField):
     """A CharField that stores datetime values."""
 
-    def __init__(self, *args, format='%c', **kwargs):
+    def __init__(self, *args, format='%c', **kwargs):   # pylint: disable=W0622
         """Invokes super init and sets the format."""
         super().__init__(*args, **kwargs)
         self.format = format
@@ -203,16 +189,21 @@ class DateTimeCharField(CharField):
     def db_value(self, value):
         """Returns a string for the database."""
         if value is None:
-            if self.null:
-                return None
-
-            return ''
+            return None if self.null else ''
 
         return value.strftime(self.format)
+
+    def py_value(self, value):
+        """Returns a datetime object for python."""
+        return datetime.strptime(value, self.format) if value else None
+
+
+class DateCharField(DateTimeCharField):
+    """A CharField that stores date values."""
 
     def py_value(self, value):
         """Returns a datetime object for python."""
         if not value:
             return None
 
-        return datetime.strptime(value, self.format)
+        return datetime.strptime(value, self.format).date()

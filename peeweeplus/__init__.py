@@ -15,6 +15,7 @@ from peeweeplus.exceptions import NonUniqueValue
 from peeweeplus.exceptions import PasswordTooShortError
 from peeweeplus.fields import Argon2Field
 from peeweeplus.fields import BooleanCharField
+from peeweeplus.fields import DateCharField
 from peeweeplus.fields import DateTimeCharField
 from peeweeplus.fields import DecimalCharField
 from peeweeplus.fields import EnumField
@@ -44,6 +45,7 @@ __all__ = [
     'JSONModel',
     'Argon2Field',
     'BooleanCharField',
+    'DateCharField',
     'DateTimeCharField',
     'DecimalCharField',
     'EnumField',
