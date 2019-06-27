@@ -46,13 +46,15 @@ class EnumField(CharField):
 
     def db_value(self, value):
         """Coerce enumeration value for database."""
-        if value is None:
-            return None
+        if value is not None:
+            value = value.value
 
-        return value.value
+        return super().db_value(value)
 
     def python_value(self, value):
         """Returns the respective enumeration."""
+        value = super().python_value(value)
+
         if value is None:
             return None
 
