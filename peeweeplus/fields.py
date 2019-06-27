@@ -134,7 +134,7 @@ class BooleanCharField(CharField):
 
         return self.true if value else self.false
 
-    def py_value(self, value):
+    def python_value(self, value):
         """Returns the python value."""
         if not value:
             return None
@@ -158,7 +158,7 @@ class IntegerCharField(CharField):
 
         return str(value)
 
-    def py_value(self, value):  # pylint: disable=R0201
+    def python_value(self, value):  # pylint: disable=R0201
         """Returns the stored string as integer."""
         return int(value) if value else None
 
@@ -173,7 +173,7 @@ class DecimalCharField(CharField):
 
         return str(value)
 
-    def py_value(self, value):  # pylint: disable=R0201
+    def python_value(self, value):  # pylint: disable=R0201
         """Returns a float from the database string."""
         return parse_float(value) if value else None
 
@@ -193,7 +193,7 @@ class DateTimeCharField(CharField):
 
         return value.strftime(self.format)
 
-    def py_value(self, value):
+    def python_value(self, value):
         """Returns a datetime object for python."""
         return datetime.strptime(value, self.format) if value else None
 
@@ -201,7 +201,7 @@ class DateTimeCharField(CharField):
 class DateCharField(DateTimeCharField):
     """A CharField that stores date values."""
 
-    def py_value(self, value):
+    def python_value(self, value):
         """Returns a datetime object for python."""
         if not value:
             return None
