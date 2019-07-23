@@ -118,7 +118,25 @@ class IPv4AddressField(BigIntegerField):
         return IPv4Address(value)
 
 
-class BooleanCharField(CharField):
+class EmptyableCharField(CharField):
+    """A Char field that might be empty."""
+
+    def __init__(self, *args, null=False, default=None, **kwargs):
+        """Updates the default value."""
+        if default is None and not null:
+            default = ''
+
+        super().__init__(*args, null=null, default=default, **kwargs)
+
+    def db_value(self, value):
+        """Converts the value to a string using the first separator."""
+        if value is None:
+            return None if self.null else ''
+
+        return str(value)
+
+
+class BooleanCharField(EmptyableCharField):
     """Stores boolean values as text."""
 
     def __init__(self, *args, true='J', false='N', **kwargs):
@@ -148,37 +166,23 @@ class BooleanCharField(CharField):
         raise ValueError(f'Invalid value for BooleanTextField: "{value}".')
 
 
-class IntegerCharField(CharField):
+class IntegerCharField(EmptyableCharField):
     """Integers stored as strings."""
-
-    def db_value(self, value):
-        """Returns a string value for the database."""
-        if value is None:
-            return None if self.null else ''
-
-        return str(value)
 
     def python_value(self, value):  # pylint: disable=R0201
         """Returns the stored string as integer."""
         return int(value) if value else None
 
 
-class DecimalCharField(CharField):
+class DecimalCharField(EmptyableCharField):
     """Decimal values stored as strings."""
-
-    def db_value(self, value):
-        """Converts the value to a string using the first separator."""
-        if value is None:
-            return None if self.null else ''
-
-        return str(value)
 
     def python_value(self, value):  # pylint: disable=R0201
         """Returns a float from the database string."""
         return parse_float(value) if value else None
 
 
-class DateTimeCharField(CharField):
+class DateTimeCharField(EmptyableCharField):
     """A CharField that stores datetime values."""
 
     def __init__(self, *args, format='%c', **kwargs):   # pylint: disable=W0622
@@ -188,7 +192,7 @@ class DateTimeCharField(CharField):
 
     def db_value(self, value):
         """Returns a string for the database."""
-        if value is None:
+        if value is not None:
             return None if self.null else ''
 
         return value.strftime(self.format)
