@@ -35,11 +35,11 @@ def _check_cascade(key, attribute, cascade):
     if not cascade:
         return (False, None)
 
+    if isinstance(cascade, bool):
+        return (True, True)
+
     if isinstance(cascade, int):
         return (True, cascade - 1) if cascade > 0 else (True, cascade + 1)
-
-    if isinstance(cascade, bool):
-        return (True, cascade)
 
     if isinstance(cascade, dict):
         with suppress(KeyError):
