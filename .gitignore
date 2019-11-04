@@ -8,3 +8,5 @@ dist
 MANIFEST
 MANIFEST.in
 .buildconfig
+*.anjuta
+.anjuta*
