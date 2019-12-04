@@ -22,6 +22,7 @@ from peeweeplus.fields import EnumField
 from peeweeplus.fields import IntegerCharField
 from peeweeplus.fields import IPv4AddressField
 from peeweeplus.fields import PasswordField
+from peeweeplus.fields import clean_html_field
 from peeweeplus.json import deserialize, serialize, JSONMixin, JSONModel
 
 
@@ -51,4 +52,6 @@ __all__ = [
     'EnumField',
     'IntegerCharField',
     'IPv4AddressField',
-    'PasswordField']
+    'PasswordField',
+    'clean_html_field'
+]
