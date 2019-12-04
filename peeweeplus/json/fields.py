@@ -81,15 +81,20 @@ class FieldConverter(dict):
 
             return None
 
-        for parent in type(field).__mro__:
+        function = self.get_function(type(field))
+
+        try:
+            return function(value, field)
+        except TypeError:
+            return function(value)
+
+    @lru_cache()
+    def get_function(self, field_class):
+        """Returns the appropriate function for the given field class."""
+        for parent in field_class.__mro__:
             try:
-                function = self[parent]
+                return self[parent]
             except KeyError:
                 continue
 
-            try:
-                return function(value, field)
-            except TypeError:
-                return function(value)
-
-        return value
+        return lambda value: value
