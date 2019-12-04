@@ -5,11 +5,7 @@ from ipaddress import IPv4Address
 from lxml.html.clean import clean_html  # pylint: disable=E0611
 
 from argon2 import PasswordHasher
-from peewee import BigIntegerField
-from peewee import CharField
-from peewee import FieldAccessor
-from peewee import FixedCharField
-from peewee import TextField
+from peewee import BigIntegerField, CharField, FieldAccessor, FixedCharField
 
 from peeweeplus.converters import parse_float
 from peeweeplus.exceptions import PasswordTooShortError
@@ -27,8 +23,7 @@ __all__ = [
     'DecimalCharField',
     'DateTimeCharField',
     'DateCharField',
-    'CleanHTMLCharField',
-    'CleanHTMLTextField'
+    'clean_html_field'
 ]
 
 
@@ -251,27 +246,19 @@ class _CleanHTMLFieldAccessor(FieldAccessor):   # pylint: disable=R0903
         super().__set__(instance, value)
 
 
-class CleanHTMLCharField(CharField):
-    """Stores cleaned HTML text."""
+def clean_html_field(typ, *args, cleanfunc=clean_html, **kwargs):
+    """Generates a clean HTML field as a subclass of the given type."""
 
-    accessor_class = _CleanHTMLFieldAccessor
+    class CleanHTMLField(typ):  # pylint: disable=R0903
+        """Stores cleaned HTML text."""
 
-    def __init__(self, *args, cleanfunc=clean_html, **kwargs):
-        """Initializes the char field, defaulting
-        max_length to the respective hash length.
-        """
-        super().__init__(*args, **kwargs)
-        self.cleanfunc = cleanfunc
+        accessor_class = _CleanHTMLFieldAccessor
 
+        def __init__(self, cleanfunc, *args, **kwargs):
+            """Initializes the field with the
+            given HTML cleaning function.
+            """
+            super().__init__(*args, **kwargs)
+            self.cleanfunc = cleanfunc
 
-class CleanHTMLTextField(TextField):
-    """Stores cleaned HTML text."""
-
-    accessor_class = _CleanHTMLFieldAccessor
-
-    def __init__(self, *args, cleanfunc=clean_html, **kwargs):
-        """Initializes the char field, defaulting
-        max_length to the respective hash length.
-        """
-        super().__init__(*args, **kwargs)
-        self.cleanfunc = cleanfunc
+    return CleanHTMLField(cleanfunc, *args, **kwargs)
