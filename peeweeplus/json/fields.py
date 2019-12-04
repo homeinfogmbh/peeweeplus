@@ -98,7 +98,7 @@ class FieldConverter(dict):
 
             try:
                 function, wants_field = entry
-            except ValueError:
+            except TypeError:
                 return (entry, False)
 
             return (function, wants_field)
