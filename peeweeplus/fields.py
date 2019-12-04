@@ -259,13 +259,6 @@ def clean_html_field(typ, *args, allow_tags=ALLOWED_TAGS, **kwargs):
         """Stores cleaned HTML text."""
 
         accessor_class = _CleanHTMLFieldAccessor
-
-        def __init__(self, *args, **kwargs):
-            """Initializes the field with the
-            given HTML cleaning function.
-            """
-            super().__init__(*args, **kwargs)
-            self.cleaner = Cleaner(
-                allow_tags=allow_tags, remove_unknown_tags=False)
+        cleaner = Cleaner(allow_tags=allow_tags, remove_unknown_tags=False)
 
     return CleanHTMLField(*args, **kwargs)
