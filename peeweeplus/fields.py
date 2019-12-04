@@ -244,7 +244,7 @@ class _CleanHTMLFieldAccessor(FieldAccessor):   # pylint: disable=R0903
     def __set__(self, instance, value):
         """Sets the password hash."""
         if value is not None:
-            value = self.field.cleaner(value)
+            value = self.field.cleaner.clean_html(value)
 
         super().__set__(instance, value)
 
