@@ -21,7 +21,7 @@ from peeweeplus.exceptions import MissingKeyError
 from peeweeplus.exceptions import NonUniqueValue
 from peeweeplus.exceptions import NullError
 from peeweeplus.fields import EnumField, IPv4AddressField
-from peeweeplus.json.fields import json_fields, FieldConverter
+from peeweeplus.json.fields import json_fields, FieldConverter, FieldConversion
 from peeweeplus.json.filter import FieldsFilter
 from peeweeplus.json.parsers import parse_blob
 from peeweeplus.json.parsers import parse_bool
@@ -35,18 +35,19 @@ __all__ = ['deserialize', 'patch']
 
 
 CONVERTER = FieldConverter(
-    (ForeignKeyField, int),
-    (BooleanField, parse_bool),
-    (UUIDField, UUID),
-    (IPv4AddressField, IPv4Address),
-    (IntegerField, int),
-    (FloatField, float),
-    (DecimalField, float),
-    (DateTimeField, parse_datetime),
-    (DateField, parse_date),
-    (TimeField, parse_time),
-    (BlobField, parse_blob),
-    (EnumField, parse_enum, True))
+    FieldConversion(ForeignKeyField, int),
+    FieldConversion(BooleanField, parse_bool),
+    FieldConversion(UUIDField, UUID),
+    FieldConversion(IPv4AddressField, IPv4Address),
+    FieldConversion(IntegerField, int),
+    FieldConversion(FloatField, float),
+    FieldConversion(DecimalField, float),
+    FieldConversion(DateTimeField, parse_datetime),
+    FieldConversion(DateField, parse_date),
+    FieldConversion(TimeField, parse_time),
+    FieldConversion(BlobField, parse_blob),
+    FieldConversion(EnumField, parse_enum, wants_field=True)
+)
 
 
 def get_orm_value(model, key, attribute, field, json_value):

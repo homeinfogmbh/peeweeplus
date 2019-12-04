@@ -11,7 +11,7 @@ from strflib import camel_case
 from peeweeplus.exceptions import NullError
 
 
-__all__ = ['contains', 'json_fields', 'FieldConverter']
+__all__ = ['contains', 'json_fields', 'FieldConversion', 'FieldConverter']
 
 
 class JSONField(NamedTuple):
@@ -70,6 +70,27 @@ def json_fields(model):
         yield JSONField(key, attribute, field)
 
 
+class FieldConversion:
+    """Maps fields to conversion functions."""
+
+    def __init__(self, subclasses, function, wants_field=False):
+        """Sets the respective subclass, type and wants_field flag."""
+        self.subclasses = subclasses
+        self.function = function
+        self.wants_field = wants_field
+
+    def match(self, field):
+        """Matches the field."""
+        return isinstance(field, self.subclasses)
+
+    def convert(self, value, field):
+        """Converts the given field without type matching."""
+        if self.wants_field:
+            return self.function(value, field)
+
+        return self.function(value)
+
+
 class FieldConverter(tuple):
     """Maps conversion functions to field classes in preserved order."""
 
@@ -77,7 +98,6 @@ class FieldConverter(tuple):
         """Creates a new tuple."""
         return super().__new__(cls, items)
 
-    @lru_cache()
     def __call__(self, field, value, check_null=False):
         """Converts the respective value to the field."""
         if value is None:
@@ -86,17 +106,8 @@ class FieldConverter(tuple):
 
             return None
 
-        for item in self:
-            try:
-                classes, function, wants_field = item
-            except ValueError:
-                classes, function = item
-                wants_field = False
-
-            if isinstance(field, classes):
-                if wants_field:
-                    return function(value, field)
-
-                return function(value)
+        for conversion in self:
+            if conversion.match(field):
+                return conversion.convert(value, field)
 
         return value
