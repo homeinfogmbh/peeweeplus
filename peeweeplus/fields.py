@@ -262,6 +262,7 @@ def clean_html_field(typ, *args, allow_tags=ALLOWED_TAGS, **kwargs):
             given HTML cleaning function.
             """
             super().__init__(*args, **kwargs)
-            self.cleaner = Cleaner(allow_tags=allow_tags)
+            self.cleaner = Cleaner(
+                allow_tags=allow_tags, remove_unknown_tags=False)
 
     return CleanHTMLField(*args, **kwargs)
