@@ -27,7 +27,10 @@ __all__ = [
 ]
 
 
-ALLOWED_TAGS = ('strong', 'em', 'p', 'ul', 'li', 'br', 'span')
+ALLOWED_TAGS = (
+    'br', 'div', 'em', 'font', 'li', 'ol', 'p', 'span', 'strong', 'table',
+    'tbody', 'td', 'th', 'tr', 'ul'
+)
 
 
 class EnumField(CharField):
