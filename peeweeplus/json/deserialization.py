@@ -35,18 +35,18 @@ __all__ = ['deserialize', 'patch']
 
 
 CONVERTER = FieldConverter({
-    ForeignKeyField: int,
-    BooleanField: parse_bool,
-    UUIDField: UUID,
-    IPv4AddressField: IPv4Address,
-    IntegerField: int,
-    FloatField: float,
-    DecimalField: float,
-    DateTimeField: parse_datetime,
-    DateField: parse_date,
-    TimeField: parse_time,
     BlobField: parse_blob,
-    EnumField: parse_enum
+    BooleanField: parse_bool,
+    DateField: parse_date,
+    DateTimeField: parse_datetime,
+    DecimalField: float,
+    EnumField: parse_enum,
+    FloatField: float,
+    ForeignKeyField: int,
+    IntegerField: int,
+    IPv4AddressField: IPv4Address,
+    TimeField: parse_time,
+    UUIDField: UUID
 })
 
 

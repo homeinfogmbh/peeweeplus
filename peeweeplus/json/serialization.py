@@ -23,17 +23,17 @@ __all__ = ['serialize']
 
 
 CONVERTER = FieldConverter({
-    ForeignKeyField: get_fk_value,
-    DecimalField: float,
-    DateTimeField: lambda value: value.isoformat(),
-    DateField: lambda value: value.isoformat(),
-    TimeField: lambda value: value.isoformat(),
     BlobField: b64encode,
-    EnumField: lambda value: value.value,
-    UUIDField: lambda value: value.hex,
-    IPv4AddressField: str,
     CharField: sanitize,
-    TextField: sanitize
+    DecimalField: float,
+    DateField: lambda value: value.isoformat(),
+    DateTimeField: lambda value: value.isoformat(),
+    EnumField: lambda value: value.value,
+    ForeignKeyField: get_fk_value,
+    IPv4AddressField: str,
+    TextField: sanitize,
+    TimeField: lambda value: value.isoformat(),
+    UUIDField: lambda value: value.hex
 })
 
 
