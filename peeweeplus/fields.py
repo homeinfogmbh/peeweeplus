@@ -2,7 +2,7 @@
 
 from datetime import datetime
 from ipaddress import IPv4Address
-from lxml.html.clean import clean_html  # pylint: disable=E0611
+from lxml.html.clean import Cleaner     # pylint: disable=E0611
 
 from argon2 import PasswordHasher
 from peewee import BigIntegerField, CharField, FieldAccessor, FixedCharField
@@ -25,6 +25,9 @@ __all__ = [
     'DateCharField',
     'clean_html_field'
 ]
+
+
+ALLOWED_TAGS = ('strong', 'em', 'p', 'ul', 'li', 'br', 'span')
 
 
 class EnumField(CharField):
@@ -241,12 +244,12 @@ class _CleanHTMLFieldAccessor(FieldAccessor):   # pylint: disable=R0903
     def __set__(self, instance, value):
         """Sets the password hash."""
         if value is not None:
-            value = self.field.cleanfunc(value)
+            value = self.field.cleaner(value)
 
         super().__set__(instance, value)
 
 
-def clean_html_field(typ, *args, cleanfunc=clean_html, **kwargs):
+def clean_html_field(typ, *args, allow_tags=ALLOWED_TAGS, **kwargs):
     """Generates a clean HTML field as a subclass of the given type."""
 
     class CleanHTMLField(typ):  # pylint: disable=R0903
@@ -254,11 +257,11 @@ def clean_html_field(typ, *args, cleanfunc=clean_html, **kwargs):
 
         accessor_class = _CleanHTMLFieldAccessor
 
-        def __init__(self, cleanfunc, *args, **kwargs):
+        def __init__(self, *args, **kwargs):
             """Initializes the field with the
             given HTML cleaning function.
             """
             super().__init__(*args, **kwargs)
-            self.cleanfunc = cleanfunc
+            self.cleaner = Cleaner(allow_tags=allow_tags)
 
-    return CleanHTMLField(cleanfunc, *args, **kwargs)
+    return CleanHTMLField(*args, **kwargs)
