@@ -22,6 +22,15 @@ class JSONField(NamedTuple):
     field: Field
 
 
+def wants_field(function):
+    """Determines whether the respective function is considered a method."""
+
+    try:
+        return function.__code__.co_varnames[1] == 'field'
+    except IndexError:
+        return False
+
+
 def contains(iterable, key, attribute, *, default=False):
     """Determines whether the field is contained within the iterable."""
 
@@ -83,10 +92,10 @@ class FieldConverter(dict):
 
         function = self.get_function(type(field))
 
-        try:
+        if wants_field(function):
             return function(value, field)
-        except TypeError:
-            return function(value)
+
+        return function(value)
 
     def get_function(self, field_class):
         """Returns the appropriate function for the given field class."""
