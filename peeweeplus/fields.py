@@ -29,7 +29,7 @@ __all__ = [
 
 ALLOWED_TAGS = (
     'br', 'div', 'em', 'font', 'li', 'ol', 'p', 'span', 'strong', 'table',
-    'tbody', 'td', 'th', 'tr', 'ul'
+    'tbody', 'td', 'th', 'thead', 'tr', 'ul'
 )
 
 
