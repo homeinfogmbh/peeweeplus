@@ -24,14 +24,14 @@ __all__ = ['serialize']
 
 CONVERTER = FieldConverter({
     BlobField: b64encode,
-    CharField: sanitize,
+    #CharField: sanitize,
     DecimalField: float,
     DateField: lambda value: value.isoformat(),
     DateTimeField: lambda value: value.isoformat(),
     EnumField: lambda value: value.value,
     ForeignKeyField: get_fk_value,
     IPv4AddressField: str,
-    TextField: sanitize,
+    #TextField: sanitize,
     TimeField: lambda value: value.isoformat(),
     UUIDField: lambda value: value.hex
 })
