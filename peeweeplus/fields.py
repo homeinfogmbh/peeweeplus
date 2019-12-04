@@ -5,7 +5,11 @@ from ipaddress import IPv4Address
 from lxml.html.clean import clean_html  # pylint: disable=E0611
 
 from argon2 import PasswordHasher
-from peewee import BigIntegerField, CharField, FieldAccessor, FixedCharField
+from peewee import BigIntegerField
+from peewee import CharField
+from peewee import FieldAccessor
+from peewee import FixedCharField
+from peewee import TextField
 
 from peeweeplus.converters import parse_float
 from peeweeplus.exceptions import PasswordTooShortError
@@ -23,7 +27,8 @@ __all__ = [
     'DecimalCharField',
     'DateTimeCharField',
     'DateCharField',
-    'CleanHTMLField'
+    'CleanHTMLCharField',
+    'CleanHTMLTextField'
 ]
 
 
@@ -246,14 +251,27 @@ class _CleanHTMLFieldAccessor(FieldAccessor):   # pylint: disable=R0903
         super().__set__(instance, value)
 
 
-class CleanHTMLField(CharField):
+class CleanHTMLCharField(CharField):
     """Stores cleaned HTML text."""
 
     accessor_class = _CleanHTMLFieldAccessor
 
-    def __init__(self, cleanfunc=clean_html, **kwargs):
+    def __init__(self, *args, cleanfunc=clean_html, **kwargs):
         """Initializes the char field, defaulting
         max_length to the respective hash length.
         """
-        super().__init__(**kwargs)
+        super().__init__(*args, **kwargs)
+        self.cleanfunc = cleanfunc
+
+
+class CleanHTMLTextField(TextField):
+    """Stores cleaned HTML text."""
+
+    accessor_class = _CleanHTMLFieldAccessor
+
+    def __init__(self, *args, cleanfunc=clean_html, **kwargs):
+        """Initializes the char field, defaulting
+        max_length to the respective hash length.
+        """
+        super().__init__(*args, **kwargs)
         self.cleanfunc = cleanfunc
