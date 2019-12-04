@@ -15,7 +15,8 @@ __all__ = [
     'parse_time',
     'parse_blob',
     'parse_enum',
-    'get_fk_value']
+    'get_fk_value'
+]
 
 
 def parse_bool(value):

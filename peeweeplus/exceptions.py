@@ -8,7 +8,8 @@ __all__ = [
     'MissingKeyError',
     'InvalidKeys',
     'NonUniqueValue',
-    'PasswordTooShortError']
+    'PasswordTooShortError'
+]
 
 
 class NullError(TypeError):

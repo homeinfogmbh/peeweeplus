@@ -2,13 +2,15 @@
 
 from datetime import datetime
 from ipaddress import IPv4Address
+from lxml.html.clean import clean_html  # pylint: disable=E0611
 
 from argon2 import PasswordHasher
-from peewee import BigIntegerField, CharField, FixedCharField
+from peewee import BigIntegerField, CharField, FieldAccessor, FixedCharField
 
 from peeweeplus.converters import parse_float
+from peeweeplus.exceptions import PasswordTooShortError
 from peeweeplus.introspection import FieldType
-from peeweeplus.passwd import Argon2FieldAccessor, Argon2Hash
+from peeweeplus.passwd import Argon2Hash
 
 
 __all__ = [
@@ -20,7 +22,9 @@ __all__ = [
     'IntegerCharField',
     'DecimalCharField',
     'DateTimeCharField',
-    'DateCharField']
+    'DateCharField',
+    'CleanHTMLField'
+]
 
 
 class EnumField(CharField):
@@ -65,10 +69,28 @@ class PasswordField(FixedCharField):    # pylint: disable=R0903
     """
 
 
+class _Argon2FieldAccessor(FieldAccessor):  # pylint: disable=R0903
+    """Accessor class for Argon2Field."""
+
+    def __set__(self, instance, value):
+        """Sets the password hash."""
+        if value is not None:
+            if not isinstance(value, Argon2Hash):
+                length = len(value)
+
+                # If value is a plain text password, hash it.
+                if length < self.field.min_pw_len:
+                    raise PasswordTooShortError(length, self.field.min_pw_len)
+
+                value = Argon2Hash.from_plaintext(value, self.field.hasher)
+
+        super().__set__(instance, value)
+
+
 class Argon2Field(PasswordField):   # pylint: disable=R0901
     """An Argon2 password field."""
 
-    accessor_class = Argon2FieldAccessor
+    accessor_class = _Argon2FieldAccessor
 
     def __init__(self, hasher=PasswordHasher(), min_pw_len=8, **kwargs):
         """Initializes the char field, defaulting
@@ -202,7 +224,7 @@ class DateTimeCharField(EmptyableCharField):
         return datetime.strptime(value, self.format) if value else None
 
 
-class DateCharField(DateTimeCharField):
+class DateCharField(DateTimeCharField):     # pylint: disable=R0901
     """A CharField that stores date values."""
 
     def python_value(self, value):
@@ -211,3 +233,27 @@ class DateCharField(DateTimeCharField):
             return None
 
         return datetime.strptime(value, self.format).date()
+
+
+class _CleanHTMLFieldAccessor(FieldAccessor):   # pylint: disable=R0903
+    """Accesses clean HTML fields."""
+
+    def __set__(self, instance, value):
+        """Sets the password hash."""
+        if value is not None:
+            value = self.field.cleanfunc(value)
+
+        super().__set__(instance, value)
+
+
+class CleanHTMLField(CharField):
+    """Stores cleaned HTML text."""
+
+    accessor_class = _CleanHTMLFieldAccessor
+
+    def __init__(self, cleanfunc=clean_html, **kwargs):
+        """Initializes the char field, defaulting
+        max_length to the respective hash length.
+        """
+        super().__init__(**kwargs)
+        self.cleanfunc = cleanfunc

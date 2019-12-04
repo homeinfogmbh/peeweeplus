@@ -9,7 +9,8 @@ __all__ = [
     'dec2orm',
     'date2orm',
     'datetime2orm',
-    'parse_float']
+    'parse_float'
+]
 
 
 def dec2dom(value):
