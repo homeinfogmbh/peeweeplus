@@ -11,7 +11,7 @@ from strflib import camel_case
 from peeweeplus.exceptions import NullError
 
 
-__all__ = ['contains', 'json_fields', 'FieldConversion', 'FieldConverter']
+__all__ = ['contains', 'json_fields', 'FieldConverter']
 
 
 class JSONField(NamedTuple):
@@ -70,33 +70,8 @@ def json_fields(model):
         yield JSONField(key, attribute, field)
 
 
-class FieldConversion:
-    """Maps fields to conversion functions."""
-
-    def __init__(self, subclasses, function, wants_field=False):
-        """Sets the respective subclass, type and wants_field flag."""
-        self.subclasses = subclasses
-        self.function = function
-        self.wants_field = wants_field
-
-    def match(self, field):
-        """Matches the field."""
-        return isinstance(field, self.subclasses)
-
-    def convert(self, value, field):
-        """Converts the given field without type matching."""
-        if self.wants_field:
-            return self.function(value, field)
-
-        return self.function(value)
-
-
-class FieldConverter(tuple):
+class FieldConverter(dict):
     """Maps conversion functions to field classes in preserved order."""
-
-    def __new__(cls, *items):
-        """Creates a new tuple."""
-        return super().__new__(cls, items)
 
     def __call__(self, field, value, check_null=False):
         """Converts the respective value to the field."""
@@ -106,8 +81,15 @@ class FieldConverter(tuple):
 
             return None
 
-        for conversion in self:
-            if conversion.match(field):
-                return conversion.convert(value, field)
+        for parent in type(field).__mro__:
+            try:
+                function = self[parent]
+            except KeyError:
+                continue
+
+            try:
+                return function(value, field)
+            except TypeError:
+                return function(value)
 
         return value

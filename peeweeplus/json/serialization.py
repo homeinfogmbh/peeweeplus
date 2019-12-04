@@ -14,7 +14,7 @@ from peewee import TimeField
 from peewee import UUIDField
 from peeweeplus.fields import EnumField, IPv4AddressField
 from peeweeplus.html import sanitize
-from peeweeplus.json.fields import json_fields, FieldConverter, FieldConversion
+from peeweeplus.json.fields import json_fields, FieldConverter
 from peeweeplus.json.filter import FieldsFilter
 from peeweeplus.json.parsers import get_fk_value
 
@@ -22,18 +22,19 @@ from peeweeplus.json.parsers import get_fk_value
 __all__ = ['serialize']
 
 
-CONVERTER = FieldConverter(
-    FieldConversion((CharField, TextField), sanitize),
-    FieldConversion(ForeignKeyField, get_fk_value),
-    FieldConversion(DecimalField, float),
-    FieldConversion(
-        (DateTimeField, DateField, TimeField),
-        lambda value: value.isoformat()),
-    FieldConversion(BlobField, b64encode),
-    FieldConversion(EnumField, lambda value: value.value),
-    FieldConversion(UUIDField, lambda value: value.hex),
-    FieldConversion(IPv4AddressField, str)
-)
+CONVERTER = FieldConverter({
+    ForeignKeyField: get_fk_value,
+    DecimalField: float,
+    DateTimeField: lambda value: value.isoformat(),
+    DateField: lambda value: value.isoformat(),
+    TimeField: lambda value: value.isoformat(),
+    BlobField: b64encode,
+    EnumField: lambda value: value.value,
+    UUIDField: lambda value: value.hex,
+    IPv4AddressField: str,
+    CharField: sanitize,
+    TextField: sanitize
+})
 
 
 def _check_cascade(key, attribute, cascade):
