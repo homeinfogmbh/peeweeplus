@@ -3,7 +3,7 @@
 from lxml.html.clean import Cleaner     # pylint: disable=E0611
 
 
-__all__ = ['ALLOWED_TAGS', 'sanitize_html']
+__all__ = ['ALLOWED_TAGS', 'sanitize']
 
 
 ALLOWED_TAGS = (
@@ -12,7 +12,7 @@ ALLOWED_TAGS = (
 )
 
 
-def sanitize_html(html, allow_tags=ALLOWED_TAGS):
+def sanitize(html, allow_tags=ALLOWED_TAGS):
     """Sanitizes the respective HTML text."""
 
     cleaner = Cleaner(allow_tags=allow_tags, remove_unknown_tags=False)
