@@ -18,23 +18,23 @@ class Transaction(deque):
         """Delegates to the primary record."""
         return getattr(self.primary, attr)
 
-    def add(self, record, before=False, primary=False):
+    def add(self, record, left=False, primary=False):
         """Adds the respective record."""
         item = (False, record)
 
         if primary:
             self.primary = record
 
-        if before:
+        if left:
             return self.appendleft(item)
 
         return self.append(item)
 
-    def delete(self, record, before=False):
+    def delete(self, record, left=False):
         """Deletes the respective record."""
         item = (True, record)
 
-        if before:
+        if left:
             return self.appendleft(item)
 
         return self.append(item)
