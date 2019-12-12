@@ -39,7 +39,7 @@ class Transaction(deque):
 
         return self.append(item)
 
-    def save(self):
+    def commit(self):
         """Saves the records or sub-transactions."""
         for delete, record in self:
             if delete:
