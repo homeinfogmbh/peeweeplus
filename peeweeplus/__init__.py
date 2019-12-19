@@ -13,6 +13,7 @@ from peeweeplus.exceptions import MissingKeyError
 from peeweeplus.exceptions import InvalidKeys
 from peeweeplus.exceptions import NonUniqueValue
 from peeweeplus.exceptions import PasswordTooShortError
+from peeweeplus.fields import AESTextField
 from peeweeplus.fields import Argon2Field
 from peeweeplus.fields import BooleanCharField
 from peeweeplus.fields import DateCharField
@@ -44,6 +45,7 @@ __all__ = [
     'MySQLDatabase',
     'JSONMixin',
     'JSONModel',
+    'AESTextField',
     'Argon2Field',
     'BooleanCharField',
     'DateCharField',

@@ -27,7 +27,8 @@ __all__ = [
     'IntegerCharField',
     'DecimalCharField',
     'DateTimeCharField',
-    'DateCharField'
+    'DateCharField',
+    'AESTextField'
 ]
 
 
@@ -267,6 +268,7 @@ class _AESTextFieldAccessor(FieldAccessor):  # pylint: disable=R0903
             value = value.decode()
 
         super().__set__(instance, value)
+
 
 class AESTextField(TextField):
     """Stores AES encrypted text."""
