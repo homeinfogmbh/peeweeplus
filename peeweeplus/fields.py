@@ -3,6 +3,7 @@
 from base64 import b64encode, b64decode
 from datetime import datetime
 from ipaddress import IPv4Address
+from json import loads, dumps
 
 from argon2 import PasswordHasher
 from peewee import BigIntegerField
@@ -28,7 +29,8 @@ __all__ = [
     'DecimalCharField',
     'DateTimeCharField',
     'DateCharField',
-    'AESTextField'
+    'AESTextField',
+    'JSONTextField'
 ]
 
 
@@ -284,3 +286,27 @@ class AESTextField(TextField):
             raise ValueError('No key specified.')
 
         self.key = key
+
+
+class JSONTextField(TextField):
+    """Stores JSON as text."""
+
+    def __init__(self, *args, serialize=dumps, deserialize=loads, **kwargs):
+        """Sets the respective encoding and decoding functions."""
+        super().__init__(*args, **kwargs)
+        self.serialize = serialize
+        self.deserialize = deserialize
+
+    def db_value(self, value):
+        """Returns a string for the database."""
+        if value is None:
+            return None
+
+        return self.serialize(value)
+
+    def python_value(self, value):
+        """Returns a JSON object for python."""
+        if value is None:
+            return None
+
+        return self.deserialize(value)
