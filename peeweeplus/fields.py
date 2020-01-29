@@ -300,13 +300,19 @@ class JSONTextField(TextField):
     def db_value(self, value):
         """Returns a string for the database."""
         if value is None:
-            return None
+            if self.null:
+                return None
+
+            return self.serialize({})
 
         return self.serialize(value)
 
     def python_value(self, value):
         """Returns a JSON object for python."""
         if value is None:
-            return None
+            if self.null:
+                return None
+
+            return {}
 
         return self.deserialize(value)
