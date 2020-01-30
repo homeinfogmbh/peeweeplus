@@ -24,6 +24,7 @@ from peeweeplus.fields import IntegerCharField
 from peeweeplus.fields import IPv4AddressField
 from peeweeplus.fields import JSONTextField
 from peeweeplus.fields import PasswordField
+from peeweeplus.fields import UnsignedIntegerField
 from peeweeplus.json import deserialize, serialize, JSONMixin, JSONModel
 from peeweeplus.transaction import Transaction
 
@@ -57,5 +58,6 @@ __all__ = [
     'IPv4AddressField',
     'JSONTextField',
     'PasswordField',
+    'UnsignedIntegerField',
     'Transaction'
 ]
