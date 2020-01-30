@@ -1,4 +1,4 @@
-"""Common field types."""
+"""Password field."""
 
 from peewee import FixedCharField
 

@@ -3,7 +3,7 @@
 from peewee import FieldAccessor
 
 from peeweeplus.exceptions import PasswordTooShortError, MissingModule
-from peeweeplus.fields.common import PasswordField
+from peeweeplus.fields.password import PasswordField
 from peeweeplus.introspection import FieldType
 
 try:
