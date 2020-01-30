@@ -17,7 +17,7 @@ from peeweeplus.exceptions import InvalidKeys
 from peeweeplus.exceptions import NonUniqueValue
 from peeweeplus.exceptions import PasswordTooShortError
 from peeweeplus.fields import *
-from peeweeplus.fields import __all__ as ALL_FIELDS
+from peeweeplus.fields import __all__ as _ALL_FIELDS
 from peeweeplus.json import deserialize, serialize, JSONMixin, JSONModel
 from peeweeplus.transaction import Transaction
 
@@ -41,7 +41,7 @@ __all__ = [
     'JSONMixin',
     'JSONModel',
     'Transaction'
-] + ALL_FIELDS
+] + _ALL_FIELDS
 
 
 LOGGER = getLogger(__file__)
@@ -49,9 +49,9 @@ LOGGER = getLogger(__file__)
 
 try:
     from peeweeplus.authlib import *
-    from peeweeplus.authlib import __all__  as ALL_AUTHLIB
+    from peeweeplus.authlib import __all__  as _ALL_AUTHLIB
 except MissingModule as error:
     LOGGER.warning('Missing module "%s".', error.module)
     LOGGER.warning('%s integration not available.', error.module)
 else:
-    __all__ += ALL_AUTHLIB
+    __all__ += _ALL_AUTHLIB
