@@ -19,7 +19,7 @@ __all__ = ['OAuth2ClientMixin']
 class OAuth2ClientMixin(ClientMixin):   # pylint: disable=R0904
     """An OAuth 2.0 client mixin for peewee models."""
 
-    client_id = CharField(48, index=True)
+    client_id = CharField(48, null=True, index=True)
     client_secret = Argon2Field(null=True)
     client_id_issued_at = IntegerField(default=0)
     client_secret_expires_at = IntegerField(default=0)
