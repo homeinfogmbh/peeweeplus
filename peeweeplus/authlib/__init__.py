@@ -20,10 +20,16 @@ else:
 
 try:
     from peeweeplus.authlib.token import OAuth2TokenMixin
-    from peeweeplus.authlib.token import OAuth2AuthorizationCodeMixin
 except MissingModule as error:
     LOGGER.warning('Missing module "%s".', error.module)
     LOGGER.warning('OAuth2TokenMixin not available.')
+else:
+    __all__.append('OAuth2TokenMixin')
+
+try:
+    from peeweeplus.authlib.token import OAuth2AuthorizationCodeMixin
+except MissingModule as error:
+    LOGGER.warning('Missing module "%s".', error.module)
     LOGGER.warning('OAuth2AuthorizationCodeMixin not available.')
 else:
-    __all__ += ['OAuth2TokenMixin', 'OAuth2AuthorizationCodeMixin']
+    __all__.append('OAuth2AuthorizationCodeMixin')
