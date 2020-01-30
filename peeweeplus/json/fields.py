@@ -81,16 +81,7 @@ class FieldConverter(dict):
 
             return None
 
-        function, wants_field = self.get_params(type(field))
-
-        if wants_field:
-            return function(value, field)
-
-        return function(value)
-
-    def get_params(self, field_class):
-        """Returns the appropriate function for the given field class."""
-        for parent in field_class.__mro__:
+        for parent in type(field).__mro__:
             try:
                 entry = self[parent]
             except KeyError:
@@ -99,8 +90,11 @@ class FieldConverter(dict):
             try:
                 function, wants_field = entry
             except TypeError:
-                return (entry, False)
+                function, wants_field = entry, False
 
-            return (function, wants_field)
+            if wants_field:
+                return function(value, field)
 
-        return (lambda value: value, False)
+            return function(value)
+
+        return value
