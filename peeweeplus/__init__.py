@@ -49,9 +49,9 @@ LOGGER = getLogger(__file__)
 
 try:
     from peeweeplus.authlib import *
-    from peeweeplus.authlib import __all__  as ALL_OAUTHLIB
+    from peeweeplus.authlib import __all__  as ALL_AUTHLIB
 except MissingModule as error:
     LOGGER.warning('Missing module "%s".', error.module)
-    LOGGER.warning('oauthlib integration not available.')
+    LOGGER.warning('%s integration not available.', error.module)
 else:
-    __all__ += ALL_OAUTHLIB
+    __all__ += ALL_AUTHLIB
