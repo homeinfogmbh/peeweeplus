@@ -1,11 +1,15 @@
 """Argon2-based password hashing."""
 
-from argon2 import extract_parameters, PasswordHasher
 from peewee import FieldAccessor
 
-from peeweeplus.exceptions import PasswordTooShortError
+from peeweeplus.exceptions import PasswordTooShortError, MissingModule
 from peeweeplus.fields.common import PasswordField
 from peeweeplus.introspection import FieldType
+
+try:
+    from argon2 import extract_parameters, PasswordHasher
+except ModuleNotFoundError:
+    raise MissingModule('argon2_cffi')
 
 
 __all__ = ['Argon2Hash', 'Argon2FieldAccessor', 'Argon2Field']

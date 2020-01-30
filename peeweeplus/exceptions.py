@@ -2,6 +2,7 @@
 
 
 __all__ = [
+    'MissingModule',
     'NullError',
     'FieldValueError',
     'FieldNotNullable',
@@ -12,11 +13,22 @@ __all__ = [
 ]
 
 
+class MissingModule(Exception):
+    """Indicates a missing optional module,
+    required for some functionality.
+    """
+
+    def __init__(self, module):
+        """Sets the module."""
+        super().__init__()
+        self.module = module
+
+
 class NullError(TypeError):
     """Indicates that the respective field cannot be null."""
 
 
-class _ModelFieldError(ValueError):
+class ModelFieldError(ValueError):
     """An error that stores model, attribute and fields."""
 
     def __init__(self, model, key, attribute, field):
@@ -28,7 +40,7 @@ class _ModelFieldError(ValueError):
         self.field = field
 
 
-class FieldValueError(_ModelFieldError):
+class FieldValueError(ModelFieldError):
     """Indicates that the field cannot store data of the provided type."""
 
     def __init__(self, model, key, attribute, field, value):
@@ -48,7 +60,7 @@ class FieldValueError(_ModelFieldError):
                 value=self.value, value_type=type(self.value))
 
 
-class FieldNotNullable(_ModelFieldError):
+class FieldNotNullable(ModelFieldError):
     """Indicates that the field was assigned
     a NULL value which it cannot store.
     """
@@ -63,7 +75,7 @@ class FieldNotNullable(_ModelFieldError):
                 field=self.field, field_type=type(self.field))
 
 
-class MissingKeyError(_ModelFieldError):
+class MissingKeyError(ModelFieldError):
     """Indicates that a key was missing to deserialize the model."""
 
     def __str__(self):

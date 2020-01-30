@@ -1,6 +1,8 @@
 """Additional field definitions."""
 
-from peeweeplus.fields.argon2 import Argon2Field
+from logging import getLogger
+
+from peeweeplus.exceptions import MissingModule
 from peeweeplus.fields.char import BooleanCharField
 from peeweeplus.fields.char import IntegerCharField
 from peeweeplus.fields.char import DecimalCharField
@@ -16,7 +18,6 @@ from peeweeplus.fields.json import JSONTextField
 
 __all__ = [
     'AESTextField',
-    'Argon2Field',
     'BooleanCharField',
     'DateCharField',
     'DateTimeCharField',
@@ -28,3 +29,14 @@ __all__ = [
     'PasswordField',
     'UnsignedIntegerField'
 ]
+
+
+LOGGER = getLogger(__file__)
+
+try:
+    from peeweeplus.fields.argon2 import Argon2Field
+except MissingModule as error:
+    LOGGER.warning(f'Missing module "{error.module}".')
+    LOGGER.warning('Argon2Field not available.')
+else:
+    __all__.append('Argon2Field')
