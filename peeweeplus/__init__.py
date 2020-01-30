@@ -1,5 +1,7 @@
 """Practical extensions of the peewee ORM framework."""
 
+from logging import getLogger
+
 from peeweeplus.contextmanagers import ChangedConnection
 from peeweeplus.converters import dec2dom
 from peeweeplus.converters import dec2dict
@@ -7,6 +9,7 @@ from peeweeplus.converters import dec2orm
 from peeweeplus.converters import date2orm
 from peeweeplus.converters import datetime2orm
 from peeweeplus.database import MySQLDatabase
+from peeweeplus.exceptions import MissingModule
 from peeweeplus.exceptions import FieldValueError
 from peeweeplus.exceptions import FieldNotNullable
 from peeweeplus.exceptions import MissingKeyError
@@ -39,3 +42,16 @@ __all__ = [
     'JSONModel',
     'Transaction'
 ] + ALL_FIELDS
+
+
+LOGGER = getLogger(__file__)
+
+
+try:
+    from peeweeplus.authlib import *
+    from peeweeplus.authlib import __all__  as ALL_OAUTHLIB
+except MissingModule as error:
+    LOGGER.warning('Missing module "%s".', error.module)
+    LOGGER.warning('oauthlib integration not available.')
+else:
+    __all__ += ALL_OAUTHLIB
