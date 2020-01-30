@@ -47,13 +47,17 @@ class FieldsFilter(NamedTuple):
         for key, attribute, field in fields:
             if contains(self.skip, key, attribute, default=False):
                 continue
-            elif not contains(self.only, key, attribute, default=True):
+
+            if not contains(self.only, key, attribute, default=True):
                 continue
-            elif not self.passwords and isinstance(field, PasswordField):
+
+            if not self.passwords and isinstance(field, PasswordField):
                 continue
-            elif not self.fk_fields and isinstance(field, ForeignKeyField):
+
+            if not self.fk_fields and isinstance(field, ForeignKeyField):
                 continue
-            elif not self.autofields and isinstance(field, AutoField):
+
+            if not self.autofields and isinstance(field, AutoField):
                 continue
 
             yield (key, attribute, field)

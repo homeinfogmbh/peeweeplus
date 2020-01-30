@@ -4,16 +4,13 @@ from base64 import b64encode
 from contextlib import suppress
 
 from peewee import BlobField
-from peewee import CharField
 from peewee import DateField
 from peewee import DateTimeField
 from peewee import DecimalField
 from peewee import ForeignKeyField
-from peewee import TextField
 from peewee import TimeField
 from peewee import UUIDField
 from peeweeplus.fields import EnumField, IPv4AddressField
-from peeweeplus.html import sanitize
 from peeweeplus.json.fields import json_fields, FieldConverter
 from peeweeplus.json.filter import FieldsFilter
 from peeweeplus.json.parsers import get_fk_value
@@ -24,14 +21,12 @@ __all__ = ['serialize']
 
 CONVERTER = FieldConverter({
     BlobField: b64encode,
-    #CharField: sanitize,
     DecimalField: float,
     DateField: lambda value: value.isoformat(),
     DateTimeField: lambda value: value.isoformat(),
     EnumField: lambda value: value.value,
     ForeignKeyField: get_fk_value,
     IPv4AddressField: str,
-    #TextField: sanitize,
     TimeField: lambda value: value.isoformat(),
     UUIDField: lambda value: value.hex
 })
