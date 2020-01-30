@@ -17,3 +17,11 @@ except MissingModule as error:
     LOGGER.warning('OAuth2ClientMixin not available.')
 else:
     __all__.append('OAuth2ClientMixin')
+
+try:
+    from peeweeplus.authlib.token import OAuth2TokenMixin
+except MissingModule as error:
+    LOGGER.warning('Missing module "%s".', error.module)
+    LOGGER.warning('OAuth2TokenMixin not available.')
+else:
+    __all__.append('OAuth2TokenMixin')
