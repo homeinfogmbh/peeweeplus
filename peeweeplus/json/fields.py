@@ -69,7 +69,7 @@ def _get_json_fields(model):
 
 def get_json_fields(model):
     """Returns the JSON fields of the respective model
-    and caches it in the model's JSON_FIELD property.
+    and caches it in the model's JSON_FIELDS property.
     """
 
     try:
