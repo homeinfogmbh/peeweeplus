@@ -67,18 +67,19 @@ def _get_json_fields(model):
         yield JSONField(key, attribute, field)
 
 
-def get_json_fields(model):
+def get_json_fields(model, cache_property='JSON_FIELDS'):
     """Returns the JSON fields of the respective model
-    and caches it in the model's JSON_FIELDS property.
+    and caches it in the model's <cache_property> property.
     """
 
-    try:
-        json_fields = model.JSON_FIELDS
-    except AttributeError:
-        json_fields = None
+    if not cache_property:
+        return frozenset(_get_json_fields(model))
+
+    json_fields = getattr(model, cache_property, None)
 
     if json_fields is None:
-        model.JSON_FIELDS = json_fields = frozenset(_get_json_fields(model))
+        json_fields = frozenset(_get_json_fields(model))
+        setattr(model, cache_property, json_fields)
 
     return json_fields
 
