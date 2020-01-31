@@ -72,7 +72,7 @@ def json_fields(model):
 
 
 class FieldConverter(dict):
-    """Maps conversion functions to field classes in preserved order."""
+    """Maps conversion functions to field classes."""
 
     def __call__(self, field, value, check_null=False):
         """Converts the respective value to the field."""
