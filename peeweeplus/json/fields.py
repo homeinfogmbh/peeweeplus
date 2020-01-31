@@ -1,5 +1,6 @@
 """Miscellaneous stuff."""
 
+from contextlib import suppress
 from functools import lru_cache
 from typing import NamedTuple
 
@@ -83,16 +84,11 @@ class FieldConverter(dict):
 
         for parent in type(field).__mro__:
             try:
-                entry = self[parent]
+                function = self[parent]
             except KeyError:
                 continue
 
-            try:
-                function, wants_field = entry
-            except TypeError:
-                function, wants_field = entry, False
-
-            if wants_field:
+            with suppress(TypeError):
                 return function(value, field)
 
             return function(value)

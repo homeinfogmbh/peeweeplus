@@ -40,7 +40,7 @@ CONVERTER = FieldConverter({
     DateField: parse_date,
     DateTimeField: parse_datetime,
     DecimalField: float,
-    EnumField: (parse_enum, True),
+    EnumField: parse_enum,
     FloatField: float,
     ForeignKeyField: int,
     IntegerField: int,
