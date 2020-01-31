@@ -1,5 +1,6 @@
 """Serialization filter."""
 
+from logging import getLogger
 from typing import NamedTuple
 
 from peewee import AutoField
@@ -9,6 +10,9 @@ from peeweeplus.json.fields import contains
 
 
 __all__ = ['FieldsFilter']
+
+
+LOGGER = getLogger(__file__)
 
 
 class FieldsFilter(NamedTuple):
@@ -21,25 +25,27 @@ class FieldsFilter(NamedTuple):
     passwords: bool
 
     @classmethod
-    def for_deserialization(cls, **kwargs):
+    def for_deserialization(cls, skip=None, only=None, fk_fields=False,
+                            passwords=True, **kwargs):
         """Creates the filter from the respective keyword arguments."""
-        skip = kwargs.get('skip')
         skip = frozenset(skip) if skip else frozenset()
-        only = kwargs.get('only')
         only = frozenset(only) if only else frozenset()
-        fk_fields = kwargs.get('fk_fields', False)
-        passwords = kwargs.get('passwords', True)
+
+        for key in kwargs:
+            LOGGER.warning('Ignoring filter key: %s.', key)
+
         return cls(skip, only, fk_fields, False, passwords)
 
     @classmethod
-    def for_serialization(cls, **kwargs):
+    def for_serialization(cls, skip=None, only=None, fk_fields=True,
+                          autofields=True, **kwargs):
         """Creates the filter from the respective keyword arguments."""
-        skip = kwargs.get('skip')
         skip = frozenset(skip) if skip else frozenset()
-        only = kwargs.get('only')
         only = frozenset(only) if only else frozenset()
-        fk_fields = kwargs.get('fk_fields', True)
-        autofields = kwargs.get('autofields', True)
+
+        for key in kwargs:
+            LOGGER.warning('Ignoring filter key: %s.', key)
+
         return cls(skip, only, fk_fields, autofields, False)
 
     def filter(self, fields):
@@ -51,13 +57,13 @@ class FieldsFilter(NamedTuple):
             if not contains(self.only, key, attribute, default=True):
                 continue
 
-            if not self.passwords and isinstance(field, PasswordField):
+            if isinstance(field, PasswordField) and not self.passwords:
                 continue
 
-            if not self.fk_fields and isinstance(field, ForeignKeyField):
+            if isinstance(field, ForeignKeyField) and not self.fk_fields:
                 continue
 
-            if not self.autofields and isinstance(field, AutoField):
+            if isinstance(field, AutoField) and not self.autofields:
                 continue
 
             yield (key, attribute, field)
