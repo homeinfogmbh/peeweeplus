@@ -1,8 +1,12 @@
 """ORM model mixin for OAuth 2.0 clients."""
 
-from time import time
+from datetime import datetime, timedelta
 
-from peewee import BooleanField, CharField, IntegerField, TextField
+from peewee import BooleanField
+from peewee import CharField
+from peewee import DateTimeField
+from peewee import IntegerField
+from peewee import TextField
 
 from peeweeplus.exceptions import MissingModule
 from peeweeplus.fields import Argon2Field, JSONTextField
@@ -196,8 +200,8 @@ class OAuth2TokenMixin(TokenMixin):
     refresh_token = CharField(255, index=True, null=True)
     scope = TextField(default='')
     revoked = BooleanField(default=False)
-    issued_at = IntegerField(default=lambda: int(time()))
-    expires_in = IntegerField(default=0)
+    issued_at = DateTimeField(default=datetime.now)
+    expires_in = IntegerField(default=0)    # Minutes.
 
     def get_client_id(self):
         """Returns the client ID."""
@@ -213,7 +217,21 @@ class OAuth2TokenMixin(TokenMixin):
 
     def get_expires_at(self):
         """Returns the timstamp in microseconds when the token expires."""
-        return self.issued_at + self.expires_in
+        return self.issued_at + timedelta(minutes=self.expires_in)
+
+    def is_expired(self):
+        """Determines whether the token is expired."""
+        return self.get_expires_at() >= datetime.now()
+
+    def is_valid(self):
+        """Determines whether the token is valid."""
+        if self.revoked:
+            return False
+
+        if self.is_expired():
+            return False
+
+        return True
 
 
 class OAuth2AuthorizationCodeMixin(AuthorizationCodeMixin):
@@ -225,13 +243,13 @@ class OAuth2AuthorizationCodeMixin(AuthorizationCodeMixin):
     response_type = TextField(default='')
     scope = TextField(default='')
     nonce = TextField(null=True)
-    auth_time = IntegerField(default=lambda: int(time()))
+    auth_time = DateTimeField(default=datetime.now)
     code_challenge = TextField(null=True)
     code_challenge_method = CharField(48, null=True)
 
     def is_expired(self):
         """Determines whether the autorization code is expired."""
-        return self.auth_time + 300 < time()
+        return self.auth_time + timedelta(seconds=300) < datetime.now()
 
     def get_redirect_uri(self):
         """Returns a redirect URI."""
