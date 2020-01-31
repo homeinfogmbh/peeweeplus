@@ -21,7 +21,7 @@ from peeweeplus.exceptions import MissingKeyError
 from peeweeplus.exceptions import NonUniqueValue
 from peeweeplus.exceptions import NullError
 from peeweeplus.fields import EnumField, IPv4AddressField
-from peeweeplus.json.fields import json_fields, FieldConverter
+from peeweeplus.json.fields import get_json_fields, FieldConverter
 from peeweeplus.json.filter import FieldsFilter
 from peeweeplus.json.parsers import parse_blob
 from peeweeplus.json.parsers import parse_bool
@@ -84,7 +84,7 @@ def deserialize(model, json, **filters):
     """Creates a new record from a JSON-ish dict."""
 
     record = model()
-    fields = json_fields(model)
+    fields = get_json_fields(model)
     json = dict(json)
     fields_filter = FieldsFilter.for_deserialization(**filters)
 
@@ -115,7 +115,7 @@ def patch(record, json, **filters):
     """Patches an existing record with a JSON-ish dict."""
 
     model = type(record)
-    fields = json_fields(model)
+    fields = get_json_fields(model)
     json = dict(json)
     fields_filter = FieldsFilter.for_deserialization(**filters)
 

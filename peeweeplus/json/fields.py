@@ -1,18 +1,16 @@
 """Miscellaneous stuff."""
 
 from contextlib import suppress
-from functools import lru_cache
 from typing import NamedTuple
 
 from peewee import Field, ForeignKeyField
 
-from functoolsplus import coerce
 from strflib import camel_case
 
 from peeweeplus.exceptions import NullError
 
 
-__all__ = ['contains', 'json_fields', 'FieldConverter']
+__all__ = ['contains', 'get_json_fields', 'FieldConverter']
 
 
 class JSONField(NamedTuple):
@@ -32,9 +30,7 @@ def contains(iterable, key, attribute, *, default=False):
     return default
 
 
-@lru_cache()
-@coerce(frozenset)
-def json_fields(model):
+def _get_json_fields(model):
     """Yields the JSON fields of the respective model."""
 
     fields = model._meta.fields     # pylint: disable=W0212
@@ -69,6 +65,22 @@ def json_fields(model):
     for field, key in field_keys.items():
         attribute = field_attributes.get(field, field.name)
         yield JSONField(key, attribute, field)
+
+
+def get_json_fields(model):
+    """Returns the JSON fields of the respective model
+    and caches it in the model's JSON_FIELD property.
+    """
+
+    try:
+        json_fields = model.JSON_FIELDS
+    except AttributeError:
+        json_fields = None
+
+    if json_fields is None:
+        model.JSON_FIELDS = json_fields = frozenset(_get_json_fields(model))
+
+    return json_fields
 
 
 class FieldConverter(dict):

@@ -11,7 +11,7 @@ from peewee import ForeignKeyField
 from peewee import TimeField
 from peewee import UUIDField
 from peeweeplus.fields import EnumField, IPv4AddressField
-from peeweeplus.json.fields import json_fields, FieldConverter
+from peeweeplus.json.fields import get_json_fields, FieldConverter
 from peeweeplus.json.filter import FieldsFilter
 from peeweeplus.json.parsers import get_fk_value
 
@@ -67,7 +67,7 @@ def serialize(record, *, null=False, cascade=None, **filters):
     """Returns a JSON-ish dict with the record's fields' values."""
 
     model = type(record)
-    fields = json_fields(model)
+    fields = get_json_fields(model)
     fields_filter = FieldsFilter.for_serialization(**filters)
     json = {}
 

@@ -3,7 +3,7 @@
 from peewee import Model
 
 from peeweeplus.json.deserialization import deserialize, patch
-from peeweeplus.json.fields import json_fields
+from peeweeplus.json.fields import get_json_fields
 from peeweeplus.json.serialization import serialize
 
 
@@ -13,7 +13,7 @@ __all__ = ['JSONMixin', 'JSONModel']
 class JSONMixin:    # pylint: disable=R0903
     """A JSON serializable and deserializable model mixin."""
 
-    json_fields = classmethod(json_fields)
+    get_json_fields = classmethod(get_json_fields)
     from_json = classmethod(deserialize)
     patch_json = patch
     to_json = serialize
