@@ -164,8 +164,8 @@ class OAuth2ClientMixin(Model, ClientMixin):   # pylint: disable=R0904
         if not scope:
             return ''
 
-        allowed = set(self.scope.split())
         scopes = scope_to_list(scope)
+        allowed = set() if self.scope is None else set(self.scope.split())
         return list_to_scope([scope for scope in scopes if scope in allowed])
 
     def check_redirect_uri(self, redirect_uri):
