@@ -10,7 +10,7 @@ from peewee import IntegerField
 from peewee import TextField
 
 from peeweeplus.exceptions import MissingModule
-from peeweeplus.fields import Argon2Field, JSONTextField
+from peeweeplus.fields import JSONTextField
 
 try:
     from authlib.common.encoding import json_loads, json_dumps
@@ -33,7 +33,7 @@ class OAuth2ClientMixin(Model, ClientMixin):   # pylint: disable=R0904
     """An OAuth 2.0 client mixin for peewee models."""
 
     client_id = CharField(48, null=True, index=True)
-    client_secret = Argon2Field(null=True)
+    client_secret = CharField(255)
     client_id_issued_at = IntegerField(default=0)
     client_secret_expires_at = IntegerField(default=0)
     client_metadata = JSONTextField(
