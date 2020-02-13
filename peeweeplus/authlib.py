@@ -2,6 +2,7 @@
 
 from datetime import datetime, timedelta
 
+from peewee import Model
 from peewee import BooleanField
 from peewee import CharField
 from peewee import DateTimeField
@@ -28,7 +29,7 @@ __all__ = [
 ]
 
 
-class OAuth2ClientMixin(ClientMixin):   # pylint: disable=R0904
+class OAuth2ClientMixin(Model, ClientMixin):   # pylint: disable=R0904
     """An OAuth 2.0 client mixin for peewee models."""
 
     client_id = CharField(48, null=True, index=True)
@@ -191,7 +192,7 @@ class OAuth2ClientMixin(ClientMixin):   # pylint: disable=R0904
         return grant_type in self.grant_types
 
 
-class OAuth2TokenMixin(TokenMixin):
+class OAuth2TokenMixin(Model, TokenMixin):
     """Mixin for OAuth 2.0 tokens."""
 
     client_id = CharField(48, null=True)
@@ -234,7 +235,7 @@ class OAuth2TokenMixin(TokenMixin):
         return True
 
 
-class OAuth2AuthorizationCodeMixin(AuthorizationCodeMixin):
+class OAuth2AuthorizationCodeMixin(Model, AuthorizationCodeMixin):
     """Mixin for OAuth 2.0 authorization codes."""
 
     code = CharField(120, unique=True)
