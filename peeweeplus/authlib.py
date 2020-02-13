@@ -2,6 +2,8 @@
 
 from datetime import datetime, timedelta
 
+from argon2.exceptions import VerifyMismatchError
+
 from peewee import Model
 from peewee import BooleanField
 from peewee import CharField
@@ -10,7 +12,7 @@ from peewee import IntegerField
 from peewee import TextField
 
 from peeweeplus.exceptions import MissingModule
-from peeweeplus.fields import JSONTextField
+from peeweeplus.fields import Argon2Field, JSONTextField
 
 try:
     from authlib.common.encoding import json_loads, json_dumps
@@ -33,7 +35,7 @@ class OAuth2ClientMixin(Model, ClientMixin):   # pylint: disable=R0904
     """An OAuth 2.0 client mixin for peewee models."""
 
     client_id = CharField(48, null=True, index=True)
-    client_secret = CharField(255, null=True)
+    client_secret = Argon2Field(null=True)
     client_id_issued_at = IntegerField(default=0)
     client_secret_expires_at = IntegerField(default=0)
     client_metadata = JSONTextField(
@@ -176,9 +178,11 @@ class OAuth2ClientMixin(Model, ClientMixin):   # pylint: disable=R0904
 
     def check_client_secret(self, client_secret):
         """Verifies the client's secret."""
-        print('CLIENT SECRET CHECK:', client_secret, self.client_secret,
-              flush=True)
-        return self.client_secret == client_secret
+        # pylint: disable=E1101
+        try:
+            return self.client_secret.verify(client_secret)
+        except VerifyMismatchError:
+            return False
 
     def check_token_endpoint_auth_method(self, method):
         """Verifies the token endpoint authentication method."""
