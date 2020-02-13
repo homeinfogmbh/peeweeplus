@@ -189,6 +189,7 @@ class OAuth2ClientMixin(Model, ClientMixin):   # pylint: disable=R0904
 
     def check_grant_type(self, grant_type):
         """Verifies the grant type."""
+        print('DEBUG GRANT TYPE:', grant_type, self.grant_types, flush=True)
         return grant_type in self.grant_types
 
 
