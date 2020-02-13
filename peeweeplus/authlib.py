@@ -182,7 +182,6 @@ class OAuth2ClientMixin(Model, ClientMixin):   # pylint: disable=R0904
         try:
             return self.client_secret.verify(client_secret)
         except VerifyMismatchError:
-            print('CLIENT SECRET:', client_secret, 'IS INVALID!', flush=True)
             return False
 
     def check_token_endpoint_auth_method(self, method):
