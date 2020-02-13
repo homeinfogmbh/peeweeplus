@@ -176,6 +176,8 @@ class OAuth2ClientMixin(Model, ClientMixin):   # pylint: disable=R0904
 
     def check_client_secret(self, client_secret):
         """Verifies the client's secret."""
+        print('CLIENT SECRET CHECK:', client_secret, self.client_secret,
+              flush=True)
         return self.client_secret == client_secret
 
     def check_token_endpoint_auth_method(self, method):
