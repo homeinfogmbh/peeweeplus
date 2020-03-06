@@ -29,18 +29,13 @@ __all__ = [
     'OAuth2ClientMixin',
     'OAuth2TokenMixin',
     'OAuth2AuthorizationCodeMixin',
+    'ClientRelatedMixin',
     'RedirectURIMixin',
     'GrantTypeMixin',
     'ResponseTypeMixin',
     'ScopeMixin',
     'ContactMixin',
-    'JWKSMixin',
-    'get_redirect_uri_model',
-    'get_grant_type_model',
-    'get_response_type_model',
-    'get_scope_model',
-    'get_contact_model',
-    'get_jwks_model'
+    'JWKSMixin'
 ]
 
 
@@ -234,109 +229,55 @@ class OAuth2AuthorizationCodeMixin(Model, AuthorizationCodeMixin):
         return self.nonce
 
 
-class RedirectURIMixin(Model):
+class ClientRelatedMixin(Model):
+    """A mixin whose implementation shall have a foreign key to a client."""
+
+    def __init_subclass__(cls, *, backref=None):
+        """Sets the backref."""
+        cls.BACKREF = backref
+
+    @classmethod
+    def get_implementation(cls, base_model, oauth2_client_model):
+        """Returns a redirect URI model."""
+        class Implementation(base_model, cls):
+            """A redirext URI model."""
+            client = ForeignKeyField(
+                oauth2_client_model, backref=cls.BACKREF, on_delete='CASCADE')
+
+        return Implementation
+
+
+class RedirectURIMixin(ClientRelatedMixin, backref='redirect_uris'):
     """A redirect URI mixin."""
 
     uri = TextField()
 
 
-class GrantTypeMixin(Model):
+class GrantTypeMixin(ClientRelatedMixin, backref='grant_types'):
     """A grant type mixin."""
 
     type = TextField()
 
 
-class ResponseTypeMixin(Model):
+class ResponseTypeMixin(ClientRelatedMixin, backref='response_types'):
     """A response type mixin."""
 
     type = TextField()
 
 
-class ScopeMixin(Model):
+class ScopeMixin(ClientRelatedMixin, backref='scopes'):
     """A scope mixin."""
 
     scope = TextField()
 
 
-class ContactMixin(Model):
+class ContactMixin(ClientRelatedMixin, backref='contacts'):
     """A contact mixin."""
 
     contact = TextField()
 
 
-class JWKSMixin(Model):
+class JWKSMixin(ClientRelatedMixin, backref='jwks'):
     """A JSON web key set mixin."""
 
     jwk = JSONTextField(serialize=json_dumps, deserialize=json_loads)
-
-
-def get_redirect_uri_model(base_model, oauth2_client_model):
-    """Returns a redirect URI model."""
-
-    class RedirectUri(base_model, RedirectURIMixin):
-        """A redirext URI model."""
-
-        client = ForeignKeyField(
-            oauth2_client_model, backref='redirect_uris', on_delete='CASCADE')
-
-    return RedirectUri
-
-
-def get_grant_type_model(base_model, oauth2_client_model):
-    """Returns a grant type model."""
-
-    class GrantType(base_model, GrantTypeMixin):
-        """A grant type model."""
-
-        client = ForeignKeyField(
-            oauth2_client_model, backref='grant_types', on_delete='CASCADE')
-
-    return GrantType
-
-
-def get_response_type_model(base_model, oauth2_client_model):
-    """Returns a response type model."""
-
-    class ResponseType(base_model, ResponseTypeMixin):
-        """A response type model."""
-
-        client = ForeignKeyField(
-            oauth2_client_model, backref='response_types', on_delete='CASCADE')
-
-    return ResponseType
-
-
-def get_scope_model(base_model, oauth2_client_model):
-    """Returns a scope model."""
-
-    class Scope(base_model, ScopeMixin):
-        """A scope model."""
-
-        client = ForeignKeyField(
-            oauth2_client_model, backref='scopes', on_delete='CASCADE')
-
-    return Scope
-
-
-def get_contact_model(base_model, oauth2_client_model):
-    """Returns a contact model."""
-
-    class Contact(base_model, ContactMixin):
-        """A contact model."""
-
-        client = ForeignKeyField(
-            oauth2_client_model, backref='contacts', on_delete='CASCADE')
-
-    return Contact
-
-
-def get_jwks_model(base_model, oauth2_client_model):
-    """Returns a contact model."""
-
-    class JWKS(base_model, JWKSMixin):
-        """A JWKS model."""
-
-        client = ForeignKeyField(
-            oauth2_client_model, backref='jwks', on_delete='CASCADE')
-
-    return JWKS
