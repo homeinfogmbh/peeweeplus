@@ -125,11 +125,7 @@ class OAuth2ClientMixin(Model, ClientMixin):   # pylint: disable=R0904
         if not scope:
             return ''
 
-        try:
-            allowed = {scope.scope for scope in self.scopes}
-        except NotImplementedError:
-            return ''
-
+        allowed = {scope.scope for scope in self.scopes}
         scopes = scope_to_list(scope)
         return list_to_scope([scope for scope in scopes if scope in allowed])
 
