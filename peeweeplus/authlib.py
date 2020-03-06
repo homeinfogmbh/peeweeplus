@@ -238,9 +238,11 @@ class ClientRelatedMixin(Model):
 
     @classmethod
     def get_implementation(cls, base_model, oauth2_client_model):
-        """Returns a redirect URI model."""
+        """Returns an implementation for the
+        respective base model and client model.
+        """
         class Implementation(base_model, cls):
-            """A redirext URI model."""
+            """Dynamic implementation of the mixin."""
             client = ForeignKeyField(
                 oauth2_client_model, backref=cls.BACKREF, on_delete='CASCADE')
 
