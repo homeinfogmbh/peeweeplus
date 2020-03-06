@@ -52,8 +52,7 @@ class OAuth2ClientMixin(Model, ClientMixin):   # pylint: disable=R0904
     client_id_issued_at = IntegerField(default=0)
     client_secret_expires_at = IntegerField(default=0)
     # Meta data.
-    token_endpoint_auth_method = TextField(
-        null=True, default='client_secret_basic')
+    token_endpoint_auth_method = TextField(null=True)
     client_name = TextField(null=True)
     client_uri = TextField(null=True)
     logo_uri = TextField(null=True)
