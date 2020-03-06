@@ -8,6 +8,7 @@ from peewee import Model
 from peewee import BooleanField
 from peewee import CharField
 from peewee import DateTimeField
+from peewee import ForeignKeyField
 from peewee import IntegerField
 from peewee import TextField
 
@@ -27,7 +28,19 @@ except ModuleNotFoundError:
 __all__ = [
     'OAuth2ClientMixin',
     'OAuth2TokenMixin',
-    'OAuth2AuthorizationCodeMixin'
+    'OAuth2AuthorizationCodeMixin',
+    'RedirectURIMixin',
+    'GrantTypeMixin',
+    'ResponseTypeMixin',
+    'ScopeMixin',
+    'ContactMixin',
+    'JWKSMixin',
+    'get_redirect_uri_model',
+    'get_grant_type_model',
+    'get_response_type_model',
+    'get_scope_model',
+    'get_contact_model',
+    'get_jwks_model'
 ]
 
 
@@ -38,8 +51,17 @@ class OAuth2ClientMixin(Model, ClientMixin):   # pylint: disable=R0904
     client_secret = Argon2Field(null=True)
     client_id_issued_at = IntegerField(default=0)
     client_secret_expires_at = IntegerField(default=0)
-    client_metadata = JSONTextField(
-        serialize=json_dumps, deserialize=json_loads)
+    # Meta data.
+    token_endpoint_auth_method = TextField(
+        null=True, default='client_secret_basic')
+    client_name = TextField(null=True)
+    client_uri = TextField(null=True)
+    logo_uri = TextField(null=True)
+    tos_uri = TextField(null=True)
+    policy_uri = TextField(null=True)
+    jwks_uri = TextField(null=True)
+    software_id = TextField(null=True)
+    software_version = TextField(null=True)
 
     @property
     def client_info(self):
@@ -58,93 +80,32 @@ class OAuth2ClientMixin(Model, ClientMixin):   # pylint: disable=R0904
     @property
     def redirect_uris(self):
         """Returns a list of redirect URIs."""
-        # pylint: disable=E1101
-        return self.client_metadata.get('redirect_uris', [])
-
-    @property
-    def token_endpoint_auth_method(self):
-        """Returns the token endpoint authentication method."""
-        # pylint: disable=E1101
-        return self.client_metadata.get(
-            'token_endpoint_auth_method', 'client_secret_basic')
+        raise NotImplementedError()
 
     @property
     def grant_types(self):
         """Returns a list of grant types."""
-        # pylint: disable=E1101
-        return self.client_metadata.get('grant_types', [])
+        raise NotImplementedError()
 
     @property
     def response_types(self):
         """Returns a list of response types."""
-        # pylint: disable=E1101
-        return self.client_metadata.get('response_types', [])
+        raise NotImplementedError()
 
     @property
-    def client_name(self):
-        """Returns the client's name."""
-        # pylint: disable=E1101
-        return self.client_metadata.get('client_name')
-
-    @property
-    def client_uri(self):
-        """Returns the client's URI."""
-        # pylint: disable=E1101
-        return self.client_metadata.get('client_uri')
-
-    @property
-    def logo_uri(self):
-        """Returns a URI to the client's logo."""
-        # pylint: disable=E1101
-        return self.client_metadata.get('logo_uri')
-
-    @property
-    def scope(self):
-        """Returns the client's scope."""
-        # pylint: disable=E1101
-        return self.client_metadata.get('scope')
+    def scopes(self):
+        """Returns a list of allowed scopes."""
+        raise NotImplementedError()
 
     @property
     def contacts(self):
         """Returns a list of contacts of the client."""
-        # pylint: disable=E1101
-        return self.client_metadata.get('contacts', [])
-
-    @property
-    def tos_uri(self):
-        """Returns a URI to the terms of service of the client."""
-        # pylint: disable=E1101
-        return self.client_metadata.get('tos_uri')
-
-    @property
-    def policy_uri(self):
-        """Returns a URI to the policy of the client."""
-        # pylint: disable=E1101
-        return self.client_metadata.get('policy_uri')
-
-    @property
-    def jwks_uri(self):
-        """Returns a URI to the JSON web key set."""
-        # pylint: disable=E1101
-        return self.client_metadata.get('jwks_uri')
+        raise NotImplementedError()
 
     @property
     def jwks(self):
         """Returns a list of JSON web key sets."""
-        # pylint: disable=E1101
-        return self.client_metadata.get('jwks', [])
-
-    @property
-    def software_id(self):
-        """Returns the client's software ID."""
-        # pylint: disable=E1101
-        return self.client_metadata.get('software_id')
-
-    @property
-    def software_version(self):
-        """Returns the client's software version."""
-        # pylint: disable=E1101
-        return self.client_metadata.get('software_version')
+        raise NotImplementedError()
 
     def get_client_id(self):
         """Returns the client's ID."""
@@ -164,13 +125,17 @@ class OAuth2ClientMixin(Model, ClientMixin):   # pylint: disable=R0904
         if not scope:
             return ''
 
+        try:
+            allowed = {scope.scope for scope in self.scopes}
+        except NotImplementedError:
+            return ''
+
         scopes = scope_to_list(scope)
-        allowed = set() if self.scope is None else set(self.scope.split())
         return list_to_scope([scope for scope in scopes if scope in allowed])
 
     def check_redirect_uri(self, redirect_uri):
         """Checks the redirect URI."""
-        return redirect_uri in self.redirect_uris
+        return redirect_uri in {uri.uri for uri in self.redirect_uris}
 
     def has_client_secret(self):
         """Checks if the client's secret is set."""
@@ -190,11 +155,11 @@ class OAuth2ClientMixin(Model, ClientMixin):   # pylint: disable=R0904
 
     def check_response_type(self, response_type):
         """Verifies the response type."""
-        return response_type in self.response_types
+        return response_type in {typ.type for typ in self.response_types}
 
     def check_grant_type(self, grant_type):
         """Verifies the grant type."""
-        return grant_type in self.grant_types
+        return grant_type in {typ.type for typ in self.grant_types}
 
 
 class OAuth2TokenMixin(Model, TokenMixin):
@@ -272,3 +237,111 @@ class OAuth2AuthorizationCodeMixin(Model, AuthorizationCodeMixin):
     def get_nonce(self):
         """Returns the nonce."""
         return self.nonce
+
+
+class RedirectURIMixin(Model):
+    """A redirect URI mixin."""
+
+    uri = TextField()
+
+
+class GrantTypeMixin(Model):
+    """A grant type mixin."""
+
+    type = TextField()
+
+
+class ResponseTypeMixin(Model):
+    """A response type mixin."""
+
+    type = TextField()
+
+
+class ScopeMixin(Model):
+    """A scope mixin."""
+
+    scope = TextField()
+
+
+class ContactMixin(Model):
+    """A contact mixin."""
+
+    contact = TextField()
+
+
+class JWKSMixin(Model):
+    """A JSON web key set mixin."""
+
+    jwk = JSONTextField(serialize=json_dumps, deserialize=json_loads)
+
+
+def get_redirect_uri_model(base_model, oauth2_client_model):
+    """Returns a redirect URI model."""
+
+    class RedirectUri(base_model, RedirectURIMixin):
+        """A redirext URI model."""
+
+        client = ForeignKeyField(
+            oauth2_client_model, backref='redirect_uris', on_delete='CASCADE')
+
+    return RedirectUri
+
+
+def get_grant_type_model(base_model, oauth2_client_model):
+    """Returns a grant type model."""
+
+    class GrantType(base_model, GrantTypeMixin):
+        """A grant type model."""
+
+        client = ForeignKeyField(
+            oauth2_client_model, backref='grant_types', on_delete='CASCADE')
+
+    return GrantType
+
+
+def get_response_type_model(base_model, oauth2_client_model):
+    """Returns a response type model."""
+
+    class ResponseType(base_model, ResponseTypeMixin):
+        """A response type model."""
+
+        client = ForeignKeyField(
+            oauth2_client_model, backref='response_types', on_delete='CASCADE')
+
+    return ResponseType
+
+
+def get_scope_model(base_model, oauth2_client_model):
+    """Returns a scope model."""
+
+    class Scope(base_model, ScopeMixin):
+        """A scope model."""
+
+        client = ForeignKeyField(
+            oauth2_client_model, backref='scopes', on_delete='CASCADE')
+
+    return Scope
+
+
+def get_contact_model(base_model, oauth2_client_model):
+    """Returns a contact model."""
+
+    class Contact(base_model, ContactMixin):
+        """A contact model."""
+
+        client = ForeignKeyField(
+            oauth2_client_model, backref='contacts', on_delete='CASCADE')
+
+    return Contact
+
+
+def get_jwks_model(base_model, oauth2_client_model):
+    """Returns a contact model."""
+
+    class JWKS(base_model, JWKSMixin):
+        """A JWKS model."""
+
+        client = ForeignKeyField(
+            oauth2_client_model, backref='jwks', on_delete='CASCADE')
+
+    return JWKS
