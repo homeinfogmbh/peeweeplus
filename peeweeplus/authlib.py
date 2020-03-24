@@ -60,7 +60,7 @@ class OAuth2ClientMixin(Model, ClientMixin):   # pylint: disable=R0904
     def get_related_models(cls, model=Model):
         """Yields related models."""
         for mixin, backref in CLIENT_RELATED_MIXINS:
-            yield cls._get_realted_model(model, mixin, backref)
+            yield cls._get_related_model(model, mixin, backref)
 
     @classmethod
     def _get_related_model(cls, model, mixin, backref):
