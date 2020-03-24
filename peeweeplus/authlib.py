@@ -29,7 +29,6 @@ __all__ = [
     'OAuth2ClientMixin',
     'OAuth2TokenMixin',
     'OAuth2AuthorizationCodeMixin',
-    'ClientRelatedMixin',
     'RedirectURIMixin',
     'GrantTypeMixin',
     'ResponseTypeMixin',
@@ -56,6 +55,23 @@ class OAuth2ClientMixin(Model, ClientMixin):   # pylint: disable=R0904
     jwks_uri = TextField(null=True)
     software_id = TextField(null=True)
     software_version = TextField(null=True)
+
+    @classmethod
+    def get_related_models(cls, model=Model):
+        """Yields related models."""
+        for mixin, backref in CLIENT_RELATED_MIXINS:
+            yield cls._get_realted_model(model, mixin, backref)
+
+    @classmethod
+    def _get_related_model(cls, model, mixin, backref):
+        """Returns an implementation of the related model."""
+        class ClientRelatedModel(model, mixin):
+            f"""Implementation of {mixin.__name__}."""
+            client = ForeignKeyField(
+                cls, column_name='client', backref=backref,
+                on_delete='CASCADE', on_update='CASCADE')
+
+        return ClientRelatedModel
 
     @property
     def client_info(self):
@@ -229,57 +245,47 @@ class OAuth2AuthorizationCodeMixin(Model, AuthorizationCodeMixin):
         return self.nonce
 
 
-class ClientRelatedMixin(Model):
-    """A mixin whose implementation shall have a foreign key to a client."""
-
-    def __init_subclass__(cls, *, backref=None):
-        """Sets the backref."""
-        cls.BACKREF = backref
-
-    @classmethod
-    def get_implementation(cls, base_model, oauth2_client_model):
-        """Returns an implementation for the
-        respective base model and client model.
-        """
-        class Implementation(base_model, cls):
-            """Dynamic implementation of the mixin."""
-            client = ForeignKeyField(
-                oauth2_client_model, backref=cls.BACKREF, on_delete='CASCADE')
-
-        return Implementation
-
-
-class RedirectURIMixin(ClientRelatedMixin, backref='redirect_uris'):
+class RedirectURIMixin:     # pylint: disable=R0903
     """A redirect URI mixin."""
 
     uri = TextField()
 
 
-class GrantTypeMixin(ClientRelatedMixin, backref='grant_types'):
+class GrantTypeMixin:   # pylint: disable=R0903
     """A grant type mixin."""
 
     type = TextField()
 
 
-class ResponseTypeMixin(ClientRelatedMixin, backref='response_types'):
+class ResponseTypeMixin:    # pylint: disable=R0903
     """A response type mixin."""
 
     type = TextField()
 
 
-class ScopeMixin(ClientRelatedMixin, backref='scopes'):
+class ScopeMixin:   # pylint: disable=R0903
     """A scope mixin."""
 
     scope = TextField()
 
 
-class ContactMixin(ClientRelatedMixin, backref='contacts'):
+class ContactMixin:     # pylint: disable=R0903
     """A contact mixin."""
 
     contact = TextField()
 
 
-class JWKSMixin(ClientRelatedMixin, backref='jwks'):
+class JWKSMixin:    # pylint: disable=R0903
     """A JSON web key set mixin."""
 
     jwk = JSONTextField(serialize=json_dumps, deserialize=json_loads)
+
+
+CLIENT_RELATED_MIXINS = (
+    (RedirectURIMixin, 'redirect_uris'),
+    (GrantTypeMixin, 'grant_types'),
+    (ResponseTypeMixin, 'response_types'),
+    (ScopeMixin, 'scopes'),
+    (ContactMixin, 'contacts'),
+    (JWKSMixin, 'jwks')
+)
