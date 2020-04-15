@@ -180,6 +180,11 @@ class OAuth2TokenMixin(Model, TokenMixin):
     issued_at = DateTimeField(default=datetime.now)
     expires_in = IntegerField(default=0)    # Minutes.
 
+    @property
+    def expires_at(self):
+        """Returns the timstamp in microseconds when the token expires."""
+        return self.issued_at + timedelta(minutes=self.expires_in)
+
     def get_client_id(self):
         """Returns the client ID."""
         return self.client_id
@@ -194,11 +199,11 @@ class OAuth2TokenMixin(Model, TokenMixin):
 
     def get_expires_at(self):
         """Returns the timstamp in microseconds when the token expires."""
-        return self.issued_at + timedelta(minutes=self.expires_in)
+        return self.expires_at.timestamp()
 
     def is_expired(self):
         """Determines whether the token is expired."""
-        return self.get_expires_at() >= datetime.now()
+        return self.expires_at >= datetime.now()
 
     def is_valid(self):
         """Determines whether the token is valid."""
