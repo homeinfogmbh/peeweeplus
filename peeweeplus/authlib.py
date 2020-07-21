@@ -79,9 +79,9 @@ class OAuth2ClientMixin(Model, ClientMixin):   # pylint: disable=R0904
     @property
     def client_info(self):
         """Implementation for Client Info in OAuth 2.0 Dynamic Client
-        Registration Protocol via `Section 3.2.1`_.
+        Registration Protocol via `Section 3.2.1`.
 
-        .. _`Section 3.2.1`: https://tools.ietf.org/html/rfc7591#section-3.2.1
+        `Section 3.2.1`: https://tools.ietf.org/html/rfc7591#section-3.2.1
         """
         return {
             'client_id': self.client_id,
