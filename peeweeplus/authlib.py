@@ -253,37 +253,37 @@ class OAuth2AuthorizationCodeMixin(Model, AuthorizationCodeMixin):
         return self.nonce
 
 
-class RedirectURIMixin:     # pylint: disable=R0903
+class RedirectURIMixin(Model):  # pylint: disable=R0903
     """A redirect URI mixin."""
 
     uri = TextField()
 
 
-class GrantTypeMixin:   # pylint: disable=R0903
+class GrantTypeMixin(Model):    # pylint: disable=R0903
     """A grant type mixin."""
 
     type = TextField()
 
 
-class ResponseTypeMixin:    # pylint: disable=R0903
+class ResponseTypeMixin(Model):     # pylint: disable=R0903
     """A response type mixin."""
 
     type = TextField()
 
 
-class ScopeMixin:   # pylint: disable=R0903
+class ScopeMixin(Model):    # pylint: disable=R0903
     """A scope mixin."""
 
     scope = TextField()
 
 
-class ContactMixin:     # pylint: disable=R0903
+class ContactMixin(Model):  # pylint: disable=R0903
     """A contact mixin."""
 
     contact = TextField()
 
 
-class JWKSMixin:    # pylint: disable=R0903
+class JWKSMixin(Model):     # pylint: disable=R0903
     """A JSON web key set mixin."""
 
     jwk = JSONTextField(serialize=json_dumps, deserialize=json_loads)
