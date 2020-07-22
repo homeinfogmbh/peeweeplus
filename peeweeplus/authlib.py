@@ -66,7 +66,7 @@ class OAuth2ClientMixin(Model, ClientMixin):   # pylint: disable=R0904
     def _get_related_model(cls, model, mixin, backref):
         """Returns an implementation of the related model."""
         class ClientRelatedModel(model, mixin):  # pylint: disable=C0115,R0903
-            class Meta:
+            class Meta:     # pylint: disable=C0115,R0903
                 table_name = backref
 
             client = ForeignKeyField(
