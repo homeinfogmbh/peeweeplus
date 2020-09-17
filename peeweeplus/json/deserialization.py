@@ -80,7 +80,7 @@ def is_unique(record, field, orm_value):
     return False
 
 
-def deserialize(model, json, **filters):
+def deserialize(model, json, *, strict=True, **filters):
     """Creates a new record from a JSON-ish dict."""
 
     record = model()
@@ -105,13 +105,13 @@ def deserialize(model, json, **filters):
 
         setattr(record, attribute, orm_value)
 
-    if json:
+    if json and strict:
         raise InvalidKeys(json.keys())
 
     return record
 
 
-def patch(record, json, **filters):
+def patch(record, json, *, strict=True, **filters):
     """Patches an existing record with a JSON-ish dict."""
 
     model = type(record)
@@ -132,5 +132,5 @@ def patch(record, json, **filters):
 
         setattr(record, attribute, orm_value)
 
-    if json:
+    if json and strict:
         raise InvalidKeys(json.keys())

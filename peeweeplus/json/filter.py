@@ -1,6 +1,5 @@
 """Serialization filter."""
 
-from logging import getLogger
 from typing import NamedTuple
 
 from peewee import AutoField
@@ -10,9 +9,6 @@ from peeweeplus.json.fields import contains
 
 
 __all__ = ['FieldsFilter']
-
-
-LOGGER = getLogger(__file__)
 
 
 class FieldsFilter(NamedTuple):
@@ -26,26 +22,18 @@ class FieldsFilter(NamedTuple):
 
     @classmethod
     def for_deserialization(cls, skip=None, only=None, fk_fields=False,
-                            passwords=True, **kwargs):
+                            passwords=True):
         """Creates the filter from the respective keyword arguments."""
         skip = frozenset(skip) if skip else frozenset()
         only = frozenset(only) if only else frozenset()
-
-        for key in kwargs:
-            LOGGER.warning('Ignoring filter key: %s.', key)
-
         return cls(skip, only, fk_fields, False, passwords)
 
     @classmethod
     def for_serialization(cls, skip=None, only=None, fk_fields=True,
-                          autofields=True, **kwargs):
+                          autofields=True):
         """Creates the filter from the respective keyword arguments."""
         skip = frozenset(skip) if skip else frozenset()
         only = frozenset(only) if only else frozenset()
-
-        for key in kwargs:
-            LOGGER.warning('Ignoring filter key: %s.', key)
-
         return cls(skip, only, fk_fields, autofields, False)
 
     def filter(self, fields):
