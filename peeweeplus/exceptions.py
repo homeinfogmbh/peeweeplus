@@ -2,7 +2,6 @@
 
 
 __all__ = [
-    'MissingModule',
     'NullError',
     'FieldValueError',
     'FieldNotNullable',
@@ -11,17 +10,6 @@ __all__ = [
     'NonUniqueValue',
     'PasswordTooShortError'
 ]
-
-
-class MissingModule(Exception):
-    """Indicates a missing optional module,
-    required for some functionality.
-    """
-
-    def __init__(self, module):
-        """Sets the module."""
-        super().__init__()
-        self.module = module
 
 
 class NullError(TypeError):

@@ -9,7 +9,6 @@ from peeweeplus.converters import dec2orm
 from peeweeplus.converters import date2orm
 from peeweeplus.converters import datetime2orm
 from peeweeplus.database import MySQLDatabase
-from peeweeplus.exceptions import MissingModule
 from peeweeplus.exceptions import FieldValueError
 from peeweeplus.exceptions import FieldNotNullable
 from peeweeplus.exceptions import MissingKeyError
@@ -50,8 +49,8 @@ LOGGER = getLogger(__file__)
 try:
     from peeweeplus.authlib import *
     from peeweeplus.authlib import __all__  as _ALL_AUTHLIB
-except MissingModule as error:
-    LOGGER.warning('Missing module "%s".', error.module)
-    LOGGER.warning('%s integration not available.', error.module)
+except ModuleNotFoundError as error:
+    LOGGER.error('Missing module: %s', error.name)
+    LOGGER.warning('Authlib integration not available.')
 else:
     __all__ += _ALL_AUTHLIB

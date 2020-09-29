@@ -3,6 +3,11 @@
 from datetime import datetime, timedelta
 
 from argon2.exceptions import VerifyMismatchError
+from authlib.common.encoding import json_loads, json_dumps
+from authlib.oauth2.rfc6749 import ClientMixin
+from authlib.oauth2.rfc6749 import TokenMixin
+from authlib.oauth2.rfc6749 import AuthorizationCodeMixin
+from authlib.oauth2.rfc6749.util import scope_to_list, list_to_scope
 
 from peewee import Model
 from peewee import BooleanField
@@ -12,17 +17,7 @@ from peewee import ForeignKeyField
 from peewee import IntegerField
 from peewee import TextField
 
-from peeweeplus.exceptions import MissingModule
 from peeweeplus.fields import Argon2Field, JSONTextField
-
-try:
-    from authlib.common.encoding import json_loads, json_dumps
-    from authlib.oauth2.rfc6749 import ClientMixin
-    from authlib.oauth2.rfc6749 import TokenMixin
-    from authlib.oauth2.rfc6749 import AuthorizationCodeMixin
-    from authlib.oauth2.rfc6749.util import scope_to_list, list_to_scope
-except ModuleNotFoundError:
-    raise MissingModule('authlib')
 
 
 __all__ = [
