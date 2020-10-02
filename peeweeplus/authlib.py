@@ -208,10 +208,7 @@ class OAuth2TokenMixin(Model, TokenMixin):
         if self.revoked:
             return False
 
-        if self.is_expired():
-            return False
-
-        return True
+        return not self.is_expired()
 
 
 class OAuth2AuthorizationCodeMixin(Model, AuthorizationCodeMixin):
