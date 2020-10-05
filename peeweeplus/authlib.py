@@ -201,7 +201,7 @@ class OAuth2TokenMixin(Model, TokenMixin):
 
     def is_expired(self):
         """Determines whether the token is expired."""
-        return self.expires_at >= datetime.now()
+        return self.expires_at <= datetime.now()
 
     def is_valid(self):
         """Determines whether the token is valid."""
