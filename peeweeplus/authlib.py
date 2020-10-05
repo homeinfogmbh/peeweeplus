@@ -180,7 +180,7 @@ class OAuth2TokenMixin(Model, TokenMixin):
 
     @property
     def expires_at(self):
-        """Returns the timstamp in microseconds when the token expires."""
+        """Returns the datetime when the token expires."""
         return self.issued_at + timedelta(minutes=self.expires_in)
 
     def get_client_id(self):
