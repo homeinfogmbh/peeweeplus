@@ -176,12 +176,12 @@ class OAuth2TokenMixin(Model, TokenMixin):
     scope = TextField(default='')
     revoked = BooleanField(default=False)
     issued_at = DateTimeField(default=datetime.now)
-    expires_in = IntegerField(default=0)    # Minutes.
+    expires_in = IntegerField(default=0)    # Seconds.
 
     @property
     def expires_at(self):
         """Returns the datetime when the token expires."""
-        return self.issued_at + timedelta(minutes=self.expires_in)
+        return self.issued_at + timedelta(seconds=self.expires_in)
 
     def get_client_id(self):
         """Returns the client ID."""
