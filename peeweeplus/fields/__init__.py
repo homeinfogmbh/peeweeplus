@@ -9,8 +9,10 @@ from peeweeplus.fields.char import DateTimeCharField
 from peeweeplus.fields.char import DateCharField
 from peeweeplus.fields.crypto import AESTextField
 from peeweeplus.fields.enum import EnumField
+from peeweeplus.fields.int import UnsignedBigIntegerField
 from peeweeplus.fields.int import UnsignedIntegerField
 from peeweeplus.fields.ip import IPv4AddressField
+from peeweeplus.fields.ip import IPv6AddressField
 from peeweeplus.fields.json import JSONTextField
 from peeweeplus.fields.password import PasswordField
 
@@ -24,8 +26,10 @@ __all__ = [
     'EnumField',
     'IntegerCharField',
     'IPv4AddressField',
+    'IPv6AddressField',
     'JSONTextField',
     'PasswordField',
+    'UnsignedBigIntegerField',
     'UnsignedIntegerField'
 ]
 
