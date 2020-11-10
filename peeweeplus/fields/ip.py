@@ -14,8 +14,10 @@ class IPAddressField(CharField):
     """Field to store IPv4 or IPv6 addresses as strings."""
 
     def __init__(self, *args, **kwargs):
-        """Sets the max_length to 39 chars for hex representation of IPv6."""
-        super().__init__(*args, max_length=39, **kwargs)
+        """Sets the max_length to 45 according to:
+        https://stackoverflow.com/a/7477384/3515670
+        """
+        super().__init__(*args, max_length=45, **kwargs)
 
     def db_value(self, value):  # pylint: disable=R0201
         """Returns the IP address' string value or None."""
