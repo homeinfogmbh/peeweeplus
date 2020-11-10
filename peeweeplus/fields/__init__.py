@@ -11,6 +11,7 @@ from peeweeplus.fields.crypto import AESTextField
 from peeweeplus.fields.enum import EnumField
 from peeweeplus.fields.int import UnsignedBigIntegerField
 from peeweeplus.fields.int import UnsignedIntegerField
+from peeweeplus.fields.ip import IPAddressField
 from peeweeplus.fields.ip import IPv4AddressField
 from peeweeplus.fields.ip import IPv6AddressField
 from peeweeplus.fields.json import JSONTextField
@@ -25,6 +26,7 @@ __all__ = [
     'DecimalCharField',
     'EnumField',
     'IntegerCharField',
+    'IPAddressField',
     'IPv4AddressField',
     'IPv6AddressField',
     'JSONTextField',
