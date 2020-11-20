@@ -15,6 +15,7 @@ __all__ = ['JSON_FIELDS', 'contains', 'get_json_fields', 'FieldConverter']
 
 
 JSON_FIELDS = {}
+CACHE_LIMIT = 1024 * 1024
 
 
 class JSONField(NamedTuple):
@@ -90,7 +91,7 @@ class FieldConverter(dict):
     def __call__(self, field: Field, value: object,
                  check_null: bool = False) -> object:
         """Converts the respective value to the field."""
-        @lru_cache(maxsize=4096, typed=True)
+        @lru_cache(maxsize=CACHE_LIMIT, typed=True)
         def cached(field: Field, value: object, check_null: bool):
             """Caches the result."""
             if value is None:
