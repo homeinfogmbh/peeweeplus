@@ -44,8 +44,9 @@ class Argon2Hash(str):
 
     def rehash(self, passwd, *, force=False):
         """Performs a rehash."""
+        print(self.field, type(self.field))
+
         if force or self.needs_rehash:
-            print(self.field, type(self.field))
             # Only rehash if the new hash length fits the current field.
             if self.field.size_changed:
                 self.field = passwd
