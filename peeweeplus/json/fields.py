@@ -87,25 +87,29 @@ def get_json_fields(model: ModelBase) -> frozenset:
 class FieldConverter(dict):
     """Maps conversion functions to field classes."""
 
-    @lru_cache(maxsize=4096, typed=True)
     def __call__(self, field: Field, value: object,
                  check_null: bool = False) -> object:
         """Converts the respective value to the field."""
-        if value is None:
-            if check_null and not field.null:
-                raise NullError()
+        @lru_cache(maxsize=4096, typed=True)
+        def cached(field: Field, value: object, check_null: bool):
+            """Caches the result."""
+            if value is None:
+                if check_null and not field.null:
+                    raise NullError()
 
-            return None
+                return None
 
-        for parent in type(field).__mro__:
-            try:
-                function = self[parent]
-            except KeyError:
-                continue
+            for parent in type(field).__mro__:
+                try:
+                    function = self[parent]
+                except KeyError:
+                    continue
 
-            with suppress(TypeError):
-                return function(value, field)
+                with suppress(TypeError):
+                    return function(value, field)
 
-            return function(value)
+                return function(value)
 
-        return value
+            return value
+
+        return cached(field, value, check_null)
