@@ -21,8 +21,3 @@ class JSONMixin:    # pylint: disable=R0903
 
 class JSONModel(Model, JSONMixin):
     """A JSON de-/serializable model."""
-
-    def __init_subclass__(cls, *args, **kwargs):
-        """Resets the JSON fields cache."""
-        super().__init_subclass__(*args, **kwargs)
-        cls.__json_fields__ = None

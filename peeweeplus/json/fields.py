@@ -10,10 +10,10 @@ from strflib import camel_case
 from peeweeplus.exceptions import NullError
 
 
-__all__ = ['contains', 'get_json_fields', 'FieldConverter']
+__all__ = ['JSON_FIELDS', 'contains', 'get_json_fields', 'FieldConverter']
 
 
-CACHE_PROPERTY = '__json_fields__'
+JSON_FIELDS = {}
 
 
 class JSONField(NamedTuple):
@@ -73,17 +73,13 @@ def _get_json_fields(model: ModelBase) -> Generator[JSONField, None, None]:
 
 def get_json_fields(model: ModelBase) -> frozenset:
     """Returns the JSON fields of the respective model
-    and caches it in the model's __json_fields__ property.
+    and caches it in the JSON_FIELDS dict.
     """
 
-    try:
-        fields = model.__json_fields__
-    except AttributeError:
-        return frozenset(_get_json_fields(model))
+    with suppress(KeyError):
+        return JSON_FIELDS[model]
 
-    if fields is None:
-        model.__json_fields__ = fields = frozenset(_get_json_fields(model))
-
+    JSON_FIELDS[model] = fields = frozenset(_get_json_fields(model))
     return fields
 
 
