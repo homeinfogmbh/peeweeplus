@@ -21,7 +21,8 @@ class Argon2Hash(str):
     def __init__(self, _, field):
         """Sets the hasher."""
         super().__init__()
-        self.field = field
+        self._field = field
+        self._instance = None
 
     @classmethod
     def from_plaintext(cls, plaintext, field):
@@ -31,24 +32,30 @@ class Argon2Hash(str):
     @property
     def needs_rehash(self):
         """Determines whether the password needs a rehash."""
-        return self.field.hasher.check_needs_rehash(self)
+        return self._field.hasher.check_needs_rehash(self)
 
     @property
     def parameters(self):
         """Returns the Argon2 hash parameters."""
         return extract_parameters(self)
 
+    @property
+    def _accessor(self):
+        """Returns the accessor."""
+        return getattr(self._field.model, self._field.name)
+
+    def _set(self, passwd):
+        """Updates the hash."""
+        self._accessor.__set__(self._instance, passwd)
+
     def verify(self, passwd):
         """Validates the plain text password against this hash."""
-        return self.field.hasher.verify(self, passwd)
+        return self._field.hasher.verify(self, passwd)
 
     def rehash(self, passwd, *, force=False):
         """Performs a rehash."""
-        print(self.field, type(self.field), dir(self.field), self.field.model)
-
         if force or self.needs_rehash:
-            #self.field.accessor_class(self.field.model, self.field, self.field.name).__set__
-            self.field = passwd
+            self._set(passwd)
             return True
 
         return False
@@ -70,8 +77,10 @@ class Argon2FieldAccessor(FieldAccessor):  # pylint: disable=R0903
 
                 value = Argon2Hash.from_plaintext(value, self.field)
 
-        if len(value) != self.field.actual_size:
-            raise ValueError('Hash length does not match char field size.')
+            if len(value) != self.field.actual_size:
+                raise ValueError('Hash length does not match char field size.')
+
+            value._instance = instance
 
         super().__set__(instance, value)
 
