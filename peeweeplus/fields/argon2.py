@@ -70,7 +70,6 @@ class Argon2FieldAccessor(FieldAccessor):  # pylint: disable=R0903
 
     def __set__(self, instance, value):
         """Sets the password hash."""
-        print('Instance:', instance, type(instance))
         if value is not None:
             if not isinstance(value, Argon2Hash):
                 length = len(value)
