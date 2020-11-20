@@ -44,6 +44,8 @@ class Argon2Hash(str):
 
     def rehash(self, passwd, *, force=False):
         """Performs a rehash."""
+        print(self.field, type(self.field), dir(self.field))
+
         if force or self.needs_rehash:
             self.field = passwd
             return True
