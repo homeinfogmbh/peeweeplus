@@ -1,6 +1,7 @@
 """Miscellaneous stuff."""
 
 from contextlib import suppress
+from functools import lru_cache
 from typing import Generator, Iterable, NamedTuple
 
 from peewee import Field, ForeignKeyField, ModelBase
@@ -86,6 +87,7 @@ def get_json_fields(model: ModelBase) -> frozenset:
 class FieldConverter(dict):
     """Maps conversion functions to field classes."""
 
+    @lru_cache(maxsize=4096, typed=True)
     def __call__(self, field: Field, value: object,
                  check_null: bool = False) -> object:
         """Converts the respective value to the field."""
