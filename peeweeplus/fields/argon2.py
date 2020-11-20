@@ -93,12 +93,12 @@ class Argon2Field(PasswordField):   # pylint: disable=R0901
 
     accessor_class = Argon2FieldAccessor
 
-    def __init__(self, hasher=None, min_pw_len=8, **kwargs):
+    def __init__(self, hasher=PasswordHasher(), min_pw_len=8, **kwargs):
         """Initializes the char field, defaulting
         max_length to the respective hash length.
         """
         super().__init__(max_length=len(hasher.hash('')), **kwargs)
-        self.hasher = hasher or PasswordHasher()
+        self.hasher = hasher
         self.min_pw_len = min_pw_len
 
     def python_value(self, value):
