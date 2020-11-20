@@ -47,6 +47,7 @@ class Argon2Hash(str):
         print(self.field, type(self.field), dir(self.field))
 
         if force or self.needs_rehash:
+            #self.field.accessor_class(self.field.model, self.field, self.field.name).__set__
             self.field = passwd
             return True
 
@@ -58,6 +59,7 @@ class Argon2FieldAccessor(FieldAccessor):  # pylint: disable=R0903
 
     def __set__(self, instance, value):
         """Sets the password hash."""
+        print('Instance:', instance, type(instance))
         if value is not None:
             if not isinstance(value, Argon2Hash):
                 length = len(value)
