@@ -1,6 +1,6 @@
 """JSON deserialization."""
 
-from ipaddress import IPv4Address
+from ipaddress import IPv4Address, IPv6Address, ip_address
 from uuid import UUID
 
 from peewee import BlobField
@@ -8,9 +8,12 @@ from peewee import BooleanField
 from peewee import DateField
 from peewee import DateTimeField
 from peewee import DecimalField
+from peewee import Field
 from peewee import FloatField
 from peewee import ForeignKeyField
 from peewee import IntegerField
+from peewee import Model
+from peewee import ModelBase
 from peewee import TimeField
 from peewee import UUIDField
 
@@ -20,7 +23,10 @@ from peeweeplus.exceptions import InvalidKeys
 from peeweeplus.exceptions import MissingKeyError
 from peeweeplus.exceptions import NonUniqueValue
 from peeweeplus.exceptions import NullError
-from peeweeplus.fields import EnumField, IPv4AddressField
+from peeweeplus.fields import EnumField
+from peeweeplus.fields import IPAddressField
+from peeweeplus.fields import IPv4AddressField
+from peeweeplus.fields import IPv6AddressField
 from peeweeplus.json.fields import get_json_fields, FieldConverter
 from peeweeplus.json.filter import FieldsFilter
 from peeweeplus.json.parsers import parse_blob
@@ -29,6 +35,7 @@ from peeweeplus.json.parsers import parse_date
 from peeweeplus.json.parsers import parse_datetime
 from peeweeplus.json.parsers import parse_time
 from peeweeplus.json.parsers import parse_enum
+from peeweeplus.types import JSON
 
 
 __all__ = ['deserialize', 'patch']
@@ -44,13 +51,16 @@ CONVERTER = FieldConverter({
     FloatField: float,
     ForeignKeyField: int,
     IntegerField: int,
+    IPAddressField: ip_address,
     IPv4AddressField: IPv4Address,
+    IPv6AddressField: IPv6Address,
     TimeField: parse_time,
     UUIDField: UUID
 })
 
 
-def get_orm_value(model, key, attribute, field, json_value):
+def get_orm_value(model: ModelBase, key: str, attribute: str,
+                  field: Field, json_value: JSON) -> object:
     """Returns the appropriate value for the field."""
 
     try:
@@ -61,7 +71,7 @@ def get_orm_value(model, key, attribute, field, json_value):
         raise FieldValueError(model, key, attribute, field, json_value)
 
 
-def is_unique(record, field, orm_value):
+def is_unique(record: Model, field, orm_value) -> bool:
     """Checks whether the value is unique for the field."""
 
     primary_key = record._pk    # pylint: disable=W0212
@@ -80,7 +90,8 @@ def is_unique(record, field, orm_value):
     return False
 
 
-def deserialize(model, json, *, strict=True, **filters):
+def deserialize(model: ModelBase, json: dict, *, strict: bool = True,
+                **filters) -> Model:
     """Creates a new record from a JSON-ish dict."""
 
     record = model()
@@ -111,7 +122,7 @@ def deserialize(model, json, *, strict=True, **filters):
     return record
 
 
-def patch(record, json, *, strict=True, **filters):
+def patch(record: Model, json: dict, *, strict: bool = True, **filters):
     """Patches an existing record with a JSON-ish dict."""
 
     model = type(record)

@@ -1,9 +1,9 @@
 """Miscellaneous stuff."""
 
 from contextlib import suppress
-from typing import NamedTuple
+from typing import Generator, Iterable, NamedTuple
 
-from peewee import Field, ForeignKeyField
+from peewee import Field, ForeignKeyField, ModelBase
 
 from strflib import camel_case
 
@@ -11,6 +11,9 @@ from peeweeplus.exceptions import NullError
 
 
 __all__ = ['contains', 'get_json_fields', 'FieldConverter']
+
+
+CACHE_PROPERTY = '__json_fields__'
 
 
 class JSONField(NamedTuple):
@@ -21,7 +24,8 @@ class JSONField(NamedTuple):
     field: Field
 
 
-def contains(iterable, key, attribute, *, default=False):
+def contains(iterable: Iterable, key: str, attribute: str, *,
+             default: bool = False) -> bool:
     """Determines whether the field is contained within the iterable."""
 
     if iterable:
@@ -30,7 +34,7 @@ def contains(iterable, key, attribute, *, default=False):
     return default
 
 
-def _get_json_fields(model):
+def _get_json_fields(model: ModelBase) -> Generator[JSONField, None, None]:
     """Yields the JSON fields of the respective model."""
 
     fields = model._meta.fields     # pylint: disable=W0212
@@ -67,27 +71,27 @@ def _get_json_fields(model):
         yield JSONField(key, attribute, field)
 
 
-def get_json_fields(model, cache_property='JSON_FIELDS'):
+def get_json_fields(model: ModelBase) -> frozenset:
     """Returns the JSON fields of the respective model
-    and caches it in the model's <cache_property> property.
+    and caches it in the model's __json_fields__ property.
     """
 
-    if not cache_property:
+    try:
+        fields = model.__json_fields__
+    except AttributeError:
         return frozenset(_get_json_fields(model))
 
-    json_fields = getattr(model, cache_property, None)
+    if fields is None:
+        model.__json_fields__ = fields = frozenset(_get_json_fields(model))
 
-    if json_fields is None:
-        json_fields = frozenset(_get_json_fields(model))
-        setattr(model, cache_property, json_fields)
-
-    return json_fields
+    return fields
 
 
 class FieldConverter(dict):
     """Maps conversion functions to field classes."""
 
-    def __call__(self, field, value, check_null=False):
+    def __call__(self, field: Field, value: object,
+                 check_null: bool = False) -> object:
         """Converts the respective value to the field."""
         if value is None:
             if check_null and not field.null:

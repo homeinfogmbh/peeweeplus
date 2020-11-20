@@ -8,15 +8,15 @@ from lxml.html.clean import Cleaner     # pylint: disable=E0611
 __all__ = ['ALLOWED_TAGS', 'CLEANER', 'sanitize']
 
 
-ALLOWED_TAGS = (
+ALLOWED_TAGS = {
     'br', 'div', 'em', 'font', 'li', 'ol', 'p', 'span', 'strong', 'table',
     'tbody', 'td', 'th', 'thead', 'tr', 'ul'
-)
+}
 CLEANER = Cleaner(allow_tags=ALLOWED_TAGS, remove_unknown_tags=False)
 
 
 @lru_cache()
-def sanitize(text, cleaner=CLEANER):
+def sanitize(text: str, *, cleaner: Cleaner = CLEANER) -> str:
     """Sanitizes the respective HTML text."""
 
     try:

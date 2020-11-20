@@ -1,5 +1,9 @@
 """Exceptions."""
 
+from typing import Iterable
+
+from peewee import Field, ModelBase
+
 
 __all__ = [
     'NullError',
@@ -19,7 +23,8 @@ class NullError(TypeError):
 class ModelFieldError(ValueError):
     """An error that stores model, attribute and fields."""
 
-    def __init__(self, model, key, attribute, field):
+    def __init__(self, model: ModelBase, key: str, attribute: str,
+                 field: Field):
         """Sets the field."""
         super().__init__()
         self.model = model
@@ -31,7 +36,8 @@ class ModelFieldError(ValueError):
 class FieldValueError(ModelFieldError):
     """Indicates that the field cannot store data of the provided type."""
 
-    def __init__(self, model, key, attribute, field, value):
+    def __init__(self, model: ModelBase, key: str, attribute: str,
+                 field: Field, value: object):
         """Sets the field and value."""
         super().__init__(model, key, attribute, field)
         self.value = value
@@ -81,7 +87,7 @@ class InvalidKeys(ValueError):
     can not be consumed by the model.
     """
 
-    def __init__(self, invalid_keys):
+    def __init__(self, invalid_keys: Iterable[str]):
         """Sets the respective invalid keys."""
         super().__init__(invalid_keys)
         self.invalid_keys = tuple(invalid_keys)
@@ -97,7 +103,7 @@ class NonUniqueValue(ValueError):
     respective field is unique but the value is not.
     """
 
-    def __init__(self, key, value):
+    def __init__(self, key: str, value: object):
         """Sets the respective invalid key→value mapping."""
         super().__init__(key, value)
         self.key = key
@@ -107,7 +113,7 @@ class NonUniqueValue(ValueError):
 class PasswordTooShortError(Exception):
     """Indicates that the provided password was too short."""
 
-    def __init__(self, pwlen, minlen):
+    def __init__(self, pwlen: int, minlen: int):
         """Sets minimum length and actual password length."""
         super().__init__(self)
         self.pwlen = pwlen

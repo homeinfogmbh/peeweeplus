@@ -2,12 +2,14 @@
 
 from base64 import b64encode
 from contextlib import suppress
+from typing import Tuple, Union
 
 from peewee import BlobField
 from peewee import DateField
 from peewee import DateTimeField
 from peewee import DecimalField
 from peewee import ForeignKeyField
+from peewee import Model
 from peewee import TimeField
 from peewee import UUIDField
 from peeweeplus.fields import EnumField, IPv4AddressField
@@ -32,7 +34,8 @@ CONVERTER = FieldConverter({
 })
 
 
-def _check_cascade(key, attribute, cascade):
+def _check_cascade(key: str, attribute: str,
+                   cascade: Union[bool, int]) -> Tuple[bool, bool]:
     """Returns a tuple of current cascade status
     and cascade status for the next level.
     """
@@ -63,7 +66,8 @@ def _check_cascade(key, attribute, cascade):
     return (False, None)
 
 
-def serialize(record, *, null=False, cascade=None, **filters):
+def serialize(record: Model, *, null: bool = False,
+              cascade: Union[bool, int] = None, **filters) -> dict:
     """Returns a JSON-ish dict with the record's fields' values."""
 
     model = type(record)

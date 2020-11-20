@@ -10,6 +10,7 @@ from authlib.oauth2.rfc6749 import AuthorizationCodeMixin
 from authlib.oauth2.rfc6749.util import scope_to_list, list_to_scope
 
 from peewee import Model
+from peewee import ModelBase
 from peewee import BooleanField
 from peewee import CharField
 from peewee import DateTimeField
@@ -18,6 +19,7 @@ from peewee import IntegerField
 from peewee import TextField
 
 from peeweeplus.fields import Argon2Field, JSONTextField
+from peeweeplus.types import ModelGenerator
 
 
 __all__ = [
@@ -52,13 +54,14 @@ class OAuth2ClientMixin(Model, ClientMixin):   # pylint: disable=R0904
     software_version = TextField(null=True)
 
     @classmethod
-    def get_related_models(cls, model=Model):
+    def get_related_models(cls, model: ModelBase = Model) -> ModelGenerator:
         """Yields related models."""
         for mixin, backref in CLIENT_RELATED_MIXINS:
             yield cls._get_related_model(model, mixin, backref)
 
     @classmethod
-    def _get_related_model(cls, model, mixin, backref):
+    def _get_related_model(cls, model: ModelBase, mixin: type,
+                           backref: str) -> Model:
         """Returns an implementation of the related model."""
         class ClientRelatedModel(model, mixin):  # pylint: disable=C0115,R0903
             class Meta:     # pylint: disable=C0115,R0903
@@ -72,7 +75,7 @@ class OAuth2ClientMixin(Model, ClientMixin):   # pylint: disable=R0904
         return ClientRelatedModel
 
     @property
-    def client_info(self):
+    def client_info(self) -> dict:
         """Implementation for Client Info in OAuth 2.0 Dynamic Client
         Registration Protocol via `Section 3.2.1`.
 
@@ -119,7 +122,7 @@ class OAuth2ClientMixin(Model, ClientMixin):   # pylint: disable=R0904
         """Returns the client's ID."""
         return self.client_id
 
-    def get_default_redirect_uri(self):
+    def get_default_redirect_uri(self) -> str:
         """Returns the default redirect URI."""
         try:
             redirect_uri, *_ = self.redirect_uris
@@ -128,7 +131,7 @@ class OAuth2ClientMixin(Model, ClientMixin):   # pylint: disable=R0904
 
         return redirect_uri
 
-    def get_allowed_scope(self, scope):
+    def get_allowed_scope(self, scope: str) -> str:
         """Returns the allowed scope."""
         if not scope:
             return ''
@@ -137,15 +140,15 @@ class OAuth2ClientMixin(Model, ClientMixin):   # pylint: disable=R0904
         scopes = scope_to_list(scope)
         return list_to_scope([scope for scope in scopes if scope in allowed])
 
-    def check_redirect_uri(self, redirect_uri):
+    def check_redirect_uri(self, redirect_uri: str) -> bool:
         """Checks the redirect URI."""
         return redirect_uri in {uri.uri for uri in self.redirect_uris}
 
-    def has_client_secret(self):
+    def has_client_secret(self) -> bool:
         """Checks if the client's secret is set."""
         return self.client_secret is not None
 
-    def check_client_secret(self, client_secret):
+    def check_client_secret(self, client_secret: str) -> bool:
         """Verifies the client's secret."""
         # pylint: disable=E1101
         try:
@@ -153,15 +156,15 @@ class OAuth2ClientMixin(Model, ClientMixin):   # pylint: disable=R0904
         except VerifyMismatchError:
             return False
 
-    def check_token_endpoint_auth_method(self, method):
+    def check_token_endpoint_auth_method(self, method: str) -> bool:
         """Verifies the token endpoint authentication method."""
         return self.token_endpoint_auth_method == method
 
-    def check_response_type(self, response_type):
+    def check_response_type(self, response_type: str) -> bool:
         """Verifies the response type."""
         return response_type in {typ.type for typ in self.response_types}
 
-    def check_grant_type(self, grant_type):
+    def check_grant_type(self, grant_type: str) -> bool:
         """Verifies the grant type."""
         return grant_type in {typ.type for typ in self.grant_types}
 
@@ -179,36 +182,33 @@ class OAuth2TokenMixin(Model, TokenMixin):
     expires_in = IntegerField(default=0)    # Seconds.
 
     @property
-    def expires_at(self):
+    def expires_at(self) -> datetime:
         """Returns the datetime when the token expires."""
         return self.issued_at + timedelta(seconds=self.expires_in)
 
-    def get_client_id(self):
+    def get_client_id(self) -> str:
         """Returns the client ID."""
         return self.client_id
 
-    def get_scope(self):
+    def get_scope(self) -> str:
         """Returns the scope."""
         return self.scope
 
-    def get_expires_in(self):
+    def get_expires_in(self) -> int:
         """Returns the amount of microseconds the token expires in."""
         return self.expires_in
 
-    def get_expires_at(self):
+    def get_expires_at(self) -> int:
         """Returns the timstamp in microseconds when the token expires."""
         return self.expires_at.timestamp()
 
-    def is_expired(self):
+    def is_expired(self) -> bool:
         """Determines whether the token is expired."""
         return self.expires_at <= datetime.now()
 
-    def is_valid(self):
+    def is_valid(self) -> bool:
         """Determines whether the token is valid."""
-        if self.revoked:
-            return False
-
-        return not self.is_expired()
+        return not self.revoked and not self.is_expired()
 
 
 class OAuth2AuthorizationCodeMixin(Model, AuthorizationCodeMixin):
@@ -224,23 +224,23 @@ class OAuth2AuthorizationCodeMixin(Model, AuthorizationCodeMixin):
     code_challenge = TextField(null=True)
     code_challenge_method = CharField(48, null=True)
 
-    def is_expired(self):
+    def is_expired(self) -> bool:
         """Determines whether the autorization code is expired."""
         return self.auth_time + timedelta(seconds=300) < datetime.now()
 
-    def get_redirect_uri(self):
+    def get_redirect_uri(self) -> str:
         """Returns a redirect URI."""
         return self.redirect_uri
 
-    def get_scope(self):
+    def get_scope(self) -> str:
         """Returns the scope."""
         return self.scope
 
-    def get_auth_time(self):
+    def get_auth_time(self) -> datetime:
         """Returns the authentication time."""
         return self.auth_time
 
-    def get_nonce(self):
+    def get_nonce(self) -> str:
         """Returns the nonce."""
         return self.nonce
 

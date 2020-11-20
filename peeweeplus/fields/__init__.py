@@ -7,7 +7,6 @@ from peeweeplus.fields.char import IntegerCharField
 from peeweeplus.fields.char import DecimalCharField
 from peeweeplus.fields.char import DateTimeCharField
 from peeweeplus.fields.char import DateCharField
-from peeweeplus.fields.crypto import AESTextField
 from peeweeplus.fields.enum import EnumField
 from peeweeplus.fields.int import UnsignedBigIntegerField
 from peeweeplus.fields.int import UnsignedIntegerField
@@ -19,7 +18,6 @@ from peeweeplus.fields.password import PasswordField
 
 
 __all__ = [
-    'AESTextField',
     'BooleanCharField',
     'DateCharField',
     'DateTimeCharField',

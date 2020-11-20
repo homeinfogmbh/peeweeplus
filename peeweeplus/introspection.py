@@ -1,7 +1,10 @@
 """Database introspection."""
 
+from __future__ import annotations
 from re import compile  # pylint: disable=W0622
 from typing import NamedTuple
+
+from peewee import Field
 
 
 __all__ = ['FieldType']
@@ -9,8 +12,9 @@ __all__ = ['FieldType']
 
 FIELD_TYPE = compile('^([a-z]+)\\((\\d*)\\)$')
 FIELD_TYPE_QUERY = (
-    "SELECT COLUMN_TYPE FROM information_schema.COLUMNS WHERE "
-    "TABLE_SCHEMA = %s AND TABLE_NAME = %s AND COLUMN_NAME = %s")
+    'SELECT COLUMN_TYPE FROM information_schema.COLUMNS WHERE '
+    'TABLE_SCHEMA = %s AND TABLE_NAME = %s AND COLUMN_NAME = %s'
+)
 
 
 class FieldType(NamedTuple):
@@ -20,7 +24,7 @@ class FieldType(NamedTuple):
     size: int
 
     @classmethod
-    def from_field(cls, field):
+    def from_field(cls, field: Field) -> FieldType:
         """Returns the field type."""
         database = field.model._meta.database   # pylint: disable=W0212
         values = (

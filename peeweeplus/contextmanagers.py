@@ -1,5 +1,7 @@
 """Context managers."""
 
+from peewee import ModelBase
+
 
 __all__ = ['ChangedConnection']
 
@@ -9,7 +11,7 @@ class ChangedConnection:
     target model to those of the source model.
     """
 
-    def __init__(self, target, source):
+    def __init__(self, target: ModelBase, source: ModelBase):
         """Sets the models."""
         self.target = target
         self.source = source

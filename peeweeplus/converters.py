@@ -1,5 +1,7 @@
 """Converter functions."""
 
+from datetime import date, datetime
+
 from timelib import strpdatetime
 
 
@@ -13,7 +15,7 @@ __all__ = [
 ]
 
 
-def dec2dom(value):
+def dec2dom(value: object) -> str:
     """Converts a decimal into a DOM compliant value."""
 
     if value is None:
@@ -22,7 +24,7 @@ def dec2dom(value):
     return str(value)
 
 
-def dec2dict(value):
+def dec2dict(value: object) -> float:
     """Converts a decimal-like string into a JSON-compliant value."""
 
     if value is None:
@@ -31,13 +33,10 @@ def dec2dict(value):
     return float(value)
 
 
-def dec2orm(value):
-    """Converts a decimal into an ORM compliant value."""
-
-    return dec2dict(value)
+dec2orm = dec2dict
 
 
-def date2orm(value):
+def date2orm(value: object) -> date:
     """Converts a date object to a ORM compliant value."""
 
     if value is None:
@@ -46,7 +45,7 @@ def date2orm(value):
     return value.date()
 
 
-def datetime2orm(value):
+def datetime2orm(value: object) -> datetime:
     """Converts a datetime object to a ORM comliant value."""
 
     if value is None:
@@ -55,7 +54,7 @@ def datetime2orm(value):
     return strpdatetime(value.isoformat())
 
 
-def parse_float(string):
+def parse_float(string: str) -> float:
     """Parses a float from a comma or dot (or both) containing string."""
 
     if ',' in string and '.' in string:

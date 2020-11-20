@@ -2,6 +2,8 @@
 
 from collections import deque
 
+from peewee import Model
+
 
 __all__ = ['Transaction']
 
@@ -18,7 +20,7 @@ class Transaction(deque):
         """Delegates to the primary record."""
         return getattr(self.primary, attr)
 
-    def add(self, record, left=False, primary=False):
+    def add(self, record: Model, left: bool = False, primary: bool = False):
         """Adds the respective record."""
         item = (False, record)
 
@@ -30,7 +32,7 @@ class Transaction(deque):
 
         return self.append(item)
 
-    def delete(self, record, left=False):
+    def delete(self, record: Model, left: bool = False):
         """Deletes the respective record."""
         item = (True, record)
 

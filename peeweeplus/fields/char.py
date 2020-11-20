@@ -1,6 +1,7 @@
 """Specialized character-based fields."""
 
-from datetime import datetime
+from datetime import date, datetime
+from typing import Union
 
 from peewee import CharField
 
@@ -19,14 +20,15 @@ __all__ = [
 class EmptyableCharField(CharField):
     """A Char field that might be empty."""
 
-    def __init__(self, *args, null=False, default=None, **kwargs):
+    def __init__(self, *args, null: bool = False, default: str = None,
+                 **kwargs):
         """Updates the default value."""
         if default is None and not null:
             default = ''
 
         super().__init__(*args, null=null, default=default, **kwargs)
 
-    def db_value(self, value):
+    def db_value(self, value: str) -> str:
         """Converts the value to a string using the first separator."""
         if value is None:
             return None if self.null else ''
@@ -37,20 +39,20 @@ class EmptyableCharField(CharField):
 class BooleanCharField(EmptyableCharField):
     """Stores boolean values as text."""
 
-    def __init__(self, *args, true='J', false='N', **kwargs):
+    def __init__(self, *args, true: str = 'J', false: str = 'N', **kwargs):
         """Invokes super init and stores true and false values."""
         super().__init__(*args, **kwargs)
         self.true = true
         self.false = false
 
-    def db_value(self, value):
+    def db_value(self, value: bool) -> str:
         """Returns the database value."""
         if value is None:
             return None if self.null else ''
 
         return self.true if value else self.false
 
-    def python_value(self, value):
+    def python_value(self, value: str) -> bool:
         """Returns the python value."""
         if not value:
             return None
@@ -67,7 +69,7 @@ class BooleanCharField(EmptyableCharField):
 class IntegerCharField(EmptyableCharField):
     """Integers stored as strings."""
 
-    def python_value(self, value):  # pylint: disable=R0201
+    def python_value(self, value: str) -> int:  # pylint: disable=R0201
         """Returns the stored string as integer."""
         return int(value) if value else None
 
@@ -75,7 +77,7 @@ class IntegerCharField(EmptyableCharField):
 class DecimalCharField(EmptyableCharField):
     """Decimal values stored as strings."""
 
-    def python_value(self, value):  # pylint: disable=R0201
+    def python_value(self, value: str) -> float:    # pylint: disable=R0201
         """Returns a float from the database string."""
         return parse_float(value) if value else None
 
@@ -83,19 +85,19 @@ class DecimalCharField(EmptyableCharField):
 class DateTimeCharField(EmptyableCharField):
     """A CharField that stores datetime values."""
 
-    def __init__(self, *args, format='%c', **kwargs):   # pylint: disable=W0622
+    def __init__(self, *args, format: str = '%c', **kwargs):
         """Invokes super init and sets the format."""
         super().__init__(*args, **kwargs)
         self.format = format
 
-    def db_value(self, value):
+    def db_value(self, value: Union[date, datetime]) -> str:
         """Returns a string for the database."""
         if value is not None:
             return None if self.null else ''
 
         return value.strftime(self.format)
 
-    def python_value(self, value):
+    def python_value(self, value: str) -> datetime:
         """Returns a datetime object for python."""
         return datetime.strptime(value, self.format) if value else None
 
@@ -103,7 +105,7 @@ class DateTimeCharField(EmptyableCharField):
 class DateCharField(DateTimeCharField):     # pylint: disable=R0901
     """A CharField that stores date values."""
 
-    def python_value(self, value):
+    def python_value(self, value: str) -> date:
         """Returns a datetime object for python."""
         if not value:
             return None

@@ -2,8 +2,10 @@
 
 from base64 import b64decode
 from datetime import datetime, date, time
+from enum import Enum
+from typing import Union
 
-from peewee import Model
+from peewee import Field, Model
 
 from timelib import strpdatetime, strpdate, strptime    # pylint: disable=E0401
 
@@ -19,7 +21,7 @@ __all__ = [
 ]
 
 
-def parse_bool(value):
+def parse_bool(value: Union[bool, int]) -> bool:
     """Parses a boolean value."""
 
     if isinstance(value, (bool, int)):
@@ -28,7 +30,7 @@ def parse_bool(value):
     raise ValueError(value)
 
 
-def parse_datetime(value):
+def parse_datetime(value: Union[datetime, str]) -> datetime:
     """Parses a datetime value."""
 
     if isinstance(value, datetime):
@@ -37,7 +39,7 @@ def parse_datetime(value):
     return strpdatetime(value)
 
 
-def parse_date(value):
+def parse_date(value: Union[date, str]) -> date:
     """Parses a date value."""
 
     if isinstance(value, date):
@@ -46,7 +48,7 @@ def parse_date(value):
     return strpdate(value)
 
 
-def parse_time(value):
+def parse_time(value: Union[time, str]) -> time:
     """Parses a time value."""
 
     if isinstance(value, time):
@@ -55,7 +57,7 @@ def parse_time(value):
     return strptime(value)
 
 
-def parse_blob(value):
+def parse_blob(value: Union[bytes, str]) -> bytes:
     """Parses a blob value."""
 
     if isinstance(value, bytes):
@@ -64,7 +66,7 @@ def parse_blob(value):
     return b64decode(value)
 
 
-def parse_enum(value, field):
+def parse_enum(value: Union[Enum, str], field: Field) -> Enum:
     """Parses an enumeration value."""
 
     if isinstance(value, field.enum):
@@ -73,7 +75,7 @@ def parse_enum(value, field):
     return field.enum(value)
 
 
-def get_fk_value(value):
+def get_fk_value(value: Union[int, Model]) -> int:
     """Returns the foreign key value."""
 
     if isinstance(value, int):

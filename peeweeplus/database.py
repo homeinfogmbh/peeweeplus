@@ -1,5 +1,8 @@
 """Database enhancements."""
 
+from __future__ import annotations
+from configparser import SectionProxy
+
 from peewee import OperationalError, MySQLDatabase as _MySQLDatabase
 
 
@@ -9,14 +12,15 @@ __all__ = ['MySQLDatabase']
 class MySQLDatabase(_MySQLDatabase):    # pylint: disable=W0223
     """Extension of peewee.MySQLDatabase with closing option."""
 
-    def __init__(self, *args, closing=False, retry=False, **kwargs):
+    def __init__(self, *args, closing: bool = False, retry: bool = False,
+                 **kwargs):
         """Adds closing switch for automatic connection closing."""
         super().__init__(*args, **kwargs)
         self.closing = closing
         self.retry = retry
 
     @classmethod
-    def from_config(cls, config):
+    def from_config(cls, config: SectionProxy) -> MySQLDatabase:
         """Creates a database from the respective configuration."""
         try:
             database = config['db']
@@ -35,7 +39,7 @@ class MySQLDatabase(_MySQLDatabase):    # pylint: disable=W0223
             database, host=config['host'], user=config['user'], passwd=passwd,
             closing=closing, retry=retry)
 
-    def execute_sql(self, *args, retried=False, **kwargs):
+    def execute_sql(self, *args, retried: bool = False, **kwargs):
         """Conditionally execute the SQL query in an
         execution context iff closing is enabled.
         """
@@ -49,7 +53,7 @@ class MySQLDatabase(_MySQLDatabase):    # pylint: disable=W0223
             if not self.retry or retried:
                 raise
 
-            if not self.is_closed():
-                self.close()
+        if not self.is_closed():
+            self.close()
 
-            return self.execute_sql(*args, retried=True, **kwargs)
+        return self.execute_sql(*args, retried=True, **kwargs)
