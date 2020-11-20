@@ -47,6 +47,9 @@ class Argon2Hash(str):
 
     def _set(self, passwd):
         """Updates the hash."""
+        if self._instance is None:
+            raise TypeError('Instance not set.')
+
         self._accessor.__set__(self._instance, passwd)
 
     def verify(self, passwd):
