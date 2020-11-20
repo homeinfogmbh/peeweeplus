@@ -18,20 +18,20 @@ class Argon2Hash(str):
         """Retuns a new Argon2Hash."""
         return super().__new__(cls, string)
 
-    def __init__(self, _, hasher):
+    def __init__(self, _, field):
         """Sets the hasher."""
         super().__init__()
-        self.hasher = hasher
+        self.field = field
 
     @classmethod
-    def from_plaintext(cls, plaintext, hasher):
+    def from_plaintext(cls, plaintext, field):
         """Creates an Argon2 hash from a plain text password."""
-        return cls(hasher.hash(plaintext), hasher)
+        return cls(field.hasher.hash(plaintext), field)
 
     @property
     def needs_rehash(self):
         """Determines whether the password needs a rehash."""
-        return self.hasher.check_needs_rehash(self)
+        return self.field.hasher.check_needs_rehash(self)
 
     @property
     def parameters(self):
@@ -40,7 +40,18 @@ class Argon2Hash(str):
 
     def verify(self, passwd):
         """Validates the plain text password against this hash."""
-        return self.hasher.verify(self, passwd)
+        return self.field.hasher.verify(self, passwd)
+
+    def rehash(self, passwd, *, force=False):
+        """Performs a rehash."""
+        if force or self.needs_rehash:
+            print(self.field, type(self.field))
+            # Only rehash if the new hash length fits the current field.
+            if self.field.size_changed:
+                self.field = passwd
+                return True
+
+        return False
 
 
 class Argon2FieldAccessor(FieldAccessor):  # pylint: disable=R0903
@@ -56,7 +67,7 @@ class Argon2FieldAccessor(FieldAccessor):  # pylint: disable=R0903
                 if length < self.field.min_pw_len:
                     raise PasswordTooShortError(length, self.field.min_pw_len)
 
-                value = Argon2Hash.from_plaintext(value, self.field.hasher)
+                value = Argon2Hash.from_plaintext(value, self.field)
 
         super().__set__(instance, value)
 
@@ -79,7 +90,7 @@ class Argon2Field(PasswordField):   # pylint: disable=R0901
         if value is None:
             return None
 
-        return Argon2Hash(value, self.hasher)
+        return Argon2Hash(value, self)
 
     def db_value(self, value):  # pylint: disable=R0201
         """Returns the string value."""
