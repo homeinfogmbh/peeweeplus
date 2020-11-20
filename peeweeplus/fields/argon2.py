@@ -44,13 +44,9 @@ class Argon2Hash(str):
 
     def rehash(self, passwd, *, force=False):
         """Performs a rehash."""
-        print(self.field, type(self.field))
-
         if force or self.needs_rehash:
-            # Only rehash if the new hash length fits the current field.
-            if self.field.size_changed:
-                self.field = passwd
-                return True
+            self.field = passwd
+            return True
 
         return False
 
@@ -69,6 +65,9 @@ class Argon2FieldAccessor(FieldAccessor):  # pylint: disable=R0903
                     raise PasswordTooShortError(length, self.field.min_pw_len)
 
                 value = Argon2Hash.from_plaintext(value, self.field)
+
+        if len(value) != self.field.actual_size:
+            raise ValueError('Hash length does not match char field size.')
 
         super().__set__(instance, value)
 
@@ -101,8 +100,3 @@ class Argon2Field(PasswordField):   # pylint: disable=R0901
     def actual_size(self):  # pylint: disable=R0201
         """Returns the actual field size."""
         return FieldType.from_field(self).size
-
-    @property
-    def size_changed(self):
-        """Determines whether the size has changed."""
-        return self.max_length != self.actual_size
