@@ -42,7 +42,7 @@ class Argon2Hash(str):
     @property
     def _accessor(self):
         """Returns the accessor."""
-        return getattr(self._field.model, self._field.name)
+        return getattr(self._instance, self._field.name)
 
     def _set(self, passwd):
         """Updates the hash."""
