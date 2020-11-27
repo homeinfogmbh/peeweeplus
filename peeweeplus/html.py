@@ -28,7 +28,7 @@ def sanitize(text: str, *, cleaner: Cleaner = CLEANER) -> str:
     except XMLSyntaxError:  # Probably not HTML text.
         return text
 
-    if cleaned_text.startswith(P_TAG) and not text.startswith(P_TAG):
+    if not text.startswith(P_TAG):
         match = P_REGEX.fullmatch(cleaned_text)
 
         if match is not None:
