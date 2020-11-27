@@ -19,7 +19,7 @@ P_TAG = '<p>'
 P_REGEX = compile('<p>(.*)</p>')
 
 
-@lru_cache()
+@lru_cache(maxsize=None)
 def sanitize(text: str, *, cleaner: Cleaner = CLEANER) -> str:
     """Sanitizes the respective HTML text."""
 
