@@ -1,6 +1,7 @@
 """Sanitizing HTML."""
 
 from functools import lru_cache
+
 from lxml.etree import XMLSyntaxError   # pylint: disable=E0611
 from lxml.html.clean import Cleaner     # pylint: disable=E0611
 
@@ -12,7 +13,11 @@ ALLOWED_TAGS = {
     'br', 'div', 'em', 'font', 'li', 'ol', 'p', 'span', 'strong', 'table',
     'tbody', 'td', 'th', 'thead', 'tr', 'ul'
 }
-CLEANER = Cleaner(allow_tags=ALLOWED_TAGS, remove_unknown_tags=False)
+CLEANER = Cleaner(
+    allow_tags=ALLOWED_TAGS,
+    remove_unknown_tags=False,
+    page_structure=False
+)
 
 
 @lru_cache()
