@@ -11,8 +11,8 @@ __all__ = ['ALLOWED_TAGS', 'CLEANER', 'sanitize']
 
 
 ALLOWED_TAGS = {
-    'a', 'br', 'div', 'em', 'font', 'i', 'li', 'ol', 'p', 'span', 'strong',
-    'table', 'tbody', 'td', 'th', 'thead', 'tr', 'u', 'ul'
+    'a', 'b', 'br', 'div', 'em', 'font', 'i', 'li', 'ol', 'p', 'span',
+    'strong', 'table', 'tbody', 'td', 'th', 'thead', 'tr', 'u', 'ul'
 }
 CLEANER = Cleaner(allow_tags=ALLOWED_TAGS, remove_unknown_tags=False)
 P_TAG = '<p>'
