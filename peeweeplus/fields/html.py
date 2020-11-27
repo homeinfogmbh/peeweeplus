@@ -1,10 +1,10 @@
 """HTML escaping."""
 
-from lxml.html.clean import Cleaner     # pylint: disable=E0611
+from typing import Callable
 
 from peewee import CharField, FieldAccessor, TextField
 
-from peeweeplus.html import CLEANER
+from peeweeplus.html import sanitize
 
 
 __all__ = ['HTMLCharField', 'HTMLTextField']
@@ -19,15 +19,15 @@ class HTMLTextAccessor(FieldAccessor):  # pylint: disable=R0903
         if text is None:
             return None
 
-        return self.field.cleaner.clean_html(text)
+        return self.field.clean_func(text)
 
 
 class HTMLCharField(CharField):
     """CharField with HTML escaped text."""
 
-    def __init__(self, *args, cleaner: Cleaner = CLEANER, **kwargs):
+    def __init__(self, *args, clean_func: Callable = sanitize, **kwargs):
         super().__init__(*args, **kwargs)
-        self.cleaner = cleaner
+        self.clean_func = clean_func
 
     accessor_class = HTMLTextAccessor
 
@@ -35,8 +35,8 @@ class HTMLCharField(CharField):
 class HTMLTextField(TextField):
     """TextField with HTML escaped text."""
 
-    def __init__(self, *args, cleaner: Cleaner = CLEANER, **kwargs):
+    def __init__(self, *args, clean_func: Callable = sanitize, **kwargs):
         super().__init__(*args, **kwargs)
-        self.cleaner = cleaner
+        self.clean_func = clean_func
 
     accessor_class = HTMLTextAccessor
