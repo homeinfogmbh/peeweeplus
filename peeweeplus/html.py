@@ -16,7 +16,7 @@ ALLOWED_TAGS = {
 CLEANER = Cleaner(
     allow_tags=ALLOWED_TAGS,
     remove_unknown_tags=False,
-    page_structure=False
+    page_structure=True
 )
 
 
