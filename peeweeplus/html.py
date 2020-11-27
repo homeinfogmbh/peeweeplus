@@ -1,7 +1,7 @@
 """Sanitizing HTML."""
 
 from functools import lru_cache
-from re import compile  # pylint: disable=W0622
+from re import DOTALL, compile  # pylint: disable=W0622
 
 from lxml.etree import XMLSyntaxError   # pylint: disable=E0611
 from lxml.html.clean import Cleaner     # pylint: disable=E0611
@@ -16,7 +16,7 @@ ALLOWED_TAGS = {
 }
 CLEANER = Cleaner(allow_tags=ALLOWED_TAGS, remove_unknown_tags=False)
 P_TAG = '<p>'
-P_REGEX = compile('<p>(.*)</p>')
+P_REGEX = compile('<p>([.*)</p>', flags=DOTALL)
 
 
 @lru_cache(maxsize=None)
