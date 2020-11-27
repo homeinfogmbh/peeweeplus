@@ -8,6 +8,7 @@ from peeweeplus.fields.char import DecimalCharField
 from peeweeplus.fields.char import DateTimeCharField
 from peeweeplus.fields.char import DateCharField
 from peeweeplus.fields.enum import EnumField
+from peeweeplus.fields.html import HTMLCharField, HTMLTextField
 from peeweeplus.fields.int import UnsignedBigIntegerField
 from peeweeplus.fields.int import UnsignedIntegerField
 from peeweeplus.fields.ip import IPAddressField
@@ -23,6 +24,8 @@ __all__ = [
     'DateTimeCharField',
     'DecimalCharField',
     'EnumField',
+    'HTMLCharField',
+    'HTMLTextField',
     'IntegerCharField',
     'IPAddressField',
     'IPv4AddressField',
