@@ -8,9 +8,9 @@ setup(
     version_format='{tag}',
     setup_requires=['setuptools-git-version'],
     author='HOMEINFO - Digitale Informationssysteme GmbH',
-    author_email='<info at homeinfo dot de>',
+    author_email='<info@homeinfo.de>',
     maintainer='Richard Neumann',
-    maintainer_email='<r dot neumann at homeinfo priod de>',
+    maintainer_email='<r.neumann@homeinfo.de>',
     packages=['peeweeplus', 'peeweeplus.fields', 'peeweeplus.json'],
     license='GPLv3',
     description='Practical extensions for the peewee ORM framework.'
