@@ -25,7 +25,8 @@ class HTMLTextAccessor(FieldAccessor):  # pylint: disable=R0903
 class HTMLCharField(CharField):
     """CharField with HTML escaped text."""
 
-    def __init__(self, *args, clean_func: Callable = sanitize, **kwargs):
+    def __init__(self, *args, clean_func: Callable[[str], str] = sanitize,
+                 **kwargs):
         super().__init__(*args, **kwargs)
         self.clean_func = clean_func
 
@@ -35,7 +36,8 @@ class HTMLCharField(CharField):
 class HTMLTextField(TextField):
     """TextField with HTML escaped text."""
 
-    def __init__(self, *args, clean_func: Callable = sanitize, **kwargs):
+    def __init__(self, *args, clean_func: Callable[[str], str] = sanitize,
+                 **kwargs):
         super().__init__(*args, **kwargs)
         self.clean_func = clean_func
 
