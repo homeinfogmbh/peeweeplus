@@ -2,8 +2,9 @@
 
 from functools import lru_cache
 
-from lxml.etree import XMLSyntaxError
-from lxml.html.clean import Cleaner, document_fromstring
+from lxml.etree import XMLSyntaxError   # pylint: disable=E0611
+from lxml.html import document_fromstring
+from lxml.html.clean import Cleaner     # pylint: disable=E0611
 
 
 __all__ = ['ALLOWED_TAGS', 'CLEANER', 'sanitize']
