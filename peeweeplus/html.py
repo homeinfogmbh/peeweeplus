@@ -16,7 +16,7 @@ ALLOWED_TAGS = {
 }
 CLEANER = Cleaner(allow_tags=ALLOWED_TAGS, remove_unknown_tags=False)
 P_TAG = '<p>'
-P_REGEX = compile('<p>([.*)</p>', flags=DOTALL)
+P_REGEX = compile('<p>(.*)</p>', flags=DOTALL)
 
 
 @lru_cache(maxsize=None)
