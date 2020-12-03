@@ -55,7 +55,7 @@ try:
     from peeweeplus.authlib import *
     from peeweeplus.authlib import __all__  as _ALL_AUTHLIB
 except ModuleNotFoundError as error:
-    LOGGER.error('Missing module: %s', error.name)
+    LOGGER.warning('Missing module: %s', error.name)
     LOGGER.warning('Authlib integration not available.')
 else:
     __all__ += _ALL_AUTHLIB

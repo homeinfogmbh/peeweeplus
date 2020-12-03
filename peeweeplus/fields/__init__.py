@@ -42,7 +42,7 @@ LOGGER = getLogger(__file__)
 try:
     from peeweeplus.fields.argon2 import Argon2Field
 except ModuleNotFoundError as error:
-    LOGGER.error('Missing module: %s', error.name)
+    LOGGER.warning('Missing module: %s', error.name)
     LOGGER.warning('Argon2Field not available.')
 else:
     __all__.append('Argon2Field')
