@@ -21,14 +21,17 @@ CLEANER = Cleaner(allow_tags=ALLOWED_TAGS, remove_unknown_tags=False)
 def get_html(element: Element) -> Generator[bytes, None, None]:
     """Returns HTML text from an element."""
 
-    children = element.getchildren()
+    first, *children = element.getchildren()
 
     # Remove <p>…</p> wrapper created by Cleaner.clean_html().
-    if len(children) == 1 and children[0].tag == 'p':
-        for child in children[0].iterchildren():
-            yield tostring(child)
+    if not children and first.tag == 'p':
+        if first.text:
+            yield first.text
+
+        for child in first.iterchildren():
+            yield tostring(child).decode()
     else:
-        for child in children:
+        for child in element.iterchildren():
             yield tostring(child)
 
 
