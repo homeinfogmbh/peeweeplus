@@ -18,8 +18,8 @@ ALLOWED_TAGS = {
 CLEANER = Cleaner(allow_tags=ALLOWED_TAGS, remove_unknown_tags=False)
 
 
-def get_html(element: Element) -> Generator[str, None, None]:
-    """Returns HTML text from an element."""
+def get_html_strings(element: Element) -> Generator[str, None, None]:
+    """Yields HTML text from an element."""
 
     first, *children = element.getchildren()
 
@@ -44,4 +44,4 @@ def sanitize(text: str, *, cleaner: Cleaner = CLEANER) -> str:
     except XMLSyntaxError:  # Probably not HTML text.
         return text
 
-    return ''.join(get_html(cleaner.clean_html(doc)))
+    return ''.join(get_html_strings(cleaner.clean_html(doc)))
