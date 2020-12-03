@@ -27,7 +27,7 @@ def sanitize(text: str, *, cleaner: Cleaner = CLEANER,
     except XMLSyntaxError:  # Probably not HTML text.
         return text
 
-    return ''.join(
-        tostring(elem, encoding=encoding).decode(encoding)
+    return b''.join(
+        tostring(elem, encoding=encoding)
         for elem in cleaner.clean_html(doc).iterchildren()
-    )
+    ).decode(encoding)
