@@ -35,7 +35,7 @@ class Argon2Hash(str):
         instance = cls(field.hasher.hash(plaintext), field)
 
         if store_plaintext:
-            instance.plaintext = plaintext
+            instance._plaintext = plaintext     # pylint: disable=W0212
 
         return instance
 
@@ -44,11 +44,6 @@ class Argon2Hash(str):
         """Returns the plain text password and forgets it."""
         plaintext, self._plaintext = self._plaintext, None
         return plaintext
-
-    @plaintext.setter
-    def plaintext(self, plaintext: str):
-        """Sets the plain text password."""
-        self._plaintext = plaintext
 
     @property
     def needs_rehash(self) -> bool:
@@ -134,7 +129,7 @@ class Argon2Field(PasswordField):   # pylint: disable=R0901
         if self._default is None:
             return None
 
-        return self._generate_default
+        return self._generate_default   # Return callable (method).
 
     @default.setter
     def default(self, default):
