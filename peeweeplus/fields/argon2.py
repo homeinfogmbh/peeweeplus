@@ -17,27 +17,25 @@ __all__ = ['Argon2Field']
 class Argon2Hash(str):
     """An Argon2 hash."""
 
-    def __new__(cls, string: str, _):
+    def __new__(cls, string: str, *_):
         """Retuns a new Argon2Hash."""
         return super().__new__(cls, string)
 
-    def __init__(self, _, field: Field):
+    def __init__(self, _, field: Field, plaintext: str = None):
         """Sets the hasher."""
         super().__init__()
         self._field = field
+        self._plaintext = plaintext
         self._instance = None
-        self._plaintext = None
 
     @classmethod
     def from_plaintext(cls, plaintext: str, field: Field, *,
                        store_plaintext: bool = False) -> Argon2Hash:
         """Creates an Argon2 hash from a plain text password."""
-        instance = cls(field.hasher.hash(plaintext), field)
-
         if store_plaintext:
-            instance._plaintext = plaintext     # pylint: disable=W0212
+            return cls(field.hasher.hash(plaintext), field, plaintext)
 
-        return instance
+        return cls(field.hasher.hash(plaintext), field)
 
     @property
     def plaintext(self) -> str:
@@ -55,11 +53,7 @@ class Argon2Hash(str):
         """Returns the Argon2 hash parameters."""
         return extract_parameters(self)
 
-    @property
-    def _accessor(self) -> Argon2FieldAccessor:
-        """Returns the accessor."""
-
-    def _set(self, passwd: str):
+    def _rehash(self, passwd: str):
         """Updates the hash."""
         if self._instance is None:
             raise TypeError('Instance not set.')
@@ -75,7 +69,7 @@ class Argon2Hash(str):
     def rehash(self, passwd: str, *, force: bool = False) -> bool:
         """Performs a rehash."""
         if force or self.needs_rehash:
-            self._set(passwd)
+            self._rehash(passwd)
             return True
 
         return False
