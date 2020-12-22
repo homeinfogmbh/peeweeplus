@@ -132,7 +132,7 @@ class Argon2Field(PasswordField):   # pylint: disable=R0901
         if value is None:
             return None
 
-        return Argon2Hash(value, self)
+        return Argon2Hash(value, self.hasher)
 
     def db_value(self, value: Argon2Hash) -> str:
         """Returns the string value."""
