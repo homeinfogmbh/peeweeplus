@@ -26,11 +26,29 @@ class Argon2Hash(str):
         super().__init__()
         self._field = field
         self._instance = None
+        self._plaintext = None
 
     @classmethod
-    def from_plaintext(cls, plaintext: str, field: Field) -> Argon2Hash:
+    def from_plaintext(cls, plaintext: str, field: Field, *,
+                       store_plaintext: bool = False) -> Argon2Hash:
         """Creates an Argon2 hash from a plain text password."""
-        return cls(field.hasher.hash(plaintext), field)
+        instance = cls(field.hasher.hash(plaintext), field)
+
+        if store_plaintext:
+            instance.plaintext = plaintext
+
+        return instance
+
+    @property
+    def plaintext(self) -> str:
+        """Returns the plain text password."""
+        plaintext, self._plaintext = self._plaintext, None
+        return plaintext
+
+    @plaintext.setter
+    def plaintext(self, plaintext: str):
+        """Sets the plain text password."""
+        self._plaintext = plaintext
 
     @property
     def needs_rehash(self) -> bool:
@@ -105,15 +123,23 @@ class Argon2Field(PasswordField):   # pylint: disable=R0901
         self.hasher = hasher
         self.min_pw_len = min_pw_len
 
+    def _generate_default(self) -> str:
+        """Generates a default password."""
+        return Argon2Hash.from_plaintext(
+            self._default(), self, store_plaintext=True)
+
     @property
     def default(self):
         """Returns the default."""
-        return Argon2Hash.from_plaintext(self._default(), self)
+        if self._default is None:
+            return None
+
+        return self._generate_default
 
     @default.setter
     def default(self, default):
         """Sets the default value."""
-        if not callable(default):
+        if default is not None and not callable(default):
             raise ValueError('Static default passwords are not allowed.')
 
         self._default = default
