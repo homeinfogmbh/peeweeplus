@@ -21,9 +21,9 @@ LOGGER = getLogger('Argon2Field')
 class Argon2Hash(str):
     """An Argon2 hash."""
 
-    def __new__(cls, string: str, *_):
+    def __new__(cls, argon2hash: str, *_):
         """Retuns a new Argon2Hash."""
-        return super().__new__(cls, string)
+        return super().__new__(cls, argon2hash)
 
     def __init__(self, _, hasher: PasswordHasher):
         """Sets the hasher."""
