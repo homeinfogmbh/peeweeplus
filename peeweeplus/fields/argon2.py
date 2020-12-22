@@ -1,6 +1,7 @@
 """Argon2-based password hashing."""
 
 from __future__ import annotations
+from logging import getLogger
 from typing import Union
 
 from argon2 import Parameters, PasswordHasher, extract_parameters
@@ -14,6 +15,9 @@ from peeweeplus.introspection import FieldType
 __all__ = ['Argon2Field']
 
 
+LOGGER = getLogger('Argon2Field')
+
+
 class Argon2Hash(str):
     """An Argon2 hash."""
 
@@ -21,27 +25,15 @@ class Argon2Hash(str):
         """Retuns a new Argon2Hash."""
         return super().__new__(cls, string)
 
-    def __init__(self, _, field: Field, plaintext: str = None):
+    def __init__(self, _, field: Field):
         """Sets the hasher."""
         super().__init__()
         self._field = field
-        self._plaintext = plaintext
-        self._instance = None
 
     @classmethod
-    def from_plaintext(cls, plaintext: str, field: Field, *,
-                       store_plaintext: bool = False) -> Argon2Hash:
+    def from_plaintext(cls, plaintext: str, field: Field) -> Argon2Hash:
         """Creates an Argon2 hash from a plain text password."""
-        if store_plaintext:
-            return cls(field.hasher.hash(plaintext), field, plaintext)
-
         return cls(field.hasher.hash(plaintext), field)
-
-    @property
-    def plaintext(self) -> str:
-        """Returns the plain text password and forgets it."""
-        plaintext, self._plaintext = self._plaintext, None
-        return plaintext
 
     @property
     def needs_rehash(self) -> bool:
@@ -53,26 +45,9 @@ class Argon2Hash(str):
         """Returns the Argon2 hash parameters."""
         return extract_parameters(self)
 
-    def _rehash(self, passwd: str):
-        """Updates the hash."""
-        if self._instance is None:
-            raise TypeError('Instance not set.')
-
-        field = self._field
-        accessor = field.accessor_class(field.model, field, field.name)
-        accessor.__set__(self._instance, passwd)
-
     def verify(self, passwd: str) -> bool:
         """Validates the plain text password against this hash."""
         return self._field.hasher.verify(self, passwd)
-
-    def rehash(self, passwd: str, *, force: bool = False) -> bool:
-        """Performs a rehash."""
-        if force or self.needs_rehash:
-            self._rehash(passwd)
-            return True
-
-        return False
 
 
 class Argon2FieldAccessor(FieldAccessor):  # pylint: disable=R0903
@@ -93,8 +68,6 @@ class Argon2FieldAccessor(FieldAccessor):  # pylint: disable=R0903
             if len(value) != self.field.actual_size:
                 raise ValueError('Hash length does not match char field size.')
 
-            value._instance = instance
-
         super().__set__(instance, value)
 
 
@@ -111,11 +84,21 @@ class Argon2Field(PasswordField):   # pylint: disable=R0901
         super().__init__(max_length=len(hasher.hash('')), **kwargs)
         self.hasher = hasher
         self.min_pw_len = min_pw_len
+        self.hooks = set()
 
-    def _generate_default(self) -> str:
+    def _generate_default(self) -> Argon2Hash:
         """Generates a default password."""
-        return Argon2Hash.from_plaintext(
-            self._default(), self, store_plaintext=True)
+        plaintext = self._default()
+
+        while True:
+            try:
+                callback = self.hooks.pop()
+            except KeyError:
+                break
+
+            callback(plaintext)
+
+        return Argon2Hash.from_plaintext(plaintext, self)
 
     @property
     def default(self):
@@ -129,7 +112,7 @@ class Argon2Field(PasswordField):   # pylint: disable=R0901
     def default(self, default):
         """Sets the default value."""
         if default is not None and not callable(default):
-            raise ValueError('Static default passwords are not allowed.')
+            LOGGER.warning('Static default passwords are a bad idea!')
 
         self._default = default
 
