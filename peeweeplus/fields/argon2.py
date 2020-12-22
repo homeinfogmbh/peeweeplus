@@ -5,7 +5,7 @@ from logging import getLogger
 from typing import Union
 
 from argon2 import Parameters, PasswordHasher, extract_parameters
-from peewee import Field, FieldAccessor, Model
+from peewee import FieldAccessor, Model
 
 from peeweeplus.exceptions import PasswordTooShortError
 from peeweeplus.fields.password import PasswordField
@@ -25,20 +25,20 @@ class Argon2Hash(str):
         """Retuns a new Argon2Hash."""
         return super().__new__(cls, string)
 
-    def __init__(self, _, field: Field):
+    def __init__(self, _, hasher: PasswordHasher):
         """Sets the hasher."""
         super().__init__()
-        self._field = field
+        self.hasher = hasher
 
     @classmethod
-    def from_plaintext(cls, plaintext: str, field: Field) -> Argon2Hash:
+    def create(cls, plaintext: str, hasher: PasswordHasher) -> Argon2Hash:
         """Creates an Argon2 hash from a plain text password."""
-        return cls(field.hasher.hash(plaintext), field)
+        return cls(hasher.hash(plaintext), hasher)
 
     @property
     def needs_rehash(self) -> bool:
         """Determines whether the password needs a rehash."""
-        return self._field.hasher.check_needs_rehash(self)
+        return self.hasher.check_needs_rehash(self)
 
     @property
     def parameters(self) -> Parameters:
@@ -47,7 +47,7 @@ class Argon2Hash(str):
 
     def verify(self, passwd: str) -> bool:
         """Validates the plain text password against this hash."""
-        return self._field.hasher.verify(self, passwd)
+        return self.hasher.verify(self, passwd)
 
 
 class Argon2FieldAccessor(FieldAccessor):  # pylint: disable=R0903
@@ -63,7 +63,7 @@ class Argon2FieldAccessor(FieldAccessor):  # pylint: disable=R0903
                 if length < self.field.min_pw_len:
                     raise PasswordTooShortError(length, self.field.min_pw_len)
 
-                value = Argon2Hash.from_plaintext(value, self.field)
+                value = Argon2Hash.create(value, self.field.hasher)
 
             if len(value) != self.field.actual_size:
                 raise ValueError('Hash length does not match char field size.')
@@ -90,6 +90,12 @@ class Argon2Field(PasswordField):   # pylint: disable=R0901
         """Generates a default password."""
         plaintext = self._default()
 
+        if not isinstance(plaintext, str):
+            raise ValueError('{self._default} did not generate a str.')
+
+        if len(plaintext) < self.min_pw_len:
+            raise PasswordTooShortError(len(plaintext), self.min_pw_len)
+
         while True:
             try:
                 callback = self.hooks.pop()
@@ -98,7 +104,7 @@ class Argon2Field(PasswordField):   # pylint: disable=R0901
 
             callback(plaintext)
 
-        return Argon2Hash.from_plaintext(plaintext, self)
+        return Argon2Hash.create(plaintext, self.hasher)
 
     @property
     def default(self):
