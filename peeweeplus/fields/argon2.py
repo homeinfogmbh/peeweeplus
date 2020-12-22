@@ -77,50 +77,16 @@ class Argon2Field(PasswordField):   # pylint: disable=R0901
     accessor_class = Argon2FieldAccessor
 
     def __init__(self, hasher: PasswordHasher = PasswordHasher(),
-                 min_pw_len: int = 8, **kwargs):
+                 min_pw_len: int = 8, default: type = None, **kwargs):
         """Initializes the char field, defaulting
         max_length to the respective hash length.
         """
         super().__init__(max_length=len(hasher.hash('')), **kwargs)
         self.hasher = hasher
         self.min_pw_len = min_pw_len
-        self.hooks = set()
 
-    def _generate_default(self) -> Argon2Hash:
-        """Generates a default password."""
-        plaintext = self._default()
-
-        if not isinstance(plaintext, str):
-            raise ValueError('{self._default} did not generate a str.')
-
-        if len(plaintext) < self.min_pw_len:
-            raise PasswordTooShortError(len(plaintext), self.min_pw_len)
-
-        while True:
-            try:
-                callback = self.hooks.pop()
-            except KeyError:
-                break
-
-            callback(plaintext)
-
-        return Argon2Hash.create(plaintext, self.hasher)
-
-    @property
-    def default(self):
-        """Returns the default."""
-        if self._default is None:
-            return None
-
-        return self._generate_default   # Return callable (method).
-
-    @default.setter
-    def default(self, default):
-        """Sets the default value."""
-        if default is not None and not callable(default):
-            LOGGER.warning('Static default passwords are a bad idea!')
-
-        self._default = default
+        if default is not None:
+            LOGGER.warning('Default values are being ignored!')
 
     @property
     def actual_size(self) -> int:
