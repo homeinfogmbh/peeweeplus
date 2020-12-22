@@ -41,7 +41,7 @@ class Argon2Hash(str):
 
     @property
     def plaintext(self) -> str:
-        """Returns the plain text password."""
+        """Returns the plain text password and forgets it."""
         plaintext, self._plaintext = self._plaintext, None
         return plaintext
 
