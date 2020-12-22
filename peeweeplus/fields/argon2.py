@@ -105,6 +105,24 @@ class Argon2Field(PasswordField):   # pylint: disable=R0901
         self.hasher = hasher
         self.min_pw_len = min_pw_len
 
+    @property
+    def default(self):
+        """Returns the default."""
+        return Argon2Hash.from_plaintext(self._default(), self)
+
+    @default.setter
+    def default(self, default):
+        """Sets the default value."""
+        if not callable(default):
+            raise ValueError('Static default passwords are not allowed.')
+
+        self._default = default
+
+    @property
+    def actual_size(self) -> int:
+        """Returns the actual field size."""
+        return FieldType.from_field(self).size
+
     def python_value(self, value: str) -> Argon2Hash:
         """Returns an Argon2 hash."""
         if value is None:
@@ -118,8 +136,3 @@ class Argon2Field(PasswordField):   # pylint: disable=R0901
             return None
 
         return str(value)
-
-    @property
-    def actual_size(self) -> int:
-        """Returns the actual field size."""
-        return FieldType.from_field(self).size
