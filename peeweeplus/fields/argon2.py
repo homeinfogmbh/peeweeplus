@@ -58,15 +58,15 @@ class Argon2Hash(str):
     @property
     def _accessor(self) -> Argon2FieldAccessor:
         """Returns the accessor."""
-        return self._field.accessor_class(
-            self._field.model, self._field, self._field.name)
 
     def _set(self, passwd: str):
         """Updates the hash."""
         if self._instance is None:
             raise TypeError('Instance not set.')
 
-        self._accessor.__set__(self._instance, passwd)
+        field = self._field
+        accessor = field.accessor_class(field.model, field, field.name)
+        accessor.__set__(self._instance, passwd)
 
     def verify(self, passwd: str) -> bool:
         """Validates the plain text password against this hash."""
