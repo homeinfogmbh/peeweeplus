@@ -63,6 +63,19 @@ def _check_cascade(cascade: Union[bool, int]) -> Cascade:
     return Cascade(False, None)
 
 
+def _get_model_value(model: Model, cascade: Union[bool, int],
+                     null: bool = False, **filters) -> Union[dict, int]:
+    """Converts a model to a JSON value."""
+
+    cascade = _check_cascade(cascade)
+
+    if cascade.cascade:
+        with suppress(AttributeError):
+            return model.to_json(null=null, cascade=cascade.next, **filters)
+
+    return model.get_id()
+
+
 def serialize(record: Model, *, null: bool = False,
               cascade: Union[bool, int] = None, **filters) -> dict:
     """Returns a JSON-ish dict with the record's fields' values."""
@@ -73,16 +86,13 @@ def serialize(record: Model, *, null: bool = False,
     json = {}
 
     for key, attribute, field in fields_filter.filter(fields):
-        value = getattr(record, attribute)
-        value = CONVERTER(field, value, check_null=False)
-        cascade, casc_next = _check_cascade(cascade)
-
-        if cascade and isinstance(value, Model):
-            with suppress(AttributeError):
-                value = model.to_json(null=null, cascade=casc_next, **filters)
+        value = CONVERTER(field, getattr(record, attribute), check_null=False)
 
         if not null and value is None:
             continue
+
+        if isinstance(value, Model):
+            value = _get_model_value(value, cascade, null=null, **filters)
 
         json[key] = value
 
