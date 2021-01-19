@@ -60,6 +60,7 @@ def select_tree(model: ModelBase) -> ModelSelect:
     select = model.select(model, *(jc.rel_model for jc in tree))
 
     for model, rel_model, join_type, condition in tree:
+        print('Rel model:', rel_model.alias, rel_model.model)
         select = select.join_from(
             model, rel_model, join_type=join_type, on=condition)
 
