@@ -16,7 +16,7 @@ __all__ = ['select_tree']
 class JoinCondition(NamedTuple):
     """Yields join conditions."""
 
-    model: ModelBase
+    model: ModelAlias
     rel_model: ModelAlias
     join_type: str
     condition: Expression
@@ -42,7 +42,7 @@ def get_foreign_keys(model: Union[ModelAlias, ModelBase]) \
             yield field
 
 
-def join_tree(model: ModelBase) -> Iterator[JoinCondition]:
+def join_tree(model: ModelAlias) -> Iterator[JoinCondition]:
     """Joins on all foreign keys."""
 
     for field in get_foreign_keys(model):
@@ -56,6 +56,7 @@ def join_tree(model: ModelBase) -> Iterator[JoinCondition]:
 def select_tree(model: ModelBase) -> ModelSelect:
     """Selects the entire relation tree."""
 
+    model = model.alias()
     tree = list(join_tree(model))
     select = model.select(model, *(jc.rel_model for jc in tree))
 
