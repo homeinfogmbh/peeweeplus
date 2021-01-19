@@ -60,15 +60,15 @@ CONVERTER = FieldConverter({
 
 
 def get_orm_value(model: ModelBase, key: str, attribute: str,
-                  field: Field, json_value: JSON) -> object:
+                  field: Field, json: JSON) -> object:
     """Returns the appropriate value for the field."""
 
     try:
-        return CONVERTER(field, json_value, check_null=True)
+        return CONVERTER(field, json, check_null=True)
     except NullError:
-        raise FieldNotNullable(model, key, attribute, field)
+        raise FieldNotNullable(model, key, attribute, field) from None
     except (TypeError, ValueError):
-        raise FieldValueError(model, key, attribute, field, json_value)
+        raise FieldValueError(model, key, attribute, field, json) from None
 
 
 def is_unique(record: Model, field, orm_value) -> bool:
@@ -107,7 +107,7 @@ def deserialize(model: ModelBase, json: dict, *, strict: bool = True,
             if field.null or field.default is not None:
                 continue
 
-            raise MissingKeyError(model, key, attribute, field)
+            raise MissingKeyError(model, key, attribute, field) from None
 
         orm_value = get_orm_value(model, key, attribute, field, json_value)
 

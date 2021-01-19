@@ -14,7 +14,7 @@ __all__ = ['IPAddressField', 'IPv4AddressField', 'IPv6AddressField']
 class IPAddressField(CharField):
     """Field to store IPv4 or IPv6 addresses as strings."""
 
-    def __init__(self, max_length: int = 45, *args, **kwargs):
+    def __init__(self, *args, max_length: int = 45, **kwargs):
         """Defaults the max_length to 45 according to:
         https://stackoverflow.com/a/7477384/3515670
         """

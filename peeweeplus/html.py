@@ -1,6 +1,7 @@
 """Sanitizing HTML."""
 
 from functools import lru_cache
+from html import unescape
 from typing import Generator
 
 from lxml.etree import XMLSyntaxError   # pylint: disable=E0611
@@ -44,4 +45,5 @@ def sanitize(text: str, *, cleaner: Cleaner = CLEANER) -> str:
     except XMLSyntaxError:  # Probably not HTML text.
         return text
 
-    return ''.join(get_html_strings(cleaner.clean_html(doc)))
+    doc = cleaner.clean_html(doc)
+    return ''.join(map(unescape, get_html_strings(doc)))
