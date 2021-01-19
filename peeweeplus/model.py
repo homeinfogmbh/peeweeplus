@@ -1,6 +1,5 @@
 """Extensions of the Model class."""
 
-from contextlib import suppress
 from typing import Iterator, NamedTuple
 
 from peewee import JOIN
@@ -44,9 +43,7 @@ def join_tree(model: ModelBase) -> Iterator[JoinCondition]:
         join_type = JOIN.LEFT_OUTER if field.null else JOIN.LEFT
         condition = field == rel_alias.id
         yield JoinCondition(model, rel_alias, join_type, condition)
-
-        with suppress(AttributeError):
-            yield from join_tree(rel_alias)
+        yield from join_tree(rel_alias)
 
 
 def select_tree(model: ModelBase) -> ModelSelect:
