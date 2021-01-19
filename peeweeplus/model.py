@@ -40,7 +40,7 @@ def join_tree(model: ModelBase) -> Iterator[JoinCondition]:
 
     for field in get_foreign_keys(model):
         rel_alias = field.rel_model.alias()
-        join_type = JOIN.LEFT_OUTER if field.null else JOIN.LEFT
+        join_type = JOIN.LEFT_OUTER if field.null else JOIN.INNER
         condition = field == rel_alias.id
         yield JoinCondition(model, rel_alias, join_type, condition)
         yield from join_tree(rel_alias)
