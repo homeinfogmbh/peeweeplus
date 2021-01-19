@@ -32,6 +32,9 @@ def get_foreign_keys(model: ModelBase) -> Iterator[ForeignKeyField]:
             if attribute.endswith('_id') and attribute + '_id' not in fields:
                 continue
 
+            if field.rel_model == model:
+                continue
+
             yield field
 
 
