@@ -19,6 +19,7 @@ class JoinCondition(NamedTuple):
     rel_model: ModelBase
     join_type: str
     condition: Expression
+    attribute: str
 
 
 def get_foreign_keys(model: ModelBase) -> Iterator[ForeignKeyField]:
@@ -34,17 +35,17 @@ def get_foreign_keys(model: ModelBase) -> Iterator[ForeignKeyField]:
             if field.rel_model is model:
                 continue
 
-            yield field
+            yield (attribute, field)
 
 
 def join_tree(model: ModelBase) -> Iterator[JoinCondition]:
     """Joins on all foreign keys."""
 
-    for field in get_foreign_keys(model):
+    for attribute, field in get_foreign_keys(model):
         join_type = JOIN.LEFT_OUTER if field.null else JOIN.INNER
         condition = field == field.rel_field
         yield JoinCondition(
-            model, field.rel_model.alias(), join_type, condition)
+            model, field.rel_model.alias(), join_type, condition, attribute)
         yield from join_tree(field.rel_model)
 
 
@@ -54,8 +55,9 @@ def select_tree(model: ModelBase) -> ModelSelect:
     tree = list(join_tree(model))
     select = model.select(model, *(jc.rel_model for jc in tree))
 
-    for model_, rel_model, join_type, condition in tree:
+    for model_, rel_model, join_type, condition, attribute in tree:
         select = select.join_from(
-            model_, rel_model, join_type=join_type, on=condition)
+            model_, rel_model, join_type=join_type, on=condition,
+            attr=attribute)
 
     return select
