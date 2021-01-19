@@ -20,7 +20,8 @@ class MySQLDatabase(_MySQLDatabase):    # pylint: disable=W0223
         self.retry = retry
 
     @classmethod
-    def from_config(cls, config: SectionProxy) -> MySQLDatabase:
+    def from_config(cls, config: SectionProxy, *, closing: bool = False,
+                    retry: bool = True) -> MySQLDatabase:
         """Creates a database from the respective configuration."""
         try:
             database = config['db']
@@ -32,8 +33,8 @@ class MySQLDatabase(_MySQLDatabase):    # pylint: disable=W0223
         except KeyError:
             passwd = config['password']
 
-        closing = config.getboolean('closing', True)
-        retry = config.getboolean('retry', False)
+        closing = config.getboolean('closing', closing)
+        retry = config.getboolean('retry', retry)
 
         return cls(
             database, host=config['host'], user=config['user'], passwd=passwd,
