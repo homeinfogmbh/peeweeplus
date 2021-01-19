@@ -2,14 +2,15 @@
 
 from __future__ import annotations
 from configparser import SectionProxy
+from typing import Any, Union
 
-from peewee import OperationalError, MySQLDatabase as _MySQLDatabase
+from peewee import SENTINEL, OperationalError, MySQLDatabase
 
 
 __all__ = ['MySQLDatabase']
 
 
-class MySQLDatabase(_MySQLDatabase):    # pylint: disable=W0223
+class MySQLDatabase(MySQLDatabase):     # pylint: disable=E0102,W0223
     """Extension of peewee.MySQLDatabase with closing option."""
 
     def __init__(self, *args, retry: bool = False, **kwargs):
@@ -37,17 +38,20 @@ class MySQLDatabase(_MySQLDatabase):    # pylint: disable=W0223
             database, host=section['host'], user=section['user'],
             passwd=passwd, retry=retry)
 
-    def execute_sql(self, *args, retried: bool = False, **kwargs):
+    # pylint: disable=W0221
+    def execute_sql(self, sql: str, params: Any = None,
+                    commit: Union[bool, object] = SENTINEL, *,
+                    retry: bool = True):
         """Conditionally execute the SQL query in an
         execution context iff closing is enabled.
         """
         try:
-            return super().execute_sql(*args, **kwargs)
+            return super().execute_sql(sql, params=params, commit=commit)
         except OperationalError:
-            if not self.retry or retried:
+            if not self.retry or not retry:
                 raise
 
         if not self.is_closed():
             self.close()
 
-        return self.execute_sql(*args, retried=True, **kwargs)
+        return self.execute_sql(sql, params=params, commit=commit, retry=False)
