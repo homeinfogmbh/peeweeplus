@@ -18,7 +18,7 @@ class JoinCondition(NamedTuple):
 
     model: ModelBase
     rel_model: ModelAlias
-    join_type: JOIN
+    join_type: str
     condition: Expression
 
 
