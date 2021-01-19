@@ -22,6 +22,7 @@ from peeweeplus.json import deserialize
 from peeweeplus.json import serialize
 from peeweeplus.json import JSONMixin
 from peeweeplus.json import JSONModel
+from peeweeplus.model import select_tree
 from peeweeplus.transaction import Transaction
 
 
@@ -39,6 +40,7 @@ __all__ = [
     'date2orm',
     'datetime2orm',
     'deserialize',
+    'select_tree',
     'serialize',
     'ChangedConnection',
     'MySQLDatabase',
