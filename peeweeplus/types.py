@@ -1,12 +1,9 @@
 """Common types."""
 
-from typing import Generator, Union
-
-from peewee import Model
+from typing import Union
 
 
-__all__ = ['JSON', 'ModelGenerator']
+__all__ = ['JSON']
 
 
 JSON = Union[bool, dict, float, int, list, None, str]
-ModelGenerator = Generator[Model, None, None]

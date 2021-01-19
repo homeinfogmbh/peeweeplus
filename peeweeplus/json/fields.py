@@ -2,7 +2,7 @@
 
 from contextlib import suppress
 from functools import lru_cache
-from typing import Generator, Iterable, NamedTuple
+from typing import Iterable, Iterator, NamedTuple, Set
 
 from peewee import Field, ForeignKeyField, ModelBase
 
@@ -36,44 +36,23 @@ def contains(iterable: Iterable, key: str, attribute: str, *,
     return default
 
 
-def _get_json_fields(model: ModelBase) -> Generator[JSONField, None, None]:
+def _get_json_fields(model: ModelBase) -> Iterator[JSONField]:
     """Yields the JSON fields of the respective model."""
 
     fields = model._meta.fields     # pylint: disable=W0212
-    field_keys = {}
-    field_attributes = {}
 
     for attribute, field in fields.items():
-        if not attribute.startswith('_'):
-            # Default JSON keys are column names in camelCase.
-            field_keys[field] = camel_case(field.column_name)
-
-            if isinstance(field, ForeignKeyField):
-                id_attr = attribute + '_id'
-
-                if hasattr(model, id_attr):
-                    field_attributes[field] = id_attr
-
-    for model in reversed(model.__mro__):   # pylint: disable=R1704
-        # Create map of custom keys for fields.
-        json_keys = model.__dict__.get('JSON_KEYS')
-
-        if not json_keys:
+        if attribute.startswith('_'):
             continue
 
-        # Inverse key → field hashing to field → key hashing.
-        # The reason we do this is because during model definition,
-        # keys are not yet bound to the model and thus cannot be hashed yet.
-        custom_keys = {field: key for key, field in json_keys.items()}
-        # Override column names with custom set field keys.
-        field_keys.update(custom_keys)
+        if isinstance(field, ForeignKeyField):
+            if attribute.endswith('_id') and attribute + '_id' not in fields:
+                continue
 
-    for field, key in field_keys.items():
-        attribute = field_attributes.get(field, field.name)
-        yield JSONField(key, attribute, field)
+        yield JSONField(camel_case(field.column_name), field.name, field)
 
 
-def get_json_fields(model: ModelBase) -> frozenset:
+def get_json_fields(model: ModelBase) -> Set[JSONField]:
     """Returns the JSON fields of the respective model
     and caches it in the JSON_FIELDS dict.
     """

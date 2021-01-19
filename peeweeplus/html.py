@@ -2,7 +2,7 @@
 
 from functools import lru_cache
 from html import unescape
-from typing import Generator
+from typing import Iterator
 
 from lxml.etree import XMLSyntaxError   # pylint: disable=E0611
 from lxml.html import Element, document_fromstring, tostring
@@ -19,7 +19,7 @@ ALLOWED_TAGS = {
 CLEANER = Cleaner(allow_tags=ALLOWED_TAGS, remove_unknown_tags=False)
 
 
-def get_html_strings(element: Element) -> Generator[str, None, None]:
+def get_html_strings(element: Element) -> Iterator[str]:
     """Yields HTML text from an element."""
 
     first, *children = element.getchildren()

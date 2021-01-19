@@ -1,7 +1,7 @@
 """Serialization filter."""
 
 from __future__ import annotations
-from typing import Generator, Iterable, NamedTuple
+from typing import Iterable, Iterator, NamedTuple
 
 from peewee import AutoField
 from peewee import ForeignKeyField
@@ -10,9 +10,6 @@ from peeweeplus.json.fields import JSONField, contains
 
 
 __all__ = ['FieldsFilter']
-
-
-JSONFieldGenerator = Generator[JSONField, None, None]
 
 
 class FieldsFilter(NamedTuple):
@@ -42,7 +39,7 @@ class FieldsFilter(NamedTuple):
         only = frozenset(only) if only else frozenset()
         return cls(skip, only, fk_fields, autofields, False)
 
-    def filter(self, fields: Iterable[JSONField]) -> JSONFieldGenerator:
+    def filter(self, fields: Iterable[JSONField]) -> Iterator[JSONField]:
         """Applies this filter to the respective fields."""
         for key, attribute, field in fields:
             if contains(self.skip, key, attribute, default=False):

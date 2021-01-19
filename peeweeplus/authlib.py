@@ -1,6 +1,7 @@
 """ORM model mixin for OAuth 2.0 clients."""
 
 from datetime import datetime, timedelta
+from typing import Iterator
 
 from argon2.exceptions import VerifyMismatchError
 from authlib.common.encoding import json_loads, json_dumps
@@ -19,7 +20,6 @@ from peewee import IntegerField
 from peewee import TextField
 
 from peeweeplus.fields import Argon2Field, JSONTextField
-from peeweeplus.types import ModelGenerator
 
 
 __all__ = [
@@ -54,7 +54,7 @@ class OAuth2ClientMixin(Model, ClientMixin):   # pylint: disable=R0904
     software_version = TextField(null=True)
 
     @classmethod
-    def get_related_models(cls, model: ModelBase = Model) -> ModelGenerator:
+    def get_related_models(cls, model: ModelBase = Model) -> Iterator[Model]:
         """Yields related models."""
         for mixin, backref in CLIENT_RELATED_MIXINS:
             yield cls._get_related_model(model, mixin, backref)
