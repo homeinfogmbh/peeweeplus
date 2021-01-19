@@ -1,6 +1,6 @@
 """Extensions of the Model class."""
 
-from typing import Iterator, NamedTuple
+from typing import Iterator, NamedTuple, Union
 
 from peewee import JOIN
 from peewee import Expression
@@ -22,7 +22,8 @@ class JoinCondition(NamedTuple):
     condition: Expression
 
 
-def get_foreign_keys(model: ModelBase) -> Iterator[ForeignKeyField]:
+def get_foreign_keys(model: Union[ModelAlias, ModelBase]) \
+        -> Iterator[ForeignKeyField]:
     """Yields foreign keys."""
 
     fields = model._meta.fields     # pylint: disable=W0212
@@ -32,7 +33,10 @@ def get_foreign_keys(model: ModelBase) -> Iterator[ForeignKeyField]:
             if attribute.endswith('_id') and attribute + '_id' not in fields:
                 continue
 
-            if field.rel_model == getattr(model, 'model', model):
+            if isinstance(model, ModelAlias):
+                model = model.model
+
+            if field.rel_model is model:
                 continue
 
             yield field
@@ -53,7 +57,7 @@ def select_tree(model: ModelBase) -> ModelSelect:
     """Selects the entire relation tree."""
 
     tree = list(join_tree(model))
-    select = model.select(model, *(jc.rel_alias for jc in tree))
+    select = model.select(model, *(jc.rel_model for jc in tree))
 
     for model, rel_model, condition, join_type in tree:
         select = select.join_from(
