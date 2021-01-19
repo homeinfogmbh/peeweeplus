@@ -5,7 +5,7 @@ from datetime import datetime, date, time
 from enum import Enum
 from typing import Union
 
-from peewee import Field, Model
+from peewee import Field
 
 from timelib import strpdatetime, strpdate, strptime    # pylint: disable=E0401
 
@@ -16,8 +16,7 @@ __all__ = [
     'parse_date',
     'parse_time',
     'parse_blob',
-    'parse_enum',
-    'get_fk_value'
+    'parse_enum'
 ]
 
 
@@ -73,15 +72,3 @@ def parse_enum(value: Union[Enum, str], field: Field) -> Enum:
         return value
 
     return field.enum(value)
-
-
-def get_fk_value(value: Union[int, Model]) -> int:
-    """Returns the foreign key value."""
-
-    if isinstance(value, int):
-        return value
-
-    if isinstance(value, Model):
-        return value.get_id()
-
-    raise ValueError(value)

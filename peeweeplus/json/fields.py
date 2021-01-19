@@ -107,9 +107,9 @@ class FieldConverter(dict):
                     continue
 
                 with suppress(TypeError):
-                    return function(value, field)
+                    return function(value)
 
-                return function(value)
+                return function(value, field)
 
             return value
 
