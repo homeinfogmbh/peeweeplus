@@ -42,7 +42,7 @@ def get_foreign_keys(model: Union[ModelAlias, ModelBase]) \
             yield field
 
 
-def join_tree(model: ModelAlias) -> Iterator[JoinCondition]:
+def join_tree(model: ModelBase) -> Iterator[JoinCondition]:
     """Joins on all foreign keys."""
 
     for field in get_foreign_keys(model):
@@ -50,13 +50,12 @@ def join_tree(model: ModelAlias) -> Iterator[JoinCondition]:
         join_type = JOIN.LEFT_OUTER if field.null else JOIN.INNER
         condition = field == rel_alias.id
         yield JoinCondition(model, rel_alias, join_type, condition)
-        yield from join_tree(rel_alias)
+        yield from join_tree(rel_alias.model)
 
 
 def select_tree(model: ModelBase) -> ModelSelect:
     """Selects the entire relation tree."""
 
-    model = model.alias()
     tree = list(join_tree(model))
     select = model.select(model, *(jc.rel_model for jc in tree))
 
