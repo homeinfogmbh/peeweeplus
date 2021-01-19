@@ -41,10 +41,10 @@ def join_tree(model: ModelBase) -> Iterator[JoinCondition]:
     """Joins on all foreign keys."""
 
     for field in get_foreign_keys(model):
-        rel_model = field.rel_model
         join_type = JOIN.LEFT_OUTER if field.null else JOIN.INNER
         condition = field == field.rel_field
-        yield JoinCondition(model, rel_model, join_type, condition)
+        yield JoinCondition(
+            model, field.rel_model.alias(), join_type, condition)
         yield from join_tree(field.rel_model)
 
 
@@ -54,8 +54,8 @@ def select_tree(model: ModelBase) -> ModelSelect:
     tree = list(join_tree(model))
     select = model.select(model, *(jc.rel_model for jc in tree))
 
-    for model, rel_model, join_type, condition in tree:
+    for model_, rel_model, join_type, condition in tree:
         select = select.join_from(
-            model, rel_model, join_type=join_type, on=condition)
+            model_, rel_model, join_type=join_type, on=condition)
 
     return select
