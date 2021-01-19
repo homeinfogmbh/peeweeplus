@@ -1,10 +1,11 @@
 """Extensions of the Model class."""
 
-from typing import Iterator, NamedTuple
+from typing import Iterator, NamedTuple, Union
 
 from peewee import JOIN
 from peewee import Expression
 from peewee import ForeignKeyField
+from peewee import ModelAlias
 from peewee import ModelBase
 from peewee import ModelSelect
 
@@ -19,10 +20,10 @@ class JoinCondition(NamedTuple):
     rel_model: ModelBase
     join_type: str
     condition: Expression
-    attribute: str
 
 
-def get_foreign_keys(model: ModelBase) -> Iterator[ForeignKeyField]:
+def get_foreign_keys(model: Union[ModelAlias, ModelBase]) \
+        -> Iterator[ForeignKeyField]:
     """Yields foreign keys."""
 
     fields = model._meta.fields     # pylint: disable=W0212
@@ -32,22 +33,24 @@ def get_foreign_keys(model: ModelBase) -> Iterator[ForeignKeyField]:
             if attribute.endswith('_id') and attribute + '_id' not in fields:
                 continue
 
+            if isinstance(model, ModelAlias):
+                model = model.model
+
             if field.rel_model is model:
                 continue
 
             yield (attribute, field)
 
 
-def join_tree(model: ModelBase) -> Iterator[JoinCondition]:
+def join_tree(model: Union[ModelAlias, ModelBase]) -> Iterator[JoinCondition]:
     """Joins on all foreign keys."""
 
-    for attribute, field in get_foreign_keys(model):
-        if isinstance(model, ModelBase):
-            rel_model = field.rel_model.alias()
-
-        join_type = JOIN.LEFT_OUTER if field.null else JOIN.INNER
+    for attribute, _ in get_foreign_keys(model):
+        field = getattr(model, attribute)
+        rel_model = field.rel_model.alias()
+        join_type = JOIN.LEFT_OUTER #if field.null else JOIN.INNER
         condition = field == rel_model.id
-        yield JoinCondition(model, rel_model, join_type, condition, attribute)
+        yield JoinCondition(model, rel_model, join_type, condition)
         yield from join_tree(rel_model)
 
 
@@ -57,10 +60,8 @@ def select_tree(model: ModelBase) -> ModelSelect:
     tree = list(join_tree(model))
     select = model.select(model, *(jc.rel_model for jc in tree))
 
-    for model_, rel_model, join_type, condition, attribute in tree:
-        print(model_, rel_model, join_type, condition, attribute)
+    for model_, rel_model, join_type, condition in tree:
         select = select.join_from(
-            model_, rel_model, join_type=join_type, on=condition,
-            attr=attribute)
+            model_, rel_model, join_type=join_type, on=condition)
 
     return select
