@@ -15,6 +15,8 @@ def params_from_config(config: SectionProxy) -> dict:
 
     return {
         'database': config.get('db', fallback=config.get('database')),
+        'host': config.get('host'),
+        'user': config.get('host'),
         'passwd': config.get('passwd', fallback=config.get('password')),
         'closing': config.getboolean('closing', True),
         'retry': config.getboolean('retry', False)
