@@ -1,8 +1,8 @@
 """Database enhancements."""
 
 from __future__ import annotations
-from configparser import SectionProxy
-from typing import Any
+from configparser import ConfigParser, SectionProxy
+from typing import Any, Optional
 
 from peewee import OperationalError, MySQLDatabase
 
@@ -26,28 +26,35 @@ def params_from_config(config: SectionProxy) -> dict:
 class MySQLDatabase(MySQLDatabase):     # pylint: disable=E0102,W0223
     """Extension of peewee.MySQLDatabase with closing option."""
 
-    def __init__(self, database: str, closing: bool = False,
-                 retry: bool = False, **kwargs):
+    def __init__(self, database: str, config: Optional[ConfigParser] = None,
+                 **kwargs):
         """Calls __init__ of super and sets closing and retry flags."""
         super().__init__(database, **kwargs)
-        self.closing = closing
-        self.retry = retry
-
-    def init(self, database: str, closing: bool = False, retry: bool = False,
-             **kwargs):
-        """Calls init of super and sets closing and retry flags."""
-        super().init(database, **kwargs)
-        self.closing = closing
-        self.retry = retry
+        self._config = config
+        self._config_loaded = False
 
     @classmethod
     def from_config(cls, config: SectionProxy) -> MySQLDatabase:
         """Creates a database from the respective configuration."""
         return cls(**params_from_config(config))
 
-    def load_config(self, config: SectionProxy) -> MySQLDatabase:
+    def init(self, database: str, closing: bool = False, retry: bool = False,
+             **kwargs):
+        """Invokes super's init method."""
+        super().init(database, **kwargs)
+        self.closing = closing
+        self.retry = retry
+
+    def load_config(self, force: bool = False):
+        """Loads the deferred configuration."""
+        if self._config is not None and (not self._config_loaded or force):
+            self.init(**params_from_config(self._config))
+            self._config_loaded = True
+
+    def connect(self, *args, **kwargs) -> MySQLDatabase:
         """Initializes a database from the respective configuration."""
-        return self.init(**params_from_config(config))
+        self.load_config()
+        return super().connect(*args, **kwargs)
 
     # pylint: disable=W0221
     def execute_sql(self, *args, retried: bool = False, **kwargs) -> Any:
