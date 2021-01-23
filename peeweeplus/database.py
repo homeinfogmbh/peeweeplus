@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 from configparser import ConfigParser, SectionProxy
-from typing import Any, Optional
+from typing import Any, Union
 
 from peewee import OperationalError, MySQLDatabase
 
@@ -26,9 +26,13 @@ def params_from_config(config: SectionProxy) -> dict:
 class MySQLDatabase(MySQLDatabase):     # pylint: disable=E0102,W0223
     """Extension of peewee.MySQLDatabase with closing option."""
 
-    def __init__(self, database: str, config: Optional[ConfigParser] = None,
-                 **kwargs):
+    def __init__(self, database: Union[str, ConfigParser], **kwargs):
         """Calls __init__ of super and sets closing and retry flags."""
+        if isinstance(database, ConfigParser):
+            config, database = database, None
+        else:
+            config = None
+
         super().__init__(database, **kwargs)
         self._config = config
         self._config_loaded = False
@@ -48,7 +52,7 @@ class MySQLDatabase(MySQLDatabase):     # pylint: disable=E0102,W0223
     def load_config(self, force: bool = False):
         """Loads the deferred configuration."""
         if self._config is not None and (not self._config_loaded or force):
-            self.init(**params_from_config(self._config))
+            self.init(**params_from_config(self._config['db']))
             self._config_loaded = True
 
     def connect(self, *args, **kwargs) -> MySQLDatabase:
