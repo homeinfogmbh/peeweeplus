@@ -24,6 +24,20 @@ def params_from_config(config: SectionProxy) -> dict:
 class MySQLDatabase(MySQLDatabase):     # pylint: disable=E0102,W0223
     """Extension of peewee.MySQLDatabase with closing option."""
 
+    def __init__(self, database: str, closing: bool = False,
+                 retry: bool = False, **kwargs):
+        """Calls __init__ of super and sets closing and retry flags."""
+        super().__init__(database, **kwargs)
+        self.closing = closing
+        self.retry = retry
+
+    def init(self, database: str, closing: bool = False, retry: bool = False,
+             **kwargs):
+        """Calls init of super and sets closing and retry flags."""
+        super().init(database, **kwargs)
+        self.closing = closing
+        self.retry = retry
+
     @classmethod
     def from_config(cls, config: SectionProxy) -> MySQLDatabase:
         """Creates a database from the respective configuration."""
