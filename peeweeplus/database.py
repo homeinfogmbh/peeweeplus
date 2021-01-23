@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 from configparser import SectionProxy
-from typing import Any
+from typing import Any, Union
 
 from peewee import OperationalError, MySQLDatabase
 
@@ -10,49 +10,42 @@ from peewee import OperationalError, MySQLDatabase
 __all__ = ['MySQLDatabase']
 
 
+def params_from_config(config: Union[SectionProxy, dict]) -> dict:
+    """Returns the database params from the configuration."""
+
+    return {
+        'database': config.get('db', config.get('database')),
+        'passwd': config.get('passwd', config.get('password')),
+        'closing': config.getboolean('closing', True),
+        'retry': config.getboolean('retry', False)
+    }
+
+
 class MySQLDatabase(MySQLDatabase):     # pylint: disable=E0102,W0223
     """Extension of peewee.MySQLDatabase with closing option."""
 
-    def __init__(self, *args, closing: bool = False, retry: bool = False,
-                 **kwargs):
-        """Adds closing switch for automatic connection closing."""
-        super().__init__(*args, **kwargs)
-        self.closing = closing
-        self.retry = retry
-
     @classmethod
-    def from_config(cls, config: SectionProxy) -> MySQLDatabase:
+    def from_config(cls, config: Union[SectionProxy, dict]) -> MySQLDatabase:
         """Creates a database from the respective configuration."""
-        try:
-            database = config['db']
-        except KeyError:
-            database = config['database']
+        return cls(**params_from_config(config))
 
-        try:
-            passwd = config['passwd']
-        except KeyError:
-            passwd = config['password']
-
-        closing = config.getboolean('closing', True)
-        retry = config.getboolean('retry', False)
-
-        return cls(
-            database, host=config['host'], user=config['user'], passwd=passwd,
-            closing=closing, retry=retry)
+    def load_section(self, config: Union[SectionProxy, dict]) -> MySQLDatabase:
+        """Initializes a database from the respective configuration."""
+        return self.init(**params_from_config(config))
 
     # pylint: disable=W0221
     def execute_sql(self, *args, retried: bool = False, **kwargs) -> Any:
         """Conditionally execute the SQL query in an
         execution context iff closing is enabled.
         """
-        if self.closing:
+        if self.connect_params.get('closing'):
             with self.connection_context():
                 return super().execute_sql(*args, **kwargs)
 
         try:
             return super().execute_sql(*args, **kwargs)
         except OperationalError:
-            if not self.retry or retried:
+            if not self.connect_params.get('retry') or retried:
                 raise
 
             if not self.is_closed():
