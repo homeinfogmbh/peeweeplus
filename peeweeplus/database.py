@@ -29,7 +29,7 @@ class MySQLDatabase(MySQLDatabase):     # pylint: disable=E0102,W0223
         """Creates a database from the respective configuration."""
         return cls(**params_from_config(config))
 
-    def load_section(self, config: Union[SectionProxy, dict]) -> MySQLDatabase:
+    def load_config(self, config: Union[SectionProxy, dict]) -> MySQLDatabase:
         """Initializes a database from the respective configuration."""
         return self.init(**params_from_config(config))
 
