@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 from configparser import SectionProxy
-from typing import Any, Union
+from typing import Any
 
 from peewee import OperationalError, MySQLDatabase
 
@@ -10,12 +10,12 @@ from peewee import OperationalError, MySQLDatabase
 __all__ = ['MySQLDatabase']
 
 
-def params_from_config(config: Union[SectionProxy, dict]) -> dict:
+def params_from_config(config: SectionProxy) -> dict:
     """Returns the database params from the configuration."""
 
     return {
-        'database': config.get('db', config.get('database')),
-        'passwd': config.get('passwd', config.get('password')),
+        'database': config.get('db', fallback=config.get('database')),
+        'passwd': config.get('passwd', fallback=config.get('password')),
         'closing': config.getboolean('closing', True),
         'retry': config.getboolean('retry', False)
     }
@@ -25,11 +25,11 @@ class MySQLDatabase(MySQLDatabase):     # pylint: disable=E0102,W0223
     """Extension of peewee.MySQLDatabase with closing option."""
 
     @classmethod
-    def from_config(cls, config: Union[SectionProxy, dict]) -> MySQLDatabase:
+    def from_config(cls, config: SectionProxy) -> MySQLDatabase:
         """Creates a database from the respective configuration."""
         return cls(**params_from_config(config))
 
-    def load_config(self, config: Union[SectionProxy, dict]) -> MySQLDatabase:
+    def load_config(self, config: SectionProxy) -> MySQLDatabase:
         """Initializes a database from the respective configuration."""
         return self.init(**params_from_config(config))
 
