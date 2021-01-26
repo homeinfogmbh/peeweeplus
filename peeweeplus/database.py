@@ -1,20 +1,13 @@
 """Database enhancements."""
 
 from __future__ import annotations
-from configparser import ConfigParser, SectionProxy
-from typing import Any, Union
+from configparser import SectionProxy
+from typing import Any
 
 from peewee import OperationalError, MySQLDatabase
 
 
 __all__ = ['MySQLDatabase']
-
-
-def params_from_config(config: SectionProxy) -> dict:
-    """Returns the database params from the configuration."""
-
-    return {
-    }
 
 
 class MySQLDatabase(MySQLDatabase):     # pylint: disable=E0102,W0223
@@ -30,11 +23,11 @@ class MySQLDatabase(MySQLDatabase):     # pylint: disable=E0102,W0223
     @classmethod
     def from_config(cls, config: SectionProxy) -> MySQLDatabase:
         """Creates a database from the respective configuration."""
-        database = config.get('db', fallback=config.get('database')),
-        host = config.get('host'),
-        user = config.get('user'),
-        passwd = config.get('passwd', fallback=config.get('password')),
-        closing = config.getboolean('closing', True),
+        database = config.get('db', fallback=config.get('database'))
+        host = config.get('host')
+        user = config.get('user')
+        passwd = config.get('passwd', fallback=config.get('password'))
+        closing = config.getboolean('closing', True)
         retry = config.getboolean('retry', False)
         return cls(database, host=host, user=user, passwd=passwd,
                    closing=closing, retry=retry)
