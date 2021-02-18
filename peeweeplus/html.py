@@ -22,7 +22,11 @@ CLEANER = Cleaner(allow_tags=ALLOWED_TAGS, remove_unknown_tags=False)
 def get_html_strings(element: Element) -> Iterator[str]:
     """Yields HTML text from an element."""
 
-    first, *children = element.getchildren()
+    try:
+        first, *children = element.getchildren()
+    except ValueError:
+        yield tostring(element)
+        return
 
     # Remove <p>…</p> wrapper created by Cleaner.clean_html().
     if not children and first.tag == 'p':
