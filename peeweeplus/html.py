@@ -25,7 +25,7 @@ def get_html_strings(element: Element) -> Iterator[str]:
     try:
         first, *children = element.getchildren()
     except ValueError:
-        yield tostring(element)
+        yield tostring(element).decode()
         return
 
     # Remove <p>…</p> wrapper created by Cleaner.clean_html().
