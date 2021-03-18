@@ -28,7 +28,7 @@ class MySQLDatabase(MySQLDatabase):     # pylint: disable=E0102,W0223
         return self.config.get('db', fallback=self.config.get('database'))
 
     @database.setter
-    def databse(self, database: Optional[str]) -> None:
+    def database(self, database: Optional[str]) -> None:
         """Sets the database name."""
         self._database = database
 
