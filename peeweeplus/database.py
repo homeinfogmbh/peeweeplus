@@ -16,8 +16,8 @@ class MySQLDatabase(MySQLDatabase):     # pylint: disable=E0102,W0223
     def init(self, database: str, *, config: Optional[SectionProxy] = None,
              **kwargs) -> None:
         """Initializes the database."""
+        self.config = config    # Must be done first!
         super().init(database, **kwargs)
-        self.config = config
 
     @property
     def database(self) -> Optional[str]:
