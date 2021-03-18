@@ -18,6 +18,7 @@ class MySQLDatabase(MySQLDatabase):     # pylint: disable=E0102,W0223
         """Initializes the database."""
         self.config = config    # Must be done first!
         super().init(database, **kwargs)
+        self.deferred = not (database or config)
 
     @property
     def database(self) -> Optional[str]:
