@@ -40,10 +40,10 @@ class MySQLDatabase(MySQLDatabase):     # pylint: disable=E0102,W0223
             return self._connect_params
 
         return {
-            **self._connect_params,
             'host': self.config.get('host'),
             'user': self.config.get('user'),
-            'passwd': self.config.get('passwd')
+            'passwd': self.config.get('passwd'),
+            **self._connect_params
         }
 
     @connect_params.setter
