@@ -27,7 +27,7 @@ class MySQLDatabase(MySQLDatabase):     # pylint: disable=E0102,W0223
         if self.config is None:
             return self._database
 
-        return self.config.get('db', fallback=self.config.get('database'))
+        return self.config.get('db', self.config.get('database'))
 
     @database.setter
     def database(self, database: Optional[str]) -> None:
