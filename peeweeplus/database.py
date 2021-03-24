@@ -57,7 +57,10 @@ class MySQLDatabase(MySQLDatabase):     # pylint: disable=E0102,W0223
         if self.config is None:
             return False
 
-        return self.config.getboolean('closing', True)
+        try:
+            return self.config.getboolean('closing', True)
+        except AttributeError:
+            return self.config.get('closing', True)
 
     @property
     def retry(self) -> bool:
@@ -65,7 +68,10 @@ class MySQLDatabase(MySQLDatabase):     # pylint: disable=E0102,W0223
         if self.config is None:
             return False
 
-        return self.config.getboolean('retry', False)
+        try:
+            return self.config.getboolean('retry', False)
+        except AttributeError:
+            return self.config.get('retry', False)
 
     @classmethod
     def from_config(cls, config: SectionProxy) -> MySQLDatabase:
