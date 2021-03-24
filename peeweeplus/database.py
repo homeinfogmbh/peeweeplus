@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 from configparser import SectionProxy
-from typing import Any, Optional
+from typing import Any, Optional, Union
 
 from peewee import OperationalError, MySQLDatabase
 
@@ -13,7 +13,8 @@ __all__ = ['MySQLDatabase']
 class MySQLDatabase(MySQLDatabase):     # pylint: disable=E0102,W0223
     """Extension of peewee.MySQLDatabase with closing option."""
 
-    def init(self, database: str, *, config: Optional[SectionProxy] = None,
+    def init(self, database: str, *,
+             config: Optional[Union[SectionProxy, dict]] = None,
              **kwargs) -> None:
         """Initializes the database."""
         self.config = config    # Must be done first!
