@@ -19,6 +19,7 @@ class HTMLTextAccessor(FieldAccessor):  # pylint: disable=R0903
         if text is None:
             return None
 
+        print('[DEBUG]', 'Type:', type(text), '/', 'Value:', text, flush=True)
         return self.field.clean_func(text)
 
 
