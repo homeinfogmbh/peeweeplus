@@ -14,12 +14,14 @@ class HTMLTextAccessor(FieldAccessor):  # pylint: disable=R0903
     """Accessor class for HTML data."""
 
     def __get__(self, instance, instance_type=None):
-        text = super().__get__(instance, instance_type=instance_type)
+        value = super().__get__(instance, instance_type=instance_type)
+
+        if instance is None:
+            return value
 
         if text is None:
             return None
 
-        print('[DEBUG]', 'Type:', type(text), '/', 'Value:', text, flush=True)
         return self.field.clean_func(text)
 
 
