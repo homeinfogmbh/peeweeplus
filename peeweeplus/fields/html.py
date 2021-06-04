@@ -1,6 +1,6 @@
 """HTML escaping."""
 
-from typing import Callable
+from typing import Callable, Optional
 
 from peewee import CharField, FieldAccessor, TextField
 
@@ -13,16 +13,16 @@ __all__ = ['HTMLCharField', 'HTMLTextField']
 class HTMLTextAccessor(FieldAccessor):  # pylint: disable=R0903
     """Accessor class for HTML data."""
 
-    def __get__(self, instance, instance_type=None):
+    def __get__(self, instance: type, instance_type: Optional[type] = None):
         value = super().__get__(instance, instance_type=instance_type)
 
         if instance is None:
             return value
 
-        if text is None:
+        if value is None:
             return None
 
-        return self.field.clean_func(text)
+        return self.field.clean_func(value)
 
 
 class HTMLCharField(CharField):
