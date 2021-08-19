@@ -74,11 +74,10 @@ def get_orm_value(model: ModelBase, key: str, attribute: str,
 def is_unique(record: Model, field, orm_value) -> bool:
     """Checks whether the value is unique for the field."""
 
-    primary_key = record._pk    # pylint: disable=W0212
     model = field.model
     select = field == orm_value
 
-    if primary_key is not None:
+    if (primary_key := record._pk) is not None:
         pk_field = model._meta.primary_key  # pylint: disable=W0212
         select &= pk_field != primary_key   # Exclude the model itself.
 

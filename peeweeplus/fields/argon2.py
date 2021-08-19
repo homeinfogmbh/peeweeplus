@@ -57,10 +57,8 @@ class Argon2FieldAccessor(FieldAccessor):  # pylint: disable=R0903
         """Sets the password hash."""
         if value is not None:
             if not isinstance(value, Argon2Hash):
-                length = len(value)
-
                 # If value is a plain text password, hash it.
-                if length < self.field.min_pw_len:
+                if (length := len(value)) < self.field.min_pw_len:
                     raise PasswordTooShortError(length, self.field.min_pw_len)
 
                 value = Argon2Hash.create(value, self.field.hasher)
