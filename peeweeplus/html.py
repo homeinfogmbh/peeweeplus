@@ -4,7 +4,7 @@ from functools import lru_cache
 from html import unescape
 from typing import Iterator
 
-from lxml.etree import XMLSyntaxError   # pylint: disable=E0611
+from lxml.etree import ParserError, XMLSyntaxError  # pylint: disable=E0611
 from lxml.html import Element, document_fromstring, tostring
 from lxml.html.clean import Cleaner     # pylint: disable=E0611
 
@@ -46,7 +46,7 @@ def sanitize(text: str, *, cleaner: Cleaner = CLEANER) -> str:
 
     try:
         doc = document_fromstring(text)
-    except XMLSyntaxError:  # Probably not HTML text.
+    except (ParserError, XMLSyntaxError):  # Probably not HTML text.
         return text
 
     doc = cleaner.clean_html(doc)
