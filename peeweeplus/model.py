@@ -26,9 +26,7 @@ def get_foreign_keys(model: Union[ModelAlias, ModelBase]) \
         -> Iterator[ForeignKeyField]:
     """Yields foreign keys."""
 
-    fields = model._meta.fields     # pylint: disable=W0212
-
-    for attribute, field in fields.items():
+    for attribute, field in (fields := model._meta.fields).items():
         if isinstance(field, ForeignKeyField):
             if attribute.endswith('_id') and attribute + '_id' not in fields:
                 continue
