@@ -189,9 +189,9 @@ class OAuth2TokenMixin(Model, TokenMixin):
         """Returns the datetime when the token expires."""
         return self.issued_at + timedelta(seconds=self.expires_in)
 
-    def get_client_id(self) -> str:
+    def check_client(self, client: OAuth2ClientMixin) -> bool:
         """Returns the client ID."""
-        return self.client_id
+        return client.client_id == self.client_id
 
     def get_scope(self) -> str:
         """Returns the scope."""
@@ -200,10 +200,6 @@ class OAuth2TokenMixin(Model, TokenMixin):
     def get_expires_in(self) -> int:
         """Returns the amount of microseconds the token expires in."""
         return self.expires_in
-
-    def get_expires_at(self) -> int:
-        """Returns the timstamp in microseconds when the token expires."""
-        return self.expires_at.timestamp()
 
     def is_expired(self) -> bool:
         """Determines whether the token is expired."""
