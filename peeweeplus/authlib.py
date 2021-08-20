@@ -158,8 +158,6 @@ class OAuth2ClientMixin(Model, ClientMixin):   # pylint: disable=R0904
 
     def check_endpoint_auth_method(self, method: str, endpoint: str) -> bool:
         """Checks the authorization for the respective endpoint."""
-        print('Endpoint auth check:', method, '@', endpoint, flush=True)
-
         if endpoint == 'token':
             return self.token_endpoint_auth_method == method
 
