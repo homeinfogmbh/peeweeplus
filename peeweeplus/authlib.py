@@ -163,7 +163,7 @@ class OAuth2ClientMixin(Model, ClientMixin):   # pylint: disable=R0904
         if endpoint == 'token':
             return self.token_endpoint_auth_method == method
 
-        return False
+        return True
 
     def check_response_type(self, response_type: str) -> bool:
         """Verifies the response type."""
