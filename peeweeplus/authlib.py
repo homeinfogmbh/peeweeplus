@@ -211,9 +211,9 @@ class OAuth2TokenMixin(Model, TokenMixin):
         """Determines whether the token is expired."""
         return self.expires_at <= datetime.now()
 
-    def is_valid(self) -> bool:
-        """Determines whether the token is valid."""
-        return not self.revoked and not self.is_expired()
+    def is_revoked(self) -> bool:
+        """Determines whether the token is revoked."""
+        return self.revoked
 
 
 class OAuth2AuthorizationCodeMixin(Model, AuthorizationCodeMixin):
