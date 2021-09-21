@@ -1,9 +1,19 @@
 """Integer fields."""
 
-from peewee import IntegerField
+from peewee import IntegerField, SmallIntegerField
 
 
-__all__ = ['UnsignedIntegerField', 'UnsignedBigIntegerField']
+__all__ = [
+    'SmallUnsignedIntegerField',
+    'UnsignedIntegerField',
+    'UnsignedBigIntegerField'
+]
+
+
+class SmallUnsignedIntegerField(SmallIntegerField):
+    """Small unsigned integer field."""
+
+    field_type = 'SMALLINT UNSIGNED'
 
 
 class UnsignedIntegerField(IntegerField):
