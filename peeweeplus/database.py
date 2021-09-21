@@ -1,13 +1,16 @@
 """Database enhancements."""
 
 from __future__ import annotations
-from configparser import SectionProxy
+from configparser import ConfigParser, SectionProxy
 from typing import Any, Optional, Union
 
 from peewee import OperationalError, MySQLDatabase
 
 
 __all__ = ['MySQLDatabase']
+
+
+SEARCH_SECTIONS = ['db', 'database']
 
 
 class MySQLDatabase(MySQLDatabase):     # pylint: disable=E0102,W0223
@@ -75,9 +78,26 @@ class MySQLDatabase(MySQLDatabase):     # pylint: disable=E0102,W0223
             return self.config.get('retry', False)
 
     @classmethod
-    def from_config(cls, config: SectionProxy) -> MySQLDatabase:
+    def from_config_section(cls, section: SectionProxy) -> MySQLDatabase:
         """Creates a database from the respective configuration."""
-        return cls(None, config=config)
+        return cls(None, config=section)
+
+    @classmethod
+    def from_config(cls, config: Union[ConfigParser, SectionProxy]) \
+            -> MySQLDatabase:
+        """Creates a database from the respective configuration."""
+        if isinstance(config, SectionProxy):
+            return cls.from_config_section(config)
+
+        for section in SEARCH_SECTIONS:
+            try:
+                section = config[section]
+            except KeyError:
+                continue
+
+            return cls.from_config_section(section)
+
+        raise KeyError('No database config section found in:', SEARCH_SECTIONS)
 
     # pylint: disable=W0221
     def execute_sql(self, *args, retried: bool = False, **kwargs) -> Any:
