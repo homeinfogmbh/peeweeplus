@@ -12,6 +12,7 @@ from timelib import strpdatetime, strpdate, strptime    # pylint: disable=E0401
 
 __all__ = [
     'parse_bool',
+    'parse_char_field',
     'parse_datetime',
     'parse_date',
     'parse_time',
@@ -27,6 +28,15 @@ def parse_bool(value: Union[bool, int]) -> bool:
         return bool(value)
 
     raise ValueError(value)
+
+
+def parse_char_field(value: str, field: Field) -> str:
+    """Parses a string for a char field."""
+
+    if (size := len(value)) > field.max_length:
+        raise ValueError(f'String is too long: {size} > {field.max_length}')
+
+    return value
 
 
 def parse_datetime(value: Union[datetime, str]) -> datetime:
