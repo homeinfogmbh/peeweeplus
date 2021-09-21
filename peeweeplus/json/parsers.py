@@ -33,6 +33,9 @@ def parse_bool(value: Union[bool, int]) -> bool:
 def parse_char_field(value: str, field: Field) -> str:
     """Parses a string for a char field."""
 
+    if field.max_length is None:
+        return value
+
     if (size := len(value)) > field.max_length:
         raise ValueError(f'String is too long: {size} > {field.max_length}')
 
