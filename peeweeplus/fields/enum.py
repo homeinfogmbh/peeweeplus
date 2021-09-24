@@ -14,6 +14,7 @@ class EnumField(CharField):
     def __init__(self, enum: EnumMeta, *args, name: bool = False, **kwargs):
         """Initializes the enumeration field with the enumeration enum.
         The keyword max_length is not supported.
+        If name is True, store the enum's name instead of its value.
         """
         super().__init__(*args, max_length=None, **kwargs)
         self.enum = enum
