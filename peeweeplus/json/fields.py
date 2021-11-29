@@ -6,9 +6,8 @@ from typing import Iterable, Iterator, NamedTuple, Set
 
 from peewee import Field, ForeignKeyField, ModelBase
 
-from strflib import camel_case
-
 from peeweeplus.exceptions import NullError
+from peeweeplus.json.functions import camel_case
 
 
 __all__ = ['JSON_FIELDS', 'contains', 'get_json_fields', 'FieldConverter']
