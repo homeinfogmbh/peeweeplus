@@ -7,8 +7,6 @@ from typing import Union
 
 from peewee import Field
 
-from timelib import strpdatetime, strpdate, strptime    # pylint: disable=E0401
-
 
 __all__ = [
     'parse_bool',
@@ -48,7 +46,7 @@ def parse_datetime(value: Union[datetime, str]) -> datetime:
     if isinstance(value, datetime):
         return value
 
-    return strpdatetime(value)
+    return datetime.fromisoformat(value)
 
 
 def parse_date(value: Union[date, str]) -> date:
@@ -57,7 +55,7 @@ def parse_date(value: Union[date, str]) -> date:
     if isinstance(value, date):
         return value
 
-    return strpdate(value)
+    return date.fromisoformat(value)
 
 
 def parse_time(value: Union[time, str]) -> time:
@@ -66,7 +64,7 @@ def parse_time(value: Union[time, str]) -> time:
     if isinstance(value, time):
         return value
 
-    return strptime(value)
+    return time.fromisoformat(value)
 
 
 def parse_blob(value: Union[bytes, str]) -> bytes:
