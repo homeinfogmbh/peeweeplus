@@ -2,8 +2,6 @@
 
 from datetime import date, datetime
 
-from timelib import strpdatetime
-
 
 __all__ = [
     'dec2dom',
@@ -51,7 +49,7 @@ def datetime2orm(value: object) -> datetime:
     if value is None:
         return None
 
-    return strpdatetime(value.isoformat())
+    return datetime.fromisoformat(value.isoformat())
 
 
 def parse_float(string: str) -> float:
