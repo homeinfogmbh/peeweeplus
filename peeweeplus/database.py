@@ -3,7 +3,7 @@
 from configparser import ConfigParser
 from logging import getLogger
 from pathlib import Path
-from typing import Any, Union
+from typing import Any, Optional, Union
 
 from peewee import OperationalError, MySQLDatabase
 
@@ -36,10 +36,11 @@ class MySQLDatabase(MySQLDatabase):     # pylint: disable=E0102,W0223
 class MySQLDatabaseProxy:   # pylint: disable=R0903
     """Proxies to a MySQL database."""
 
-    def __init__(self, database: str, config_file: Union[Path, str],
+    def __init__(self, database: str,
+                 config_file: Optional[Union[Path, str]] = None,
                  config_section: str = 'db'):
         self.database = database
-        self.config_file = config_file
+        self.config_file = config_file or f'{database}.conf'
         self.config_section = config_section
         self._database = MySQLDatabase(database)
         self._initialized = False
