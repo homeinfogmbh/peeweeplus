@@ -7,6 +7,8 @@ from typing import Any, Union
 
 from peewee import OperationalError, MySQLDatabase
 
+from configlib import search_paths
+
 
 __all__ = ['MySQLDatabase', 'MySQLDatabaseProxy']
 
@@ -57,7 +59,10 @@ class MySQLDatabaseProxy:   # pylint: disable=R0903
             'Loading database config from "%s" section "%s"', self.config_file,
             self.config_section)
         config_parser = ConfigParser()
-        config_parser.read(self.config_file)
+
+        for filename in search_paths(self.config_file):
+            config_parser.read(filename)
+
         self._database.init(
             self.database,
             host=config_parser.get(self.config_section, 'host'),
