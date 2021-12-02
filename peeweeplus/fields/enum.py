@@ -11,17 +11,19 @@ __all__ = ['EnumField']
 class EnumField(CharField):
     """CharField-based enumeration field."""
 
-    def __init__(self, enum: EnumMeta, *args, **kwargs):
+    def __init__(self, enum: EnumMeta, *args, use_name: bool = False, **kwargs):
         """Initializes the enumeration field with the enumeration enum.
         The keyword max_length is not supported.
+        If use_name is True, store the enum's name instead of its value.
         """
         super().__init__(*args, max_length=None, **kwargs)
         self.enum = enum
+        self.use_name = use_name
 
     @property
     def max_length(self) -> int:
         """Derives the required field size from the enumeration values."""
-        return max(len(value.value) for value in self.enum)
+        return max(len(v.name if self.use_name else v.value) for v in self.enum)
 
     @max_length.setter
     def max_length(self, max_length: int):   # pylint: disable=R0201
@@ -34,11 +36,11 @@ class EnumField(CharField):
         if value is None:
             return None
 
-        return value.value
+        return value.name if self.use_name else value.value
 
     def python_value(self, value: str) -> Enum:
         """Returns the respective enumeration."""
         if value is None:
             return None
 
-        return self.enum(value)
+        return self.enum[value] if self.use_name else self.enum(value)

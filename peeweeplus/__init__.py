@@ -14,7 +14,7 @@ from peeweeplus.exceptions import FieldNotNullable
 from peeweeplus.exceptions import MissingKeyError
 from peeweeplus.exceptions import InvalidKeys
 from peeweeplus.exceptions import NonUniqueValue
-from peeweeplus.exceptions import PasswordTooShortError
+from peeweeplus.exceptions import PasswordTooShort
 from peeweeplus.fields import *
 from peeweeplus.fields import __all__ as _ALL_FIELDS
 from peeweeplus.json import JSON_FIELDS
@@ -33,7 +33,7 @@ __all__ = [
     'MissingKeyError',
     'InvalidKeys',
     'NonUniqueValue',
-    'PasswordTooShortError',
+    'PasswordTooShort',
     'dec2dom',
     'dec2dict',
     'dec2orm',

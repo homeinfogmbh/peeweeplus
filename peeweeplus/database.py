@@ -1,40 +1,38 @@
 """Database enhancements."""
 
-from __future__ import annotations
 from configparser import ConfigParser
 from logging import getLogger
 from pathlib import Path
 from typing import Any, Union
 
-from peewee import SENTINEL, OperationalError, MySQLDatabase
+from peewee import OperationalError, MySQLDatabase
 
 
 __all__ = ['MySQLDatabase', 'MySQLDatabaseProxy']
+
 
 
 class MySQLDatabase(MySQLDatabase):     # pylint: disable=E0102,W0223
     """Extension of peewee.MySQLDatabase with closing option."""
 
     # pylint: disable=W0221
-    def execute_sql(self, sql: str, params: Any = None,
-                    commit: Union[bool, object] = SENTINEL, *,
-                    retry: bool = True):
+    def execute_sql(self, *args, retried: bool = False, **kwargs) -> Any:
         """Conditionally execute the SQL query in an
         execution context iff closing is enabled.
         """
         try:
-            return super().execute_sql(sql, params=params, commit=commit)
+            return super().execute_sql(*args, **kwargs)
         except OperationalError:
-            if not retry:
+            if retried:
                 raise
 
         if not self.is_closed():
             self.close()
 
-        return self.execute_sql(sql, params=params, commit=commit, retry=False)
+        return self.execute_sql(*args, retried=True, **kwargs)
 
 
-class MySQLDatabaseProxy:
+class MySQLDatabaseProxy:   # pylint: disable=R0903
     """Proxies to a MySQL database."""
 
     def __init__(self, database: str, config_file: Union[Path, str],

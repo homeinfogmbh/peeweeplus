@@ -1,11 +1,19 @@
 """Transactions for adding and deleting multiple records in one action."""
 
 from collections import deque
+from typing import NamedTuple
 
 from peewee import Model
 
 
 __all__ = ['Transaction']
+
+
+class TransactionItem(NamedTuple):
+    """Item of a transaction."""
+
+    delete: bool
+    record: Model
 
 
 class Transaction(deque):
@@ -22,7 +30,7 @@ class Transaction(deque):
 
     def add(self, record: Model, left: bool = False, primary: bool = False):
         """Adds the respective record."""
-        item = (False, record)
+        item = TransactionItem(False, record)
 
         if primary:
             self.primary = record
@@ -34,7 +42,7 @@ class Transaction(deque):
 
     def delete(self, record: Model, left: bool = False):
         """Deletes the respective record."""
-        item = (True, record)
+        item = TransactionItem(True, record)
 
         if left:
             return self.appendleft(item)
@@ -43,8 +51,8 @@ class Transaction(deque):
 
     def commit(self):
         """Saves the records or sub-transactions."""
-        for delete, record in self:
-            if delete:
-                record.delete_instance()
+        for item in self:
+            if item.delete:
+                item.record.delete_instance()
             else:
-                record.save()
+                item.record.save()

@@ -12,7 +12,7 @@ __all__ = [
     'MissingKeyError',
     'InvalidKeys',
     'NonUniqueValue',
-    'PasswordTooShortError'
+    'PasswordTooShort'
 ]
 
 
@@ -110,7 +110,7 @@ class NonUniqueValue(ValueError):
         self.value = value
 
 
-class PasswordTooShortError(Exception):
+class PasswordTooShort(Exception):
     """Indicates that the provided password was too short."""
 
     def __init__(self, pwlen: int, minlen: int):

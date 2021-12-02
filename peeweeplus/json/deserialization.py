@@ -5,6 +5,7 @@ from uuid import UUID
 
 from peewee import BlobField
 from peewee import BooleanField
+from peewee import CharField
 from peewee import DateField
 from peewee import DateTimeField
 from peewee import DecimalField
@@ -30,6 +31,7 @@ from peeweeplus.fields import IPv6AddressField
 from peeweeplus.json.fields import get_json_fields, FieldConverter
 from peeweeplus.json.filter import FieldsFilter
 from peeweeplus.json.parsers import parse_blob
+from peeweeplus.json.parsers import parse_char_field
 from peeweeplus.json.parsers import parse_bool
 from peeweeplus.json.parsers import parse_date
 from peeweeplus.json.parsers import parse_datetime
@@ -44,6 +46,7 @@ __all__ = ['deserialize', 'patch']
 CONVERTER = FieldConverter({
     BlobField: parse_blob,
     BooleanField: parse_bool,
+    CharField: parse_char_field,
     DateField: parse_date,
     DateTimeField: parse_datetime,
     DecimalField: float,
@@ -74,11 +77,10 @@ def get_orm_value(model: ModelBase, key: str, attribute: str,
 def is_unique(record: Model, field, orm_value) -> bool:
     """Checks whether the value is unique for the field."""
 
-    primary_key = record._pk    # pylint: disable=W0212
     model = field.model
     select = field == orm_value
 
-    if primary_key is not None:
+    if (primary_key := record._pk) is not None:
         pk_field = model._meta.primary_key  # pylint: disable=W0212
         select &= pk_field != primary_key   # Exclude the model itself.
 

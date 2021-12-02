@@ -156,9 +156,12 @@ class OAuth2ClientMixin(Model, ClientMixin):   # pylint: disable=R0904
         except VerifyMismatchError:
             return False
 
-    def check_token_endpoint_auth_method(self, method: str) -> bool:
-        """Verifies the token endpoint authentication method."""
-        return self.token_endpoint_auth_method == method
+    def check_endpoint_auth_method(self, method: str, endpoint: str) -> bool:
+        """Checks the authorization for the respective endpoint."""
+        if endpoint == 'token':
+            return self.token_endpoint_auth_method == method
+
+        return False
 
     def check_response_type(self, response_type: str) -> bool:
         """Verifies the response type."""
@@ -186,9 +189,9 @@ class OAuth2TokenMixin(Model, TokenMixin):
         """Returns the datetime when the token expires."""
         return self.issued_at + timedelta(seconds=self.expires_in)
 
-    def get_client_id(self) -> str:
+    def check_client(self, client: OAuth2ClientMixin) -> bool:
         """Returns the client ID."""
-        return self.client_id
+        return client.client_id == self.client_id
 
     def get_scope(self) -> str:
         """Returns the scope."""
@@ -198,17 +201,13 @@ class OAuth2TokenMixin(Model, TokenMixin):
         """Returns the amount of microseconds the token expires in."""
         return self.expires_in
 
-    def get_expires_at(self) -> int:
-        """Returns the timstamp in microseconds when the token expires."""
-        return self.expires_at.timestamp()
-
     def is_expired(self) -> bool:
         """Determines whether the token is expired."""
         return self.expires_at <= datetime.now()
 
-    def is_valid(self) -> bool:
-        """Determines whether the token is valid."""
-        return not self.revoked and not self.is_expired()
+    def is_revoked(self) -> bool:
+        """Determines whether the token is revoked."""
+        return self.revoked
 
 
 class OAuth2AuthorizationCodeMixin(Model, AuthorizationCodeMixin):

@@ -4,7 +4,7 @@ from functools import lru_cache
 from html import unescape
 from typing import Iterator
 
-from lxml.etree import XMLSyntaxError   # pylint: disable=E0611
+from lxml.etree import ParserError, XMLSyntaxError  # pylint: disable=E0611
 from lxml.html import Element, document_fromstring, tostring
 from lxml.html.clean import Cleaner     # pylint: disable=E0611
 
@@ -22,7 +22,11 @@ CLEANER = Cleaner(allow_tags=ALLOWED_TAGS, remove_unknown_tags=False)
 def get_html_strings(element: Element) -> Iterator[str]:
     """Yields HTML text from an element."""
 
-    first, *children = element.getchildren()
+    try:
+        first, *children = element.getchildren()
+    except ValueError:
+        yield tostring(element).decode()
+        return
 
     # Remove <p>…</p> wrapper created by Cleaner.clean_html().
     if not children and first.tag == 'p':
@@ -42,7 +46,7 @@ def sanitize(text: str, *, cleaner: Cleaner = CLEANER) -> str:
 
     try:
         doc = document_fromstring(text)
-    except XMLSyntaxError:  # Probably not HTML text.
+    except (ParserError, XMLSyntaxError):  # Probably not HTML text.
         return text
 
     doc = cleaner.clean_html(doc)
