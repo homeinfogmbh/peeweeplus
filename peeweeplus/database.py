@@ -11,7 +11,6 @@ from peewee import OperationalError, MySQLDatabase
 __all__ = ['MySQLDatabase', 'MySQLDatabaseProxy']
 
 
-
 class MySQLDatabase(MySQLDatabase):     # pylint: disable=E0102,W0223
     """Extension of peewee.MySQLDatabase with closing option."""
 
