@@ -13,6 +13,9 @@ from configlib import search_paths
 __all__ = ['MySQLDatabase', 'MySQLDatabaseProxy']
 
 
+LOGGER = getLogger(__file__)
+
+
 class MySQLDatabase(MySQLDatabase):     # pylint: disable=E0102,W0223
     """Extension of peewee.MySQLDatabase with closing option."""
 
@@ -56,9 +59,8 @@ class MySQLDatabaseProxy:   # pylint: disable=R0903
 
     def _initialize(self) -> None:
         """Initializes the database."""
-        getLogger(type(self).__name__).debug(
-            'Loading database config from "%s" section "%s"', self.config_file,
-            self.config_section)
+        LOGGER.debug('Loading database config from "%s" section "%s".',
+                     self.config_file, self.config_section)
         config = ConfigParser()
 
         for filename in search_paths(self.config_file):
