@@ -66,8 +66,10 @@ class MySQLDatabaseProxy:   # pylint: disable=R0903
 
         self._database.init(
             self.database,
-            host=config_parser.get(self.config_section, 'host'),
-            user=config_parser.get(self.config_section, 'user'),
+            host=config_parser.get(self.config_section, 'host',
+                                   fallback='localhost'),
+            user=config_parser.get(self.config_section, 'user',
+                                   fallback=self.database),
             passwd=config_parser.get(self.config_section, 'passwd')
         )
         self._initialized = True
