@@ -59,17 +59,15 @@ class MySQLDatabaseProxy:   # pylint: disable=R0903
         getLogger(type(self).__name__).debug(
             'Loading database config from "%s" section "%s"', self.config_file,
             self.config_section)
-        config_parser = ConfigParser()
+        config = ConfigParser()
 
         for filename in search_paths(self.config_file):
-            config_parser.read(filename)
+            config.read(filename)
 
         self._database.init(
-            self.database,
-            host=config_parser.get(self.config_section, 'host',
-                                   fallback='localhost'),
-            user=config_parser.get(self.config_section, 'user',
-                                   fallback=self.database),
-            passwd=config_parser.get(self.config_section, 'passwd')
+            database := self.database,
+            host=config.get(self.config_section, 'host', fallback='localhost'),
+            user=config.get(self.config_section, 'user', fallback=database),
+            passwd=config.get(self.config_section, 'passwd')
         )
         self._initialized = True
