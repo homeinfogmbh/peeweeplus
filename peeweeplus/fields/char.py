@@ -1,7 +1,8 @@
 """Specialized character-based fields."""
 
 from datetime import date, datetime
-from typing import Iterable, Optional, Union
+from re import fullmatch
+from typing import Optional, Union
 
 from peewee import CharField, FieldAccessor
 
@@ -132,15 +133,15 @@ class RestrictedCharFieldAccessor(FieldAccessor):   # pylint: disable=R0903
 class RestrictedCharField(CharField):
     """CharField with restricted character set."""
 
-    def __init__(self, allowed_chars: Iterable[str], *args, **kwargs):
+    def __init__(self, regex: str, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.allowed_chars = allowed_chars
+        self.regex = regex
 
     def check(self, text: str) -> str:
         """Checks the text against the allowed chars."""
-        if all(char in self.allowed_chars for char in text):
+        if fullmatch(self.regex, text):
             return text
 
-        raise ValueError('Text contains invalid characters.')
+        raise ValueError('Text does not match regular expression.')
 
     accessor_class = RestrictedCharFieldAccessor
