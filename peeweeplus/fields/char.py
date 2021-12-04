@@ -1,9 +1,9 @@
 """Specialized character-based fields."""
 
 from datetime import date, datetime
-from typing import Union
+from typing import Iterable, Optional, Union
 
-from peewee import CharField
+from peewee import CharField, FieldAccessor
 
 from peeweeplus.converters import parse_float
 
@@ -13,7 +13,8 @@ __all__ = [
     'IntegerCharField',
     'DecimalCharField',
     'DateTimeCharField',
-    'DateCharField'
+    'DateCharField',
+    'RestrictedCharField'
 ]
 
 
@@ -111,3 +112,35 @@ class DateCharField(DateTimeCharField):     # pylint: disable=R0901
             return None
 
         return datetime.strptime(value, self.format).date()
+
+
+class RestrictedCharFieldAccessor(FieldAccessor):   # pylint: disable=R0903
+    """Accessor class for HTML data."""
+
+    def __get__(self, instance: type, instance_type: Optional[type] = None):
+        value = super().__get__(instance, instance_type=instance_type)
+
+        if instance is None:
+            return value
+
+        if value is None:
+            return None
+
+        return self.field.check(value)
+
+
+class RestrictedCharField(CharField):
+    """CharField with restricted character set."""
+
+    def __init__(self, allowed_chars: Iterable[str], *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.allowed_chars = allowed_chars
+
+    def check(self, text: str) -> str:
+        """Checks the text against the allowed chars."""
+        if all(char in self.allowed_chars for char in text):
+            return text
+
+        raise ValueError('Text contains invalid characters.')
+
+    accessor_class = RestrictedCharFieldAccessor

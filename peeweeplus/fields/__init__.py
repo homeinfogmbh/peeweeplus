@@ -3,10 +3,11 @@
 from logging import getLogger
 
 from peeweeplus.fields.char import BooleanCharField
-from peeweeplus.fields.char import IntegerCharField
 from peeweeplus.fields.char import DecimalCharField
 from peeweeplus.fields.char import DateTimeCharField
 from peeweeplus.fields.char import DateCharField
+from peeweeplus.fields.char import IntegerCharField
+from peeweeplus.fields.char import RestrictedCharField
 from peeweeplus.fields.enum import EnumField
 from peeweeplus.fields.html import HTMLCharField, HTMLTextField
 from peeweeplus.fields.int import SmallUnsignedIntegerField
@@ -33,6 +34,7 @@ __all__ = [
     'IPv6AddressField',
     'JSONTextField',
     'PasswordField',
+    'RestrictedCharField',
     'SmallUnsignedIntegerField',
     'UnsignedBigIntegerField',
     'UnsignedIntegerField'
