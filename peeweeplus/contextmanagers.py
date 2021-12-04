@@ -1,9 +1,21 @@
 """Context managers."""
 
-from peewee import ModelBase
+from peewee import Database, ModelBase
+
+from peeweeplus.database import MySQLDatabaseProxy
 
 
 __all__ = ['ChangedConnection']
+
+
+def get_database(model: ModelBase) -> Database:
+    """Returns the respective databse."""
+
+    # pylint: disable=W0212
+    if isinstance((database := model._meta.database), MySQLDatabaseProxy):
+        return database._database
+
+    return database
 
 
 class ChangedConnection:
@@ -32,9 +44,9 @@ class ChangedConnection:
     @property
     def target_db(self):
         """Returns the target's database."""
-        return self.target._meta.database   # pylint: disable=W0212
+        return get_database(self.target)
 
     @property
     def source_db(self):
         """Returns the source's database."""
-        return self.source._meta.database   # pylint: disable=W0212
+        return get_database(self.source)
