@@ -8,7 +8,8 @@ from peeweeplus.converters import dec2dict
 from peeweeplus.converters import dec2orm
 from peeweeplus.converters import date2orm
 from peeweeplus.converters import datetime2orm
-from peeweeplus.database import MySQLDatabase, MySQLDatabaseProxy
+from peeweeplus.database import MySQLDatabase
+from peeweeplus.dbproxy import DatabaseProxy, MySQLDatabaseProxy
 from peeweeplus.exceptions import FieldValueError
 from peeweeplus.exceptions import FieldNotNullable
 from peeweeplus.exceptions import MissingKeyError
@@ -43,6 +44,7 @@ __all__ = [
     'select_tree',
     'serialize',
     'ChangedConnection',
+    'DatabaseProxy',
     'MySQLDatabase',
     'MySQLDatabaseProxy',
     'JSONMixin',

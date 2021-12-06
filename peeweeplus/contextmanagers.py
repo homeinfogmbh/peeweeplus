@@ -2,7 +2,7 @@
 
 from peewee import Database, ModelBase
 
-from peeweeplus.database import MySQLDatabaseProxy
+from peeweeplus.dbproxy import DatabaseProxy
 
 
 __all__ = ['ChangedConnection']
@@ -12,7 +12,7 @@ def get_database(model: ModelBase) -> Database:
     """Returns the respective databse."""
 
     # pylint: disable=W0212
-    if isinstance((database := model._meta.database), MySQLDatabaseProxy):
+    if isinstance((database := model._meta.database), DatabaseProxy):
         return database._database
 
     return database
