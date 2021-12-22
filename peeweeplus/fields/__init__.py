@@ -20,6 +20,7 @@ from peeweeplus.fields.ip import IPv4AddressField
 from peeweeplus.fields.ip import IPv6AddressField
 from peeweeplus.fields.json import JSONTextField
 from peeweeplus.fields.password import PasswordField
+from peeweeplus.fields.phonenumber import PhoneNumberField
 from peeweeplus.fields.username import UserNameField
 
 
@@ -38,6 +39,7 @@ __all__ = [
     'IPv6AddressField',
     'JSONTextField',
     'PasswordField',
+    'PhoneNumberField',
     'RestrictedCharField',
     'SmallUnsignedIntegerField',
     'TimedeltaField',
