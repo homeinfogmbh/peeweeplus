@@ -22,4 +22,4 @@ class EMailField(RestrictedCharField):
     """Restricted field to store email addresses."""
 
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, regex=REGEX, **kwargs)
+        super().__init__(REGEX, *args, **kwargs)
