@@ -11,8 +11,9 @@ setup(
     setup_requires=['setuptools_scm'],
     install_requires=[
         'configlib',
+        'lxml',
+        'mimeutil',
         'peewee',
-        'lxml'
     ],
     extras_require={
         'Argon2Field': ['argon2_cffi'],

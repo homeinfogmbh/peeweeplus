@@ -23,6 +23,7 @@ from peeweeplus.json import deserialize
 from peeweeplus.json import serialize
 from peeweeplus.json import JSONMixin
 from peeweeplus.json import JSONModel
+from peeweeplus.mixins import FileMixin
 from peeweeplus.model import select_tree
 from peeweeplus.transaction import Transaction
 
