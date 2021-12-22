@@ -46,6 +46,7 @@ __all__ = [
     'serialize',
     'ChangedConnection',
     'DatabaseProxy',
+    'FileMixin',
     'MySQLDatabase',
     'MySQLDatabaseProxy',
     'JSONMixin',
