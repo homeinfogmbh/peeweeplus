@@ -6,7 +6,7 @@ from peeweeplus.fields.char import RestrictedCharField
 __all__ = ['UserNameField']
 
 
-REGEX = r"^[A-Za-zÄäÖöÜüßéè '-]+$"
+REGEX = r"^[0-9A-Za-zÄäÖöÜüßéè '-]+$"
 
 
 class UserNameField(RestrictedCharField):
