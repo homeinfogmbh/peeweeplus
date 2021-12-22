@@ -4,7 +4,7 @@ from datetime import date, datetime
 from re import fullmatch
 from typing import Optional, Union
 
-from peewee import CharField, FieldAccessor
+from peewee import CharField, FieldAccessor, Model
 
 from peeweeplus.converters import parse_float
 
@@ -118,16 +118,11 @@ class DateCharField(DateTimeCharField):     # pylint: disable=R0901
 class RestrictedCharFieldAccessor(FieldAccessor):   # pylint: disable=R0903
     """Accessor class for HTML data."""
 
-    def __get__(self, instance: type, instance_type: Optional[type] = None):
-        value = super().__get__(instance, instance_type=instance_type)
-
-        if instance is None:
-            return value
-
+    def __set__(self, instance: Model, value: Optional[str]):
         if value is None:
-            return None
+            return super().__set__(instance, value)
 
-        return self.field.check(value)
+        return super().__set__(instance, self.field.check(value))
 
 
 class RestrictedCharField(CharField):
