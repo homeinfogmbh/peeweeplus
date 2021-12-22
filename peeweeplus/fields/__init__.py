@@ -9,6 +9,7 @@ from peeweeplus.fields.char import DateCharField
 from peeweeplus.fields.char import IntegerCharField
 from peeweeplus.fields.char import RestrictedCharField
 from peeweeplus.fields.datetime import TimedeltaField
+from peeweeplus.fields.email import EMailField
 from peeweeplus.fields.enum import EnumField
 from peeweeplus.fields.html import HTMLCharField, HTMLTextField
 from peeweeplus.fields.int import SmallUnsignedIntegerField
@@ -26,6 +27,7 @@ __all__ = [
     'DateCharField',
     'DateTimeCharField',
     'DecimalCharField',
+    'EMailField',
     'EnumField',
     'HTMLCharField',
     'HTMLTextField',
