@@ -137,6 +137,6 @@ class RestrictedCharField(CharField):
         if fullmatch(self.regex, text):
             return text
 
-        raise ValueError('Text does not match regular expression.')
+        raise ValueError(f'Text "{text}" does not match regex: {self.regex}')
 
     accessor_class = RestrictedCharFieldAccessor
