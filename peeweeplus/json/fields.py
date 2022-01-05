@@ -7,7 +7,6 @@ from typing import Iterable, Iterator, NamedTuple, Set
 from peewee import Field, ForeignKeyField, ModelBase
 
 from peeweeplus.exceptions import NullError
-from peeweeplus.json.functions import camel_case
 
 
 __all__ = ['JSON_FIELDS', 'contains', 'get_json_fields', 'FieldConverter']
@@ -40,6 +39,11 @@ def _get_json_fields(model: ModelBase) -> Iterator[JSONField]:
 
     fields = model._meta.fields     # pylint: disable=W0212
 
+    try:
+        key_formatter = model.__key_formatter__
+    except AttributeError:
+        key_formatter = lambda x: x
+
     for attribute, field in fields.items():
         if attribute.startswith('_'):
             continue
@@ -48,7 +52,7 @@ def _get_json_fields(model: ModelBase) -> Iterator[JSONField]:
             if attribute.endswith('_id') and attribute + '_id' not in fields:
                 continue
 
-        yield JSONField(camel_case(field.column_name), field.name, field)
+        yield JSONField(key_formatter(field.column_name), field.name, field)
 
 
 def get_json_fields(model: ModelBase) -> Set[JSONField]:
