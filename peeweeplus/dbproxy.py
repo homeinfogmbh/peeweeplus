@@ -1,4 +1,4 @@
-"""Databse proxies."""
+"""Database proxies."""
 
 from configparser import ConfigParser
 from logging import getLogger
