@@ -1,9 +1,11 @@
 """Model mixins."""
 
 from __future__ import annotations
+from hashlib import sha256
+from mimetypes import guess_extension
 from typing import Iterator
 
-from mimeutil import FileMetaData
+from magic import detect_from_content
 from peewee import BlobField
 from peewee import CharField
 from peewee import Field
@@ -26,7 +28,13 @@ class FileMixin:
     @classmethod
     def from_bytes(cls, data: bytes) -> FileMixin:
         """Creates a file from the given bytes."""
-        return cls(bytes=data, size=len(data), **FileMetaData.from_bytes(data))
+        return cls(
+            bytes=data,
+            size=len(data),
+            sha256sum=sha256(data).hexdigest(),
+            mimetype=(mimetype := detect_from_content(data[:1024])),
+            suffix=guess_extension(mimetype)
+        )
 
     @classmethod
     def shallow(cls) -> Iterator[Field]:

@@ -12,7 +12,7 @@ setup(
     install_requires=[
         'configlib',
         'lxml',
-        'mimeutil',
+        'python-magic',
         'peewee',
     ],
     extras_require={
