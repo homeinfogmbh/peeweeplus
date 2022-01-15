@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 from logging import getLogger
-from typing import Union
+from typing import Optional
 
 from argon2 import Parameters, PasswordHasher, extract_parameters
 from peewee import FieldAccessor, Model
 
-from peeweeplus.exceptions import PasswordTooShortError
+from peeweeplus.exceptions import PasswordTooShort
 from peeweeplus.fields.password import PasswordField
 from peeweeplus.introspection import FieldType
 
@@ -53,20 +53,22 @@ class Argon2Hash(str):
 class Argon2FieldAccessor(FieldAccessor):  # pylint: disable=R0903
     """Accessor class for Argon2Field."""
 
-    def __set__(self, instance: Model, value: Union[str, Argon2Hash]):
+    def __set__(self, instance: Model, value: Optional[str]):
         """Sets the password hash."""
-        if value is not None:
-            if not isinstance(value, Argon2Hash):
-                # If value is a plain text password, hash it.
-                if (length := len(value)) < self.field.min_pw_len:
-                    raise PasswordTooShortError(length, self.field.min_pw_len)
+        if value is None:
+            return super().__set__(instance, value)
 
-                value = Argon2Hash.create(value, self.field.hasher)
+        if not isinstance(value, Argon2Hash):
+            # If value is a plain text password, hash it.
+            if (length := len(value)) < self.field.min_pw_len:
+                raise PasswordTooShort(length, self.field.min_pw_len)
 
-            if len(value) != self.field.actual_size:
-                raise ValueError('Hash length does not match char field size.')
+            value = Argon2Hash.create(value, self.field.hasher)
 
-        super().__set__(instance, value)
+        if len(value) != self.field.actual_size:
+            raise ValueError('Hash length does not match char field size.')
+
+        return super().__set__(instance, value)
 
 
 class Argon2Field(PasswordField):   # pylint: disable=R0901
