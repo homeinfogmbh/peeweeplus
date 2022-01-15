@@ -19,14 +19,21 @@ LOGGER = getLogger(__file__)
 class DatabaseProxy:   # pylint: disable=R0903
     """Proxies to a MySQL database."""
 
-    def __init__(self, typ: type, database: str,
-                 config_file: Optional[Union[Path, str]] = None,
-                 config_section: str = 'db'):
+    def __init__(
+            self,
+            database: str,
+            config_file: Optional[Union[Path, str]] = None,
+            config_section: str = 'db'
+    ):
         self.database = database
         self.config_file = config_file or f'{database}.conf'
         self.config_section = config_section
-        self._database = typ(database)
+        self._database = self._dbtype(database)
         self._initialized = False
+
+    def __init_subclass__(cls, *, dbtype: Optional[type] = None):
+        if dbtype is not None:
+            cls._dbtype = dbtype
 
     def __getattr__(self, attribute: str) -> Any:
         """Delegates to the database while ensuring
@@ -54,11 +61,10 @@ class DatabaseProxy:   # pylint: disable=R0903
         )
         self._initialized = True
 
+    def _dbtype(self, _):
+        """Raise an exception per default."""
+        raise NotImplementedError('Database type not specified.')
 
-class MySQLDatabaseProxy(DatabaseProxy):
+
+class MySQLDatabaseProxy(DatabaseProxy, dbtype=MySQLDatabase):
     """A MySQL database proxy."""
-
-    def __init__(self, database: str,
-                 config_file: Optional[Union[Path, str]] = None,
-                 config_section: str = 'db'):
-        super().__init__(MySQLDatabase, database, config_file, config_section)
