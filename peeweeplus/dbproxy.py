@@ -16,8 +16,16 @@ __all__ = ['DatabaseProxy', 'MySQLDatabaseProxy']
 LOGGER = getLogger(__file__)
 
 
+def no_database_set(self, _: str) -> None:
+    """Raise an exception per default."""
+
+    raise NotImplementedError('Database type not specified.')
+
+
 class DatabaseProxy:   # pylint: disable=R0903
     """Proxies to a MySQL database."""
+
+    _dbtype = no_database_set
 
     def __init__(
             self,
@@ -60,10 +68,6 @@ class DatabaseProxy:   # pylint: disable=R0903
             passwd=config.get(self.config_section, 'passwd')
         )
         self._initialized = True
-
-    def _dbtype(self, _):
-        """Raise an exception per default."""
-        raise NotImplementedError('Database type not specified.')
 
 
 class MySQLDatabaseProxy(DatabaseProxy, dbtype=MySQLDatabase):
