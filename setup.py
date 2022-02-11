@@ -16,8 +16,7 @@ setup(
         'peewee',
     ],
     extras_require={
-        'Argon2Field': ['argon2_cffi'],
-        'authlib integration': ['authlib']
+        'Argon2Field': ['argon2_cffi']
     },
     author='HOMEINFO - Digitale Informationssysteme GmbH',
     author_email='<info@homeinfo.de>',
