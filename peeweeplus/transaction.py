@@ -51,7 +51,7 @@ class Transaction(deque):
     @property
     def databases(self) -> set[Database]:
         """Returns a set of databases involved."""
-        return {model._meta.database for model in self}
+        return {item.record._meta.database for item in self}
 
     def add(self, record: Model, left: bool = False, primary: bool = False):
         """Adds the respective record."""
