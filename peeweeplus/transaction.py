@@ -1,9 +1,10 @@
 """Transactions for adding and deleting multiple records in one action."""
 
 from collections import deque
-from typing import NamedTuple
+from contextlib import ExitStack
+from typing import Iterable, NamedTuple
 
-from peewee import Model
+from peewee import Database, Model
 
 
 __all__ = ['Transaction']
@@ -14,6 +15,25 @@ class TransactionItem(NamedTuple):
 
     delete: bool
     record: Model
+
+
+class LockedDatabases(ExitStack):
+    """Context manager for locking multiple databases."""
+
+    def __init__(self, databases: Iterable[Database]):
+        super().__init__()
+        self.databases = databases
+
+    def __enter__(self):
+        stack = super().__enter__()
+
+        for database in self.databases:
+            stack.enter_context(database.atomic())
+
+        return stack
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        return super().__exit__(exc_type, exc_val, exc_tb)
 
 
 class Transaction(deque):
@@ -27,6 +47,11 @@ class Transaction(deque):
     def __getattr__(self, attr):
         """Delegates to the primary record."""
         return getattr(self.primary, attr)
+
+    @property
+    def databases(self) -> set[Database]:
+        """Returns a set of databases involved."""
+        return {model._meta.database for model in self}
 
     def add(self, record: Model, left: bool = False, primary: bool = False):
         """Adds the respective record."""
@@ -51,8 +76,9 @@ class Transaction(deque):
 
     def commit(self):
         """Saves the records or sub-transactions."""
-        for item in self:
-            if item.delete:
-                item.record.delete_instance()
-            else:
-                item.record.save()
+        with LockedDatabases(self.databases):
+            for item in self:
+                if item.delete:
+                    item.record.delete_instance()
+                else:
+                    item.record.save()
