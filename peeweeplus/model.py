@@ -25,6 +25,32 @@ class JoinCondition(NamedTuple):
     condition: Union[bool, Expression]
 
 
+def select_tree(model: ModelType) -> Select:
+    """Selects the entire relation tree."""
+
+    tree = list(join_tree(model))
+    select = model.select(model, *(condition.rel_model for condition in tree))
+
+    for model_, rel_model, join_type, condition in tree:
+        select = select.join_from(
+            model_, rel_model, join_type=join_type, on=condition
+        )
+
+    return select
+
+
+def join_tree(model: ModelType) -> Iterator[JoinCondition]:
+    """Joins on all foreign keys."""
+
+    for attribute in get_foreign_keys(model):
+        field = getattr(model, attribute)
+        rel_model = field.rel_model.alias()
+        join_type = JOIN.LEFT_OUTER if field.null else JOIN.INNER
+        condition = field == rel_model.id
+        yield JoinCondition(model, rel_model, join_type, condition)
+        yield from join_tree(rel_model)
+
+
 def get_foreign_keys(model: ModelType) -> Iterator[str]:
     """Yields foreign key field attributes."""
 
@@ -42,29 +68,3 @@ def get_foreign_keys(model: ModelType) -> Iterator[str]:
             continue
 
         yield attribute
-
-
-def join_tree(model: ModelType) -> Iterator[JoinCondition]:
-    """Joins on all foreign keys."""
-
-    for attribute in get_foreign_keys(model):
-        field = getattr(model, attribute)
-        rel_model = field.rel_model.alias()
-        join_type = JOIN.LEFT_OUTER if field.null else JOIN.INNER
-        condition = field == rel_model.id
-        yield JoinCondition(model, rel_model, join_type, condition)
-        yield from join_tree(rel_model)
-
-
-def select_tree(model: ModelType) -> Select:
-    """Selects the entire relation tree."""
-
-    tree = list(join_tree(model))
-    select = model.select(model, *(condition.rel_model for condition in tree))
-
-    for model_, rel_model, join_type, condition in tree:
-        select = select.join_from(
-            model_, rel_model, join_type=join_type, on=condition
-        )
-
-    return select
