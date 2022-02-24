@@ -17,7 +17,7 @@ from peeweeplus.exceptions import InvalidKeys
 from peeweeplus.exceptions import NonUniqueValue
 from peeweeplus.exceptions import PasswordTooShort
 from peeweeplus.fields import *
-from peeweeplus.fields import __all__ as _ALL_FIELDS
+from peeweeplus.fields import FIELDS
 from peeweeplus.json import JSON_FIELDS
 from peeweeplus.json import deserialize
 from peeweeplus.json import serialize
@@ -52,7 +52,7 @@ __all__ = [
     'JSONMixin',
     'JSONModel',
     'Transaction'
-] + _ALL_FIELDS
+] + FIELDS
 
 
 LOGGER = getLogger(__file__)

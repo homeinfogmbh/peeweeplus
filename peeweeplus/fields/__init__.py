@@ -24,7 +24,8 @@ from peeweeplus.fields.phonenumber import PhoneNumberField
 from peeweeplus.fields.username import UserNameField
 
 
-__all__ = [
+__all__ = FIELDS = [
+    'FIELDS',
     'BooleanCharField',
     'DateCharField',
     'DateTimeCharField',
