@@ -3,7 +3,9 @@
 from configparser import ConfigParser
 from logging import getLogger
 from pathlib import Path
-from typing import Any, Optional, Union
+from typing import Any, Optional, Type, Union
+
+from peewee import Database
 
 from configlib import search_paths
 
@@ -16,16 +18,8 @@ __all__ = ['DatabaseProxy', 'MySQLDatabaseProxy']
 LOGGER = getLogger(__file__)
 
 
-def no_database_set(self, _: str) -> None:
-    """Raise an exception per default."""
-
-    raise NotImplementedError('Database type not specified.')
-
-
-class DatabaseProxy:   # pylint: disable=R0903
+class DatabaseProxy:
     """Proxies to a MySQL database."""
-
-    _dbtype = no_database_set
 
     def __init__(
             self,
@@ -39,7 +33,7 @@ class DatabaseProxy:   # pylint: disable=R0903
         self._database = self._dbtype(database)
         self._initialized = False
 
-    def __init_subclass__(cls, *, dbtype: Optional[type] = None):
+    def __init_subclass__(cls, *, dbtype: Optional[Type[Database]] = None):
         if dbtype is not None:
             cls._dbtype = dbtype
 
@@ -54,8 +48,10 @@ class DatabaseProxy:   # pylint: disable=R0903
 
     def _initialize(self) -> None:
         """Initializes the database."""
-        LOGGER.debug('Loading database config from "%s" section "%s".',
-                     self.config_file, self.config_section)
+        LOGGER.debug(
+            'Loading database config from "%s" section "%s".',
+            self.config_file, self.config_section
+        )
         config = ConfigParser()
 
         for filename in search_paths(self.config_file):

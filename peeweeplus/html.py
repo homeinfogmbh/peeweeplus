@@ -4,9 +4,9 @@ from functools import lru_cache
 from html import unescape
 from typing import Iterator
 
-from lxml.etree import ParserError, XMLSyntaxError  # pylint: disable=E0611
+from lxml.etree import ParserError, XMLSyntaxError
 from lxml.html import Element, document_fromstring, tostring
-from lxml.html.clean import Cleaner     # pylint: disable=E0611
+from lxml.html.clean import Cleaner
 
 
 __all__ = ['ALLOWED_TAGS', 'CLEANER', 'sanitize']
@@ -14,13 +14,12 @@ __all__ = ['ALLOWED_TAGS', 'CLEANER', 'sanitize']
 
 ALLOWED_TAGS = {
     'a', 'b', 'br', 'div', 'em', 'font', 'i', 'li', 'ol', 'p', 'span',
-    'strong', 'table', 'tbody', 'td', 'th', 'thead', 'tr', 'u', 'ul'
 }
 CLEANER = Cleaner(allow_tags=ALLOWED_TAGS, remove_unknown_tags=False)
 
 
 def get_html_strings(element: Element) -> Iterator[str]:
-    """Yields HTML text from an element."""
+    """Yields HTML-text from an element."""
 
     try:
         first, *children = element.getchildren()
@@ -49,5 +48,4 @@ def sanitize(text: str, *, cleaner: Cleaner = CLEANER) -> str:
     except (ParserError, XMLSyntaxError):  # Probably not HTML text.
         return text
 
-    doc = cleaner.clean_html(doc)
-    return ''.join(map(unescape, get_html_strings(doc)))
+    return ''.join(map(unescape, get_html_strings(cleaner.clean_html(doc))))

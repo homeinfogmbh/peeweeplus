@@ -39,5 +39,7 @@ class FileMixin:
     @classmethod
     def shallow(cls) -> Iterator[Field]:
         """Yields all fields except BlobFields."""
-        return filter(lambda field: not isinstance(field, BlobField),
-                      cls._meta.fields.values())
+        return filter(
+            lambda field: not isinstance(field, BlobField),
+            cls._meta.fields.values()
+        )

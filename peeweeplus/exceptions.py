@@ -1,8 +1,8 @@
 """Exceptions."""
 
-from typing import Iterable
+from typing import Iterable, Type
 
-from peewee import Field, ModelBase
+from peewee import Field, Model
 
 
 __all__ = [
@@ -23,8 +23,13 @@ class NullError(TypeError):
 class ModelFieldError(ValueError):
     """An error that stores model, attribute and fields."""
 
-    def __init__(self, model: ModelBase, key: str, attribute: str,
-                 field: Field):
+    def __init__(
+            self,
+            model: Type[Model],
+            key: str,
+            attribute: str,
+            field: Field
+    ):
         """Sets the field."""
         super().__init__()
         self.model = model
@@ -36,8 +41,13 @@ class ModelFieldError(ValueError):
 class FieldValueError(ModelFieldError):
     """Indicates that the field cannot store data of the provided type."""
 
-    def __init__(self, model: ModelBase, key: str, attribute: str,
-                 field: Field, value: object):
+    def __init__(
+            self,
+            model: Type[Model],
+            key: str,
+            attribute: str,
+            field: Field, value: object
+    ):
         """Sets the field and value."""
         super().__init__(model, key, attribute, field)
         self.value = value
@@ -48,10 +58,12 @@ class FieldValueError(ModelFieldError):
             'Field <{field_type.__name__}> from key'
             ' "{key}" in column "{field.column_name}" at'
             ' <{model.__name__}.{attribute}> cannot store'
-            ' {value_type.__name__}: {value}.').format(
-                model=self.model, key=self.key, attribute=self.attribute,
-                field=self.field, field_type=type(self.field),
-                value=self.value, value_type=type(self.value))
+            ' {value_type.__name__}: {value}.'
+        ).format(
+            model=self.model, key=self.key, attribute=self.attribute,
+            field=self.field, field_type=type(self.field),
+            value=self.value, value_type=type(self.value)
+        )
 
 
 class FieldNotNullable(ModelFieldError):
@@ -64,9 +76,11 @@ class FieldNotNullable(ModelFieldError):
         return (
             'Field <{field_type.__name__}> from key "{key}"'
             ' in column "{field.column_name}" at'
-            ' <{model.__name__}.{attribute}> must not be NULL.').format(
-                model=self.model, key=self.key, attribute=self.attribute,
-                field=self.field, field_type=type(self.field))
+            ' <{model.__name__}.{attribute}> must not be NULL.'
+        ).format(
+            model=self.model, key=self.key, attribute=self.attribute,
+            field=self.field, field_type=type(self.field)
+        )
 
 
 class MissingKeyError(ModelFieldError):
@@ -77,9 +91,11 @@ class MissingKeyError(ModelFieldError):
         return (
             'Value for field <{field_type.__name__}> from key'
             ' "{key}" in column "{field.column_name}" at'
-            ' <{model.__name__}.{attribute}> is missing.').format(
-                model=self.model, key=self.key, attribute=self.attribute,
-                field=self.field, field_type=type(self.field))
+            ' <{model.__name__}.{attribute}> is missing.'
+        ).format(
+            model=self.model, key=self.key, attribute=self.attribute,
+            field=self.field, field_type=type(self.field)
+        )
 
 
 class InvalidKeys(ValueError):
@@ -94,7 +110,7 @@ class InvalidKeys(ValueError):
 
     def __iter__(self):
         """Yields the invalid keys."""
-        yield from self.invalid_keys
+        return iter(self.invalid_keys)
 
 
 class NonUniqueValue(ValueError):

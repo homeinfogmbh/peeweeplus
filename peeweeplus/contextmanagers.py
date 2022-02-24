@@ -11,7 +11,6 @@ __all__ = ['ChangedConnection']
 def get_database(model: ModelBase) -> Database:
     """Returns the respective databse."""
 
-    # pylint: disable=W0212
     if isinstance((database := model._meta.database), DatabaseProxy):
         return database._database
 

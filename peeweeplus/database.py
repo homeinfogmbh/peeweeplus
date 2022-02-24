@@ -24,6 +24,3 @@ class MySQLDatabase(_MySQLDatabase):
 
         with self.connection_context():
             return super().execute_sql(*args, **kwargs)
-
-    def sequence_exists(self, seq):     # Only used on PostgreSQL databases
-        pass
