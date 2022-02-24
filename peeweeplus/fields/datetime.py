@@ -12,14 +12,14 @@ __all__ = ['TimedeltaField']
 class TimedeltaField(FloatField):
     """A field that stores a timedelta in seconds."""
 
-    def db_value(self, value: Optional[timedelta]) -> float:
-        """Returns the database value as float of sencods."""
+    def db_value(self, value: Optional[timedelta]) -> Optional[float]:
+        """Returns the database value as float of seconds."""
         if value is None:
             return None
 
         return value.total_seconds()
 
-    def python_value(self, value: Optional[float]) -> timedelta:
+    def python_value(self, value: Optional[float]) -> Optional[timedelta]:
         """Returns the python value as timedelta."""
         if value is None:
             return None

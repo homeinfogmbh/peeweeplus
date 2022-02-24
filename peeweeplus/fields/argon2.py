@@ -22,7 +22,7 @@ class Argon2Hash(str):
     """An Argon2 hash."""
 
     def __new__(cls, argon2hash: str, *_):
-        """Retuns a new Argon2Hash."""
+        """Returns a new Argon2Hash."""
         return super().__new__(cls, argon2hash)
 
     def __init__(self, _, hasher: PasswordHasher):
@@ -50,7 +50,7 @@ class Argon2Hash(str):
         return self.hasher.verify(self, passwd)
 
 
-class Argon2FieldAccessor(FieldAccessor):  # pylint: disable=R0903
+class Argon2FieldAccessor(FieldAccessor):
     """Accessor class for Argon2Field."""
 
     def __set__(self, instance: Model, value: Optional[str]):
@@ -71,7 +71,7 @@ class Argon2FieldAccessor(FieldAccessor):  # pylint: disable=R0903
         return super().__set__(instance, value)
 
 
-class Argon2Field(PasswordField):   # pylint: disable=R0901
+class Argon2Field(PasswordField):
     """An Argon2 password field."""
 
     accessor_class = Argon2FieldAccessor
@@ -93,14 +93,14 @@ class Argon2Field(PasswordField):   # pylint: disable=R0901
         """Returns the actual field size."""
         return FieldType.from_field(self).size
 
-    def python_value(self, value: str) -> Argon2Hash:
+    def python_value(self, value: str) -> Optional[Argon2Hash]:
         """Returns an Argon2 hash."""
         if value is None:
             return None
 
         return Argon2Hash(value, self.hasher)
 
-    def db_value(self, value: Argon2Hash) -> str:
+    def db_value(self, value: Argon2Hash) -> Optional[str]:
         """Returns the string value."""
         if value is None:
             return None

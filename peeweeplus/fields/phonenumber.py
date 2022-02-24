@@ -1,4 +1,4 @@
-"""User name field."""
+"""Phone number field."""
 
 from peeweeplus.fields.char import RestrictedCharField
 

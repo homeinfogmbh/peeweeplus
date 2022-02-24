@@ -1,7 +1,7 @@
 """IP-related fields."""
 
 from ipaddress import IPv4Address, IPv6Address, ip_address
-from typing import Union
+from typing import Optional, Union
 
 from peewee import CharField, Field
 
@@ -9,6 +9,9 @@ from peeweeplus.fields.int import UnsignedIntegerField
 
 
 __all__ = ['IPAddressField', 'IPv4AddressField', 'IPv6AddressField']
+
+
+IPAddress = Union[IPv4Address, IPv6Address]
 
 
 class IPAddressField(CharField):
@@ -20,14 +23,14 @@ class IPAddressField(CharField):
         """
         super().__init__(*args, max_length=max_length, **kwargs)
 
-    def db_value(self, value: Union[IPv4Address, IPv6Address]) -> str:
+    def db_value(self, value: Optional[IPAddress]) -> Optional[str]:
         """Returns the IP address' string value or None."""
         if value is None:
             return None
 
         return str(value)
 
-    def python_value(self, value: str) -> Union[IPv4Address, IPv6Address]:
+    def python_value(self, value: Optional[str]) -> Optional[IPAddress]:
         """Returns the IP address object or None."""
         if value is None:
             return None
@@ -38,14 +41,14 @@ class IPAddressField(CharField):
 class IPv4AddressField(UnsignedIntegerField):
     """Field to store IPv4 addresses as integers."""
 
-    def db_value(self, value: IPv4Address) -> int:
+    def db_value(self, value: Optional[IPv4Address]) -> Optional[int]:
         """Returns the IPv4 address's integer value or None."""
         if value is None:
             return None
 
         return int(value)
 
-    def python_value(self, value: int) -> IPv4Address:
+    def python_value(self, value: Optional[int]) -> Optional[IPv4Address]:
         """Returns the IPv4 address object or None."""
         if value is None:
             return None
@@ -58,14 +61,14 @@ class IPv6AddressField(Field):
 
     field_type = 'BINARY(16)'
 
-    def db_value(self, value: IPv6Address) -> bytes:
+    def db_value(self, value: Optional[IPv6Address]) -> Optional[bytes]:
         """Returns the IPv4 address's integer value or None."""
         if value is None:
             return None
 
         return int(value).to_bytes(16, 'big')
 
-    def python_value(self, value: bytes) -> IPv6Address:
+    def python_value(self, value: Optional[bytes]) -> Optional[IPv6Address]:
         """Returns the IP address object or None."""
         if value is None:
             return None
