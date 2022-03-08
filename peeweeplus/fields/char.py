@@ -99,7 +99,7 @@ class DateTimeCharField(EmptyableCharField):
 
     def db_value(self, value: Union[date, datetime]) -> Optional[str]:
         """Returns a string for the database."""
-        if value is not None:
+        if value is None:
             return None if self.null else ''
 
         return value.strftime(self.format)
