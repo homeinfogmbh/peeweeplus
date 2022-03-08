@@ -20,6 +20,9 @@ class MySQLDatabase(_MySQLDatabase):
         execution context iff closing is enabled.
         """
         if self._state.transactions:
+            getLogger('MySQLDatabase').warning(
+                'Executing query out of context manager.'
+            )
             return super().execute_sql(*args, **kwargs)
 
         with self.connection_context():
