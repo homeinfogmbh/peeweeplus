@@ -38,7 +38,7 @@ class AtomicTransaction(ExitStack):
 
         for database in self.databases:
             if database.close():
-                getLogger(type(self).__name__).error(
+                getLogger(type(self).__name__).debug(
                     'Closed dangling database connection on: %s', database
                 )
 
