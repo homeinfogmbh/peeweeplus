@@ -19,6 +19,10 @@ class MySQLDatabase(_MySQLDatabase):
         """Conditionally execute the SQL query in an
         execution context iff closing is enabled.
         """
+        getLogger('MySQLDatabase').warning(
+            'Transactions: %s', self._state.transactions
+        )
+
         if self._state.transactions:
             getLogger('MySQLDatabase').warning(
                 'Executing query out of context manager.'
