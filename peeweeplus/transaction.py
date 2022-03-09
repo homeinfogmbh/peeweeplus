@@ -33,10 +33,12 @@ class AtomicTransaction(ExitStack):
         return stack
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        result = super().__exit__(exc_type, exc_val, exc_tb)
+
         for database in self.databases:
             database.close()
 
-        return super().__exit__(exc_type, exc_val, exc_tb)
+        return result
 
 
 class Transaction(deque):
