@@ -17,8 +17,8 @@ class TransactionItem(NamedTuple):
     record: Model
 
 
-class LockedDatabases(ExitStack):
-    """Context manager for locking multiple databases."""
+class AtomicTransaction(ExitStack):
+    """Context manager for atomic transactions."""
 
     def __init__(self, databases: Iterable[Database]):
         super().__init__()
@@ -33,6 +33,9 @@ class LockedDatabases(ExitStack):
         return stack
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        for database in self.databases:
+            database.close()
+
         return super().__exit__(exc_type, exc_val, exc_tb)
 
 
@@ -76,7 +79,7 @@ class Transaction(deque):
 
     def commit(self):
         """Saves the records or sub-transactions."""
-        with LockedDatabases(self.databases):
+        with AtomicTransaction(self.databases):
             for item in self:
                 if item.delete:
                     item.record.delete_instance()
