@@ -2,7 +2,6 @@
 
 from collections import deque
 from contextlib import ExitStack
-from logging import getLogger
 from typing import Iterable, NamedTuple
 
 from peewee import Database, Model
@@ -37,10 +36,7 @@ class AtomicTransaction(ExitStack):
         result = super().__exit__(exc_type, exc_val, exc_tb)
 
         for database in self.databases:
-            if database.close():
-                getLogger(type(self).__name__).debug(
-                    'Closed dangling database connection on: %s', database
-                )
+            database.close()
 
         return result
 
