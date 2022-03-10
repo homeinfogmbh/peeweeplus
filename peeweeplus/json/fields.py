@@ -9,7 +9,13 @@ from peewee import Field, ForeignKeyField, Model
 from peeweeplus.exceptions import NullError
 
 
-__all__ = ['JSON_FIELDS', 'contains', 'get_json_fields', 'FieldConverter']
+__all__ = [
+    'JSON_FIELDS',
+    'JSONField',
+    'FieldConverter',
+    'contains',
+    'get_json_fields',
+]
 
 
 JSON_FIELDS = {}
@@ -22,21 +28,6 @@ class JSONField(NamedTuple):
     key: str
     attribute: str
     field: Field
-
-
-def contains(
-        iterable: Iterable,
-        key: str,
-        attribute: str,
-        *,
-        default: bool = False
-) -> bool:
-    """Determines whether the field is contained within the iterable."""
-
-    if iterable:
-        return key in iterable or attribute in iterable
-
-    return default
 
 
 class FieldConverter(dict):
@@ -79,6 +70,33 @@ class FieldConverter(dict):
         return _convert_field_value(field, value, check_null)
 
 
+def contains(
+        iterable: Iterable,
+        key: str,
+        attribute: str,
+        *,
+        default: bool = False
+) -> bool:
+    """Determines whether the field is contained within the iterable."""
+
+    if iterable:
+        return key in iterable or attribute in iterable
+
+    return default
+
+
+def get_json_fields(model: Type[Model]) -> frozenset[JSONField]:
+    """Returns the JSON fields of the respective model
+    and caches it in the JSON_FIELDS dict.
+    """
+
+    with suppress(KeyError):
+        return JSON_FIELDS[model]
+
+    JSON_FIELDS[model] = fields = frozenset(_get_json_fields(model))
+    return fields
+
+
 def _get_json_fields(model: Type[Model]) -> Iterator[JSONField]:
     """Yields the JSON fields of the respective model."""
 
@@ -103,15 +121,3 @@ def _get_json_fields(model: Type[Model]) -> Iterator[JSONField]:
             key = field.column_name
 
         yield JSONField(key, field.name, field)
-
-
-def get_json_fields(model: Type[Model]) -> frozenset[JSONField]:
-    """Returns the JSON fields of the respective model
-    and caches it in the JSON_FIELDS dict.
-    """
-
-    with suppress(KeyError):
-        return JSON_FIELDS[model]
-
-    JSON_FIELDS[model] = fields = frozenset(_get_json_fields(model))
-    return fields
