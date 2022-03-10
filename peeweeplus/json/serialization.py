@@ -46,8 +46,12 @@ def _next(cascade: Union[bool, int]) -> Union[bool, int]:
     return cascade + 1
 
 
-def _get_model_value(model: Model, cascade: Union[bool, int],
-                     null: bool = False, **filters) -> Union[dict, int]:
+def _get_model_value(
+        model: Model,
+        cascade: Union[bool, int],
+        null: bool = False,
+        **filters
+) -> Union[dict, int]:
     """Converts a model to a JSON value."""
 
     if cascade:
@@ -57,8 +61,13 @@ def _get_model_value(model: Model, cascade: Union[bool, int],
     return model.get_id()
 
 
-def serialize(record: Model, *, null: bool = False,
-              cascade: Union[bool, int] = None, **filters) -> dict:
+def serialize(
+        record: Model,
+        *,
+        null: bool = False,
+        cascade: Union[bool, int] = None,
+        **filters
+) -> dict:
     """Returns a JSON-ish dict with the record's fields' values."""
 
     model = type(record)
