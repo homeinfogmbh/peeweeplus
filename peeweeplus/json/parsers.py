@@ -5,7 +5,9 @@ from datetime import datetime, date, time
 from enum import Enum
 from typing import Union
 
-from peewee import Field
+from peewee import CharField
+
+from peeweeplus.fields.enum import EnumField
 
 
 __all__ = [
@@ -28,7 +30,7 @@ def parse_bool(value: Union[bool, int]) -> bool:
     raise ValueError(value)
 
 
-def parse_char_field(value: str, field: Field) -> str:
+def parse_char_field(value: str, field: CharField) -> str:
     """Parses a string for a char field."""
 
     if field.max_length is None:
@@ -76,7 +78,7 @@ def parse_blob(value: Union[bytes, str]) -> bytes:
     return b64decode(value)
 
 
-def parse_enum(value: Union[Enum, str], field: Field) -> Enum:
+def parse_enum(value: Union[Enum, str], field: EnumField) -> Enum:
     """Parses an enumeration value."""
 
     if isinstance(value, field.enum):
