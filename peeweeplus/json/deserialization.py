@@ -1,6 +1,7 @@
 """JSON deserialization."""
 
 from ipaddress import IPv4Address, IPv6Address, ip_address
+from typing import Any, Type
 from uuid import UUID
 
 from peewee import BlobField
@@ -14,7 +15,6 @@ from peewee import FloatField
 from peewee import ForeignKeyField
 from peewee import IntegerField
 from peewee import Model
-from peewee import ModelBase
 from peewee import TimeField
 from peewee import UUIDField
 
@@ -62,8 +62,13 @@ CONVERTER = FieldConverter({
 })
 
 
-def get_orm_value(model: ModelBase, key: str, attribute: str,
-                  field: Field, json: JSON) -> object:
+def get_orm_value(
+        model: Type[Model],
+        key: str,
+        attribute: str,
+        field: Field,
+        json: JSON
+) -> Any:
     """Returns the appropriate value for the field."""
 
     try:
@@ -81,7 +86,7 @@ def is_unique(record: Model, field, orm_value) -> bool:
     select = field == orm_value
 
     if (primary_key := record._pk) is not None:
-        pk_field = model._meta.primary_key  # pylint: disable=W0212
+        pk_field = model._meta.primary_key
         select &= pk_field != primary_key   # Exclude the model itself.
 
     try:
@@ -92,8 +97,13 @@ def is_unique(record: Model, field, orm_value) -> bool:
     return False
 
 
-def deserialize(model: ModelBase, json: dict, *, strict: bool = True,
-                **filters) -> Model:
+def deserialize(
+        model: Type[Model],
+        json: dict,
+        *,
+        strict: bool = True,
+        **filters
+) -> Model:
     """Creates a new record from a JSON-ish dict."""
 
     record = model()
@@ -124,7 +134,13 @@ def deserialize(model: ModelBase, json: dict, *, strict: bool = True,
     return record
 
 
-def patch(record: Model, json: dict, *, strict: bool = True, **filters):
+def patch(
+        record: Model,
+        json: dict,
+        *,
+        strict: bool = True,
+        **filters
+) -> None:
     """Patches an existing record with a JSON-ish dict."""
 
     model = type(record)
