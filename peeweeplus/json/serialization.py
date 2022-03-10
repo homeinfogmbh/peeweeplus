@@ -2,7 +2,7 @@
 
 from base64 import b64encode
 from contextlib import suppress
-from typing import NamedTuple, Union
+from typing import Union
 
 from peewee import BlobField
 from peewee import DateField
@@ -31,47 +31,28 @@ CONVERTER = FieldConverter({
 })
 
 
-class Cascade(NamedTuple):
-    """Represents cascading settings."""
+def _next(cascade: Union[bool, int]) -> Union[bool, int]:
+    """Returns the next cascading step."""
 
-    cascade: bool
-    next: Union[bool, int]
-
-
-def _check_cascade(cascade: Union[bool, int]) -> Cascade:
-    """Returns a tuple of current cascade status
-    and cascade status for the next level.
-    """
-
-    # If cascade is falsy, do not cascade now or in the next step.
     if not cascade:
-        return Cascade(False, None)
+        return False
 
-    # If cascade is True, cascade down the whole tree.
-    if isinstance(cascade, bool):
-        return Cascade(True, True)
+    if cascade is True:
+        return True
 
-    # If it's an integer, count up or down to zero.
-    # Zero itself ist matched by "if not cascade:…" from above.
-    if isinstance(cascade, int):
-        if cascade > 0:
-            return Cascade(True, cascade - 1)
+    if cascade > 0:
+        return cascade - 1
 
-        return Cascade(True, cascade + 1)
-
-    # On any other setting, do not cascade either.
-    return Cascade(False, None)
+    return cascade + 1
 
 
 def _get_model_value(model: Model, cascade: Union[bool, int],
                      null: bool = False, **filters) -> Union[dict, int]:
     """Converts a model to a JSON value."""
 
-    cascade = _check_cascade(cascade)
-
-    if cascade.cascade:
+    if cascade:
         with suppress(AttributeError):
-            return model.to_json(null=null, cascade=cascade.next, **filters)
+            return model.to_json(null=null, cascade=_next(cascade), **filters)
 
     return model.get_id()
 
