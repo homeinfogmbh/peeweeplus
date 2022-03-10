@@ -1,7 +1,7 @@
 """Serialization filter."""
 
 from __future__ import annotations
-from typing import Iterable, Iterator, NamedTuple
+from typing import Iterable, Iterator, NamedTuple, Optional
 
 from peewee import AutoField
 from peewee import ForeignKeyField
@@ -15,25 +15,33 @@ __all__ = ['FieldsFilter']
 class FieldsFilter(NamedTuple):
     """Field filtering settings."""
 
-    skip: frozenset
-    only: frozenset
+    skip: frozenset[str]
+    only: frozenset[str]
     fk_fields: bool
     autofields: bool
     passwords: bool
 
     @classmethod
-    def for_deserialization(cls, skip: Iterable = None, only: Iterable = None,
-                            fk_fields: bool = False,
-                            passwords: bool = True) -> FieldsFilter:
+    def for_deserialization(
+            cls,
+            skip: Optional[Iterable[str]] = None,
+            only: Optional[Iterable[str]] = None,
+            fk_fields: bool = False,
+            passwords: bool = True
+    ) -> FieldsFilter:
         """Creates the filter from the respective keyword arguments."""
         skip = frozenset(skip) if skip else frozenset()
         only = frozenset(only) if only else frozenset()
         return cls(skip, only, fk_fields, False, passwords)
 
     @classmethod
-    def for_serialization(cls, skip: Iterable = None, only: Iterable = None,
-                          fk_fields: bool = True,
-                          autofields: bool = True) -> FieldsFilter:
+    def for_serialization(
+            cls,
+            skip: Optional[Iterable[str]] = None,
+            only: Optional[Iterable[str]] = None,
+            fk_fields: bool = True,
+            autofields: bool = True
+    ) -> FieldsFilter:
         """Creates the filter from the respective keyword arguments."""
         skip = frozenset(skip) if skip else frozenset()
         only = frozenset(only) if only else frozenset()
