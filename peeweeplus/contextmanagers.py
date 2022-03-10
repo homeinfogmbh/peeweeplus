@@ -1,6 +1,8 @@
 """Context managers."""
 
-from peewee import Database, ModelBase
+from typing import Type
+
+from peewee import Database, Model
 
 from peeweeplus.dbproxy import DatabaseProxy
 
@@ -8,8 +10,8 @@ from peeweeplus.dbproxy import DatabaseProxy
 __all__ = ['ChangedConnection']
 
 
-def get_database(model: ModelBase) -> Database:
-    """Returns the respective databse."""
+def get_database(model: Type[Model]) -> Database:
+    """Returns the respective database."""
 
     if isinstance((database := model._meta.database), DatabaseProxy):
         return database._database
@@ -22,7 +24,7 @@ class ChangedConnection:
     target model to those of the source model.
     """
 
-    def __init__(self, target: ModelBase, source: ModelBase):
+    def __init__(self, target: Type[Model], source: Type[Model]):
         """Sets the models."""
         self.target = target
         self.source = source
