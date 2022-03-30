@@ -126,7 +126,10 @@ def deserialize(
         if field.unique and not is_unique(record, field, orm_value):
             raise NonUniqueValue(key, json_value)
 
-        setattr(record, attribute, orm_value)
+        try:
+            setattr(record, attribute, orm_value)
+        except ValueError:
+            raise FieldValueError(model, key, attribute, field, json) from None
 
     if json and strict:
         raise InvalidKeys(json.keys())
@@ -159,7 +162,10 @@ def patch(
         if field.unique and not is_unique(record, field, orm_value):
             raise NonUniqueValue(key, json_value)
 
-        setattr(record, attribute, orm_value)
+        try:
+            setattr(record, attribute, orm_value)
+        except ValueError:
+            raise FieldValueError(model, key, attribute, field, json) from None
 
     if json and strict:
         raise InvalidKeys(json.keys())
