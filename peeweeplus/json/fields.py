@@ -1,7 +1,6 @@
 """Miscellaneous stuff."""
 
-from contextlib import suppress
-from functools import lru_cache
+from functools import cache
 from typing import Any, Iterable, Iterator, NamedTuple, Type
 
 from peewee import Field, ForeignKeyField, Model
@@ -10,16 +9,11 @@ from peeweeplus.exceptions import NullError
 
 
 __all__ = [
-    'JSON_FIELDS',
     'JSONField',
     'FieldConverter',
     'contains',
     'get_json_fields',
 ]
-
-
-JSON_FIELDS = {}
-CACHE_LIMIT = 1024 * 1024
 
 
 class JSONField(NamedTuple):
@@ -40,34 +34,23 @@ class FieldConverter(dict):
             check_null: bool = False
     ) -> Any:
         """Converts the respective value to the field."""
-        @lru_cache(maxsize=CACHE_LIMIT, typed=True)
-        def _convert_field_value(
-                field: Field,
-                value: Any,
-                check_null: bool
-        ) -> Any:
-            """Caches the result."""
 
-            if value is None:
-                if check_null and not field.null:
-                    raise NullError()
+        if value is None:
+            if check_null and not field.null:
+                raise NullError()
 
-                return None
+            return None
 
-            for parent in type(field).__mro__:
-                try:
-                    function = self[parent]
-                except KeyError:
-                    continue
-
-                with suppress(TypeError):
-                    return function(value)
-
-                return function(value, field)
-
+        for typ, function in self.items():
+            if isinstance(field, typ):
+                break
+        else:
             return value
 
-        return _convert_field_value(field, value, check_null)
+        try:
+            return function(value)
+        except TypeError:
+            return function(value, field)
 
 
 def contains(
@@ -85,16 +68,13 @@ def contains(
     return default
 
 
+@cache
 def get_json_fields(model: Type[Model]) -> frozenset[JSONField]:
     """Returns the JSON fields of the respective model
     and caches it in the JSON_FIELDS dict.
     """
 
-    with suppress(KeyError):
-        return JSON_FIELDS[model]
-
-    JSON_FIELDS[model] = fields = frozenset(_get_json_fields(model))
-    return fields
+    return frozenset(_get_json_fields(model))
 
 
 def _get_json_fields(model: Type[Model]) -> Iterator[JSONField]:
