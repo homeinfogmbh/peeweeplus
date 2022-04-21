@@ -80,7 +80,7 @@ def get_json_fields(model: Type[Model]) -> frozenset[JSONField]:
 def _get_json_fields(model: Type[Model]) -> Iterator[JSONField]:
     """Yields the JSON fields of the respective model."""
 
-    fields = model._meta.fields     # pylint: disable=W0212
+    fields = model._meta.fields
 
     try:
         key_formatter = model.__key_formatter__
