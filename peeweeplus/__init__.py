@@ -18,7 +18,6 @@ from peeweeplus.exceptions import NonUniqueValue
 from peeweeplus.exceptions import PasswordTooShort
 from peeweeplus.fields import *
 from peeweeplus.fields import FIELDS
-from peeweeplus.json import JSON_FIELDS
 from peeweeplus.json import deserialize
 from peeweeplus.json import serialize
 from peeweeplus.json import JSONMixin
@@ -29,7 +28,6 @@ from peeweeplus.transaction import Transaction
 
 
 __all__ = [
-    'JSON_FIELDS',
     'FieldValueError',
     'FieldNotNullable',
     'MissingKeyError',
