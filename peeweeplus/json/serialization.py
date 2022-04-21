@@ -11,7 +11,7 @@ from peewee import DecimalField
 from peewee import Model
 from peewee import TimeField
 from peewee import UUIDField
-from peeweeplus.fields import EnumField, IPv4AddressField
+from peeweeplus.fields import EnumField, IPv4AddressField, IPv6AddressField
 from peeweeplus.json.fields import get_json_fields, FieldConverter
 from peeweeplus.json.filter import FieldsFilter
 
@@ -26,6 +26,7 @@ CONVERTER = FieldConverter({
     DateTimeField: lambda value: value.isoformat(),
     EnumField: lambda value: value.value,
     IPv4AddressField: str,
+    IPv6AddressField: str,
     TimeField: lambda value: value.isoformat(),
     UUIDField: lambda value: value.hex
 })
