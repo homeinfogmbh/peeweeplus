@@ -30,9 +30,13 @@ class JSONModel(Model, JSONMixin):
 
     def __init_subclass__(
             cls,
-            key_formatter: Optional[Callable[[str], str]] = None
-        ):
+            *args,
+            key_formatter: Optional[Callable[[str], str]] = None,
+            **kwargs
+    ):
         """Set an optional key formatter."""
+        super().__init_subclass__(*args, **kwargs)
+
         if key_formatter is not None:
             cls.__key_formatter__ = key_formatter
 
