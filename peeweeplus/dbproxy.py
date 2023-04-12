@@ -61,7 +61,12 @@ class DatabaseProxy:
             database := self.database,
             host=config.get(self.config_section, 'host', fallback='localhost'),
             user=config.get(self.config_section, 'user', fallback=database),
-            passwd=config.get(self.config_section, 'passwd')
+            passwd=config.get(self.config_section, 'passwd'),
+            charset=config.get(
+                self.config_section,
+                'charset',
+                fallback='utf8mb4'
+            )
         )
         self._initialized = True
 
