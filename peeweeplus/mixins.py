@@ -13,7 +13,7 @@ from peewee import FixedCharField
 from peewee import IntegerField
 
 
-__all__ = ['FileMixin']
+__all__ = ["FileMixin"]
 
 
 class FileMixin:
@@ -33,13 +33,12 @@ class FileMixin:
             size=len(data),
             sha256sum=sha256(data).hexdigest(),
             mimetype=(mimetype := detect_from_content(data[:1024])),
-            suffix=guess_extension(mimetype)
+            suffix=guess_extension(mimetype),
         )
 
     @classmethod
     def shallow(cls) -> Iterator[Field]:
         """Yields all fields except BlobFields."""
         return filter(
-            lambda field: not isinstance(field, BlobField),
-            cls._meta.fields.values()
+            lambda field: not isinstance(field, BlobField), cls._meta.fields.values()
         )

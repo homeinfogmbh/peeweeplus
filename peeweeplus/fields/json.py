@@ -8,18 +8,18 @@ from peewee import TextField
 from peeweeplus.types import JSON
 
 
-__all__ = ['JSONTextField']
+__all__ = ["JSONTextField"]
 
 
 class JSONTextField(TextField):
     """Stores JSON as text."""
 
     def __init__(
-            self,
-            *args,
-            serialize: Callable[[JSON], str] = dumps,
-            deserialize: Callable[[str], JSON] = loads,
-            **kwargs
+        self,
+        *args,
+        serialize: Callable[[JSON], str] = dumps,
+        deserialize: Callable[[str], JSON] = loads,
+        **kwargs
     ):
         """Sets the respective encoding and decoding functions."""
         super().__init__(*args, **kwargs)

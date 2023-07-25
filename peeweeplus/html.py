@@ -9,11 +9,21 @@ from lxml.html import Element, document_fromstring, tostring
 from lxml.html.clean import Cleaner
 
 
-__all__ = ['ALLOWED_TAGS', 'CLEANER', 'sanitize']
+__all__ = ["ALLOWED_TAGS", "CLEANER", "sanitize"]
 
 
 ALLOWED_TAGS = {
-    'a', 'b', 'br', 'div', 'em', 'font', 'i', 'li', 'ol', 'p', 'span',
+    "a",
+    "b",
+    "br",
+    "div",
+    "em",
+    "font",
+    "i",
+    "li",
+    "ol",
+    "p",
+    "span",
 }
 CLEANER = Cleaner(allow_tags=ALLOWED_TAGS, remove_unknown_tags=False)
 
@@ -28,7 +38,7 @@ def get_html_strings(element: Element) -> Iterator[str]:
         return
 
     # Remove <p>…</p> wrapper created by Cleaner.clean_html().
-    if not children and first.tag == 'p':
+    if not children and first.tag == "p":
         if first.text:
             yield first.text
 
@@ -48,4 +58,4 @@ def sanitize(text: str, *, cleaner: Cleaner = CLEANER) -> str:
     except (ParserError, XMLSyntaxError):  # Probably not HTML text.
         return text
 
-    return ''.join(map(unescape, get_html_strings(cleaner.clean_html(doc))))
+    return "".join(map(unescape, get_html_strings(cleaner.clean_html(doc))))

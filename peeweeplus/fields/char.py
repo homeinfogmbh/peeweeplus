@@ -10,35 +10,29 @@ from peeweeplus.converters import parse_float
 
 
 __all__ = [
-    'BooleanCharField',
-    'IntegerCharField',
-    'DecimalCharField',
-    'DateTimeCharField',
-    'DateCharField',
-    'RestrictedCharField'
+    "BooleanCharField",
+    "IntegerCharField",
+    "DecimalCharField",
+    "DateTimeCharField",
+    "DateCharField",
+    "RestrictedCharField",
 ]
 
 
 class EmptyableCharField(CharField):
     """A Char field that might be empty."""
 
-    def __init__(
-            self,
-            *args,
-            null: bool = False,
-            default: str = None,
-            **kwargs
-    ):
+    def __init__(self, *args, null: bool = False, default: str = None, **kwargs):
         """Updates the default value."""
         if default is None and not null:
-            default = ''
+            default = ""
 
         super().__init__(*args, null=null, default=default, **kwargs)
 
     def db_value(self, value: str) -> Optional[str]:
         """Converts the value to a string using the first separator."""
         if value is None:
-            return None if self.null else ''
+            return None if self.null else ""
 
         return str(value)
 
@@ -46,7 +40,7 @@ class EmptyableCharField(CharField):
 class BooleanCharField(EmptyableCharField):
     """Stores boolean values as text."""
 
-    def __init__(self, *args, true: str = 'J', false: str = 'N', **kwargs):
+    def __init__(self, *args, true: str = "J", false: str = "N", **kwargs):
         """Invokes super init and stores true and false values."""
         super().__init__(*args, **kwargs)
         self.true = true
@@ -55,7 +49,7 @@ class BooleanCharField(EmptyableCharField):
     def db_value(self, value: bool) -> Optional[str]:
         """Returns the database value."""
         if value is None:
-            return None if self.null else ''
+            return None if self.null else ""
 
         return self.true if value else self.false
 
@@ -92,7 +86,7 @@ class DecimalCharField(EmptyableCharField):
 class DateTimeCharField(EmptyableCharField):
     """A CharField that stores datetime values."""
 
-    def __init__(self, *args, format: str = '%c', **kwargs):
+    def __init__(self, *args, format: str = "%c", **kwargs):
         """Invokes super init and sets the format."""
         super().__init__(*args, **kwargs)
         self.format = format
@@ -100,7 +94,7 @@ class DateTimeCharField(EmptyableCharField):
     def db_value(self, value: Union[date, datetime]) -> Optional[str]:
         """Returns a string for the database."""
         if value is None:
-            return None if self.null else ''
+            return None if self.null else ""
 
         return value.strftime(self.format)
 

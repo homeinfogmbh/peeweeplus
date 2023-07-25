@@ -11,13 +11,13 @@ from peeweeplus.fields.enum import EnumField
 
 
 __all__ = [
-    'parse_bool',
-    'parse_char_field',
-    'parse_datetime',
-    'parse_date',
-    'parse_time',
-    'parse_blob',
-    'parse_enum'
+    "parse_bool",
+    "parse_char_field",
+    "parse_datetime",
+    "parse_date",
+    "parse_time",
+    "parse_blob",
+    "parse_enum",
 ]
 
 
@@ -37,7 +37,7 @@ def parse_char_field(value: str, field: CharField) -> str:
         return value
 
     if (size := len(value)) > field.max_length:
-        raise ValueError(f'String is too long: {size} > {field.max_length}')
+        raise ValueError(f"String is too long: {size} > {field.max_length}")
 
     return value
 

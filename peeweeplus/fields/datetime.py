@@ -6,7 +6,7 @@ from typing import Optional
 from peewee import FloatField
 
 
-__all__ = ['TimedeltaField']
+__all__ = ["TimedeltaField"]
 
 
 class TimedeltaField(FloatField):

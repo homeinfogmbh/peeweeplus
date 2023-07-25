@@ -4,14 +4,7 @@ from datetime import date, datetime
 from typing import Any, Optional
 
 
-__all__ = [
-    'dec2dom',
-    'dec2dict',
-    'dec2orm',
-    'date2orm',
-    'datetime2orm',
-    'parse_float'
-]
+__all__ = ["dec2dom", "dec2dict", "dec2orm", "date2orm", "datetime2orm", "parse_float"]
 
 
 def dec2dom(value: Any) -> Optional[str]:
@@ -56,31 +49,31 @@ def datetime2orm(value: Any) -> Optional[datetime]:
 def parse_float_with_comma_and_decimal(string: str) -> float:
     """Parses a float that contains a comma and a decimal point."""
 
-    if string.index(',') < string.index('.'):
-        return float(string.replace(',', ''))
+    if string.index(",") < string.index("."):
+        return float(string.replace(",", ""))
 
-    return float(string.replace('.', '').replace(',', '.'))
+    return float(string.replace(".", "").replace(",", "."))
 
 
 def parse_float_with_comma(string: str) -> float:
     """Parses a float that contains a comma."""
 
-    if '.' in string:
+    if "." in string:
         return parse_float_with_comma_and_decimal(string)
 
-    if string.count(',') > 1:
-        return float(string.replace(',', ''))
+    if string.count(",") > 1:
+        return float(string.replace(",", ""))
 
-    return float(string.replace(',', '.'))
+    return float(string.replace(",", "."))
 
 
 def parse_float(string: str) -> float:
     """Parses a float from a comma or dot (or both) containing string."""
 
-    if ',' in string:
+    if "," in string:
         return parse_float_with_comma(string)
 
-    if string.count('.') > 1:
-        return float(string.replace('.', ''))
+    if string.count(".") > 1:
+        return float(string.replace(".", ""))
 
     return float(string)

@@ -7,7 +7,7 @@ from peewee import CharField, FieldAccessor, TextField
 from peeweeplus.html import sanitize
 
 
-__all__ = ['HTMLCharField', 'HTMLTextField']
+__all__ = ["HTMLCharField", "HTMLTextField"]
 
 
 class HTMLTextAccessor(FieldAccessor):
@@ -28,12 +28,7 @@ class HTMLTextAccessor(FieldAccessor):
 class HTMLCharField(CharField):
     """CharField with HTML escaped text."""
 
-    def __init__(
-            self,
-            *args,
-            clean_func: Callable[[str], str] = sanitize,
-            **kwargs
-    ):
+    def __init__(self, *args, clean_func: Callable[[str], str] = sanitize, **kwargs):
         super().__init__(*args, **kwargs)
         self.clean_func = clean_func
 
@@ -43,12 +38,7 @@ class HTMLCharField(CharField):
 class HTMLTextField(TextField):
     """TextField with HTML escaped text."""
 
-    def __init__(
-            self,
-            *args,
-            clean_func: Callable[[str], str] = sanitize,
-            **kwargs
-    ):
+    def __init__(self, *args, clean_func: Callable[[str], str] = sanitize, **kwargs):
         super().__init__(*args, **kwargs)
         self.clean_func = clean_func
 

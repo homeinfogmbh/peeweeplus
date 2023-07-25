@@ -25,28 +25,28 @@ from peeweeplus.fields.username import UserNameField
 
 
 __all__ = FIELDS = [
-    'FIELDS',
-    'BooleanCharField',
-    'DateCharField',
-    'DateTimeCharField',
-    'DecimalCharField',
-    'EMailField',
-    'EnumField',
-    'HTMLCharField',
-    'HTMLTextField',
-    'IntegerCharField',
-    'IPAddressField',
-    'IPv4AddressField',
-    'IPv6AddressField',
-    'JSONTextField',
-    'PasswordField',
-    'PhoneNumberField',
-    'RestrictedCharField',
-    'SmallUnsignedIntegerField',
-    'TimedeltaField',
-    'UnsignedBigIntegerField',
-    'UnsignedIntegerField',
-    'UserNameField'
+    "FIELDS",
+    "BooleanCharField",
+    "DateCharField",
+    "DateTimeCharField",
+    "DecimalCharField",
+    "EMailField",
+    "EnumField",
+    "HTMLCharField",
+    "HTMLTextField",
+    "IntegerCharField",
+    "IPAddressField",
+    "IPv4AddressField",
+    "IPv6AddressField",
+    "JSONTextField",
+    "PasswordField",
+    "PhoneNumberField",
+    "RestrictedCharField",
+    "SmallUnsignedIntegerField",
+    "TimedeltaField",
+    "UnsignedBigIntegerField",
+    "UnsignedIntegerField",
+    "UserNameField",
 ]
 
 
@@ -55,7 +55,7 @@ LOGGER = getLogger(__file__)
 try:
     from peeweeplus.fields.argon2 import Argon2Field
 except ModuleNotFoundError as error:
-    LOGGER.warning('Missing module: %s', error.name)
-    LOGGER.warning('Argon2Field not available.')
+    LOGGER.warning("Missing module: %s", error.name)
+    LOGGER.warning("Argon2Field not available.")
 else:
-    __all__.append('Argon2Field')
+    __all__.append("Argon2Field")

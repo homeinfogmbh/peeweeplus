@@ -5,10 +5,4 @@ from peeweeplus.json.model import JSONMixin, JSONModel
 from peeweeplus.json.serialization import serialize
 
 
-__all__ = [
-    'deserialize',
-    'patch',
-    'serialize',
-    'JSONMixin',
-    'JSONModel'
-]
+__all__ = ["deserialize", "patch", "serialize", "JSONMixin", "JSONModel"]

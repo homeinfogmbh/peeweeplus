@@ -40,34 +40,32 @@ from peeweeplus.json.parsers import parse_enum
 from peeweeplus.types import JSON
 
 
-__all__ = ['deserialize', 'patch']
+__all__ = ["deserialize", "patch"]
 
 
-CONVERTER = FieldConverter({
-    BlobField: parse_blob,
-    BooleanField: parse_bool,
-    DateField: parse_date,
-    DateTimeField: parse_datetime,
-    DecimalField: float,
-    EnumField: parse_enum,
-    FloatField: float,
-    ForeignKeyField: int,
-    IPAddressField: ip_address,
-    IPv4AddressField: IPv4Address,
-    IPv6AddressField: IPv6Address,
-    TimeField: parse_time,
-    UUIDField: UUID,
-    CharField: parse_char_field,
-    IntegerField: int
-})
+CONVERTER = FieldConverter(
+    {
+        BlobField: parse_blob,
+        BooleanField: parse_bool,
+        DateField: parse_date,
+        DateTimeField: parse_datetime,
+        DecimalField: float,
+        EnumField: parse_enum,
+        FloatField: float,
+        ForeignKeyField: int,
+        IPAddressField: ip_address,
+        IPv4AddressField: IPv4Address,
+        IPv6AddressField: IPv6Address,
+        TimeField: parse_time,
+        UUIDField: UUID,
+        CharField: parse_char_field,
+        IntegerField: int,
+    }
+)
 
 
 def get_orm_value(
-        model: Type[Model],
-        key: str,
-        attribute: str,
-        field: Field,
-        json: JSON
+    model: Type[Model], key: str, attribute: str, field: Field, json: JSON
 ) -> Any:
     """Returns the appropriate value for the field."""
 
@@ -87,7 +85,7 @@ def is_unique(record: Model, field, orm_value) -> bool:
 
     if (primary_key := record._pk) is not None:
         pk_field = model._meta.primary_key
-        select &= pk_field != primary_key   # Exclude the model itself.
+        select &= pk_field != primary_key  # Exclude the model itself.
 
     try:
         model.get(select)
@@ -98,11 +96,7 @@ def is_unique(record: Model, field, orm_value) -> bool:
 
 
 def deserialize(
-        model: Type[Model],
-        json: dict,
-        *,
-        strict: bool = True,
-        **filters
+    model: Type[Model], json: dict, *, strict: bool = True, **filters
 ) -> Model:
     """Creates a new record from a JSON-ish dict."""
 
@@ -137,13 +131,7 @@ def deserialize(
     return record
 
 
-def patch(
-        record: Model,
-        json: dict,
-        *,
-        strict: bool = True,
-        **filters
-) -> None:
+def patch(record: Model, json: dict, *, strict: bool = True, **filters) -> None:
     """Patches an existing record with a JSON-ish dict."""
 
     model = type(record)

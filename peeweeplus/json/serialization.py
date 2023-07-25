@@ -16,20 +16,22 @@ from peeweeplus.json.fields import get_json_fields, FieldConverter
 from peeweeplus.json.filter import FieldsFilter
 
 
-__all__ = ['serialize']
+__all__ = ["serialize"]
 
 
-CONVERTER = FieldConverter({
-    BlobField: b64encode,
-    DecimalField: float,
-    DateField: lambda value: value.isoformat(),
-    DateTimeField: lambda value: value.isoformat(),
-    EnumField: lambda value: value.value,
-    IPv4AddressField: str,
-    IPv6AddressField: str,
-    TimeField: lambda value: value.isoformat(),
-    UUIDField: lambda value: value.hex
-})
+CONVERTER = FieldConverter(
+    {
+        BlobField: b64encode,
+        DecimalField: float,
+        DateField: lambda value: value.isoformat(),
+        DateTimeField: lambda value: value.isoformat(),
+        EnumField: lambda value: value.value,
+        IPv4AddressField: str,
+        IPv6AddressField: str,
+        TimeField: lambda value: value.isoformat(),
+        UUIDField: lambda value: value.hex,
+    }
+)
 
 
 def _next(cascade: Union[bool, int]) -> Union[bool, int]:
@@ -48,10 +50,7 @@ def _next(cascade: Union[bool, int]) -> Union[bool, int]:
 
 
 def _get_model_value(
-        model: Model,
-        cascade: Union[bool, int],
-        null: bool = False,
-        **filters
+    model: Model, cascade: Union[bool, int], null: bool = False, **filters
 ) -> Union[dict, int]:
     """Converts a model to a JSON value."""
 
@@ -63,11 +62,7 @@ def _get_model_value(
 
 
 def serialize(
-        record: Model,
-        *,
-        null: bool = False,
-        cascade: Union[bool, int] = None,
-        **filters
+    record: Model, *, null: bool = False, cascade: Union[bool, int] = None, **filters
 ) -> dict:
     """Returns a JSON-ish dict with the record's fields' values."""
 

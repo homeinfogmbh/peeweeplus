@@ -7,7 +7,7 @@ from typing import Iterable, NamedTuple
 from peewee import Database, Model
 
 
-__all__ = ['Transaction']
+__all__ = ["Transaction"]
 
 
 class TransactionItem(NamedTuple):

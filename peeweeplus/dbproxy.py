@@ -12,7 +12,7 @@ from configlib import search_paths
 from peeweeplus.database import MySQLDatabase
 
 
-__all__ = ['DatabaseProxy', 'MySQLDatabaseProxy']
+__all__ = ["DatabaseProxy", "MySQLDatabaseProxy"]
 
 
 LOGGER = getLogger(__file__)
@@ -22,13 +22,13 @@ class DatabaseProxy:
     """Proxies to a MySQL database."""
 
     def __init__(
-            self,
-            database: str,
-            config_file: Optional[Union[Path, str]] = None,
-            config_section: str = 'db'
+        self,
+        database: str,
+        config_file: Optional[Union[Path, str]] = None,
+        config_section: str = "db",
     ):
         self.database = database
-        self.config_file = config_file or f'{database}.conf'
+        self.config_file = config_file or f"{database}.conf"
         self.config_section = config_section
         self._database = self._dbtype(database)
         self._initialized = False
@@ -50,7 +50,8 @@ class DatabaseProxy:
         """Initializes the database."""
         LOGGER.debug(
             'Loading database config from "%s" section "%s".',
-            self.config_file, self.config_section
+            self.config_file,
+            self.config_section,
         )
         config = ConfigParser()
 
@@ -59,14 +60,10 @@ class DatabaseProxy:
 
         self._database.init(
             database := self.database,
-            host=config.get(self.config_section, 'host', fallback='localhost'),
-            user=config.get(self.config_section, 'user', fallback=database),
-            passwd=config.get(self.config_section, 'passwd'),
-            charset=config.get(
-                self.config_section,
-                'charset',
-                fallback='utf8mb4'
-            )
+            host=config.get(self.config_section, "host", fallback="localhost"),
+            user=config.get(self.config_section, "user", fallback=database),
+            passwd=config.get(self.config_section, "passwd"),
+            charset=config.get(self.config_section, "charset", fallback="utf8mb4"),
         )
         self._initialized = True
 

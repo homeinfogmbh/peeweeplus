@@ -9,7 +9,7 @@ from peeweeplus.fields import PasswordField
 from peeweeplus.json.fields import JSONField, contains
 
 
-__all__ = ['FieldsFilter']
+__all__ = ["FieldsFilter"]
 
 
 class FieldsFilter(NamedTuple):
@@ -23,11 +23,11 @@ class FieldsFilter(NamedTuple):
 
     @classmethod
     def for_deserialization(
-            cls,
-            skip: Optional[Iterable[str]] = None,
-            only: Optional[Iterable[str]] = None,
-            fk_fields: bool = False,
-            passwords: bool = True
+        cls,
+        skip: Optional[Iterable[str]] = None,
+        only: Optional[Iterable[str]] = None,
+        fk_fields: bool = False,
+        passwords: bool = True,
     ) -> FieldsFilter:
         """Creates the filter from the respective keyword arguments."""
         skip = frozenset(skip) if skip else frozenset()
@@ -36,11 +36,11 @@ class FieldsFilter(NamedTuple):
 
     @classmethod
     def for_serialization(
-            cls,
-            skip: Optional[Iterable[str]] = None,
-            only: Optional[Iterable[str]] = None,
-            fk_fields: bool = True,
-            autofields: bool = True
+        cls,
+        skip: Optional[Iterable[str]] = None,
+        only: Optional[Iterable[str]] = None,
+        fk_fields: bool = True,
+        autofields: bool = True,
     ) -> FieldsFilter:
         """Creates the filter from the respective keyword arguments."""
         skip = frozenset(skip) if skip else frozenset()

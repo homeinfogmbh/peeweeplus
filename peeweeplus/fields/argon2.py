@@ -12,10 +12,10 @@ from peeweeplus.fields.password import PasswordField
 from peeweeplus.introspection import FieldType
 
 
-__all__ = ['Argon2Field']
+__all__ = ["Argon2Field"]
 
 
-LOGGER = getLogger('Argon2Field')
+LOGGER = getLogger("Argon2Field")
 
 
 class Argon2Hash(str):
@@ -66,7 +66,7 @@ class Argon2FieldAccessor(FieldAccessor):
             value = Argon2Hash.create(value, self.field.hasher)
 
         if len(value) != self.field.actual_size:
-            raise ValueError('Hash length does not match char field size.')
+            raise ValueError("Hash length does not match char field size.")
 
         return super().__set__(instance, value)
 
@@ -76,17 +76,22 @@ class Argon2Field(PasswordField):
 
     accessor_class = Argon2FieldAccessor
 
-    def __init__(self, hasher: PasswordHasher = PasswordHasher(),
-                 min_pw_len: int = 8, default: type = None, **kwargs):
+    def __init__(
+        self,
+        hasher: PasswordHasher = PasswordHasher(),
+        min_pw_len: int = 8,
+        default: type = None,
+        **kwargs,
+    ):
         """Initializes the char field, defaulting
         max_length to the respective hash length.
         """
-        super().__init__(max_length=len(hasher.hash('')), **kwargs)
+        super().__init__(max_length=len(hasher.hash("")), **kwargs)
         self.hasher = hasher
         self.min_pw_len = min_pw_len
 
         if default is not None:
-            LOGGER.warning('Default values are being ignored!')
+            LOGGER.warning("Default values are being ignored!")
 
     @property
     def actual_size(self) -> int:

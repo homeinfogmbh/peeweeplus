@@ -6,7 +6,7 @@ from typing import Any
 from peewee import MySQLDatabase as _MySQLDatabase
 
 
-__all__ = ['MySQLDatabase']
+__all__ = ["MySQLDatabase"]
 
 
 LOGGER = getLogger(__file__)

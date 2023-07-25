@@ -9,10 +9,10 @@ from peeweeplus.exceptions import NullError
 
 
 __all__ = [
-    'JSONField',
-    'FieldConverter',
-    'contains',
-    'get_json_fields',
+    "JSONField",
+    "FieldConverter",
+    "contains",
+    "get_json_fields",
 ]
 
 
@@ -27,12 +27,7 @@ class JSONField(NamedTuple):
 class FieldConverter(dict):
     """Maps conversion functions to field classes."""
 
-    def __call__(
-            self,
-            field: Field,
-            value: Any,
-            check_null: bool = False
-    ) -> Any:
+    def __call__(self, field: Field, value: Any, check_null: bool = False) -> Any:
         """Converts the respective value to the field."""
 
         if value is None:
@@ -54,11 +49,7 @@ class FieldConverter(dict):
 
 
 def contains(
-        iterable: Iterable,
-        key: str,
-        attribute: str,
-        *,
-        default: bool = False
+    iterable: Iterable, key: str, attribute: str, *, default: bool = False
 ) -> bool:
     """Determines whether the field is contained within the iterable."""
 
@@ -88,11 +79,11 @@ def _get_json_fields(model: Type[Model]) -> Iterator[JSONField]:
         key_formatter = None
 
     for attribute, field in fields.items():
-        if attribute.startswith('_'):
+        if attribute.startswith("_"):
             continue
 
         if isinstance(field, ForeignKeyField):
-            if attribute.endswith('_id') and attribute + '_id' not in fields:
+            if attribute.endswith("_id") and attribute + "_id" not in fields:
                 continue
 
         if key_formatter is not None:

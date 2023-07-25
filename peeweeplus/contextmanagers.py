@@ -7,7 +7,7 @@ from peewee import Database, Model
 from peeweeplus.dbproxy import DatabaseProxy
 
 
-__all__ = ['ChangedConnection']
+__all__ = ["ChangedConnection"]
 
 
 def get_database(model: Type[Model]) -> Database:
@@ -33,7 +33,7 @@ class ChangedConnection:
     def __enter__(self):
         """Alters the connection parameters."""
         self._connection_parameters = self.target_db.connect_params
-        params = dict(self.target_db.connect_params)    # Copy dictionary.
+        params = dict(self.target_db.connect_params)  # Copy dictionary.
         params.update(self.source_db.connect_params)
         self.target_db.connect_params = params
         return self

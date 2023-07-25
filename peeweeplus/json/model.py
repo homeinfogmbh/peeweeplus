@@ -11,10 +11,10 @@ from peeweeplus.json.functions import camel_case
 from peeweeplus.json.serialization import serialize
 
 
-__all__ = ['JSONMixin', 'JSONModel']
+__all__ = ["JSONMixin", "JSONModel"]
 
 
-class JSONMixin:    # pylint: disable=R0903
+class JSONMixin:  # pylint: disable=R0903
     """A JSON serializable and deserializable model mixin."""
 
     get_json_fields = classmethod(get_json_fields)
@@ -29,10 +29,7 @@ class JSONModel(Model, JSONMixin):
     __key_formatter__ = camel_case
 
     def __init_subclass__(
-            cls,
-            *args,
-            key_formatter: Optional[Callable[[str], str]] = None,
-            **kwargs
+        cls, *args, key_formatter: Optional[Callable[[str], str]] = None, **kwargs
     ):
         """Set an optional key formatter."""
         super().__init_subclass__(*args, **kwargs)
@@ -43,10 +40,11 @@ class JSONModel(Model, JSONMixin):
     def __repr__(self):
         """Returns the service's name."""
         cls = type(self)
-        fields = cls._meta.fields   # pylint: disable=E1101
-        args = ', '.join(
-            f'{name}=...' if isinstance(field, PasswordField)
-            else f'{name}={getattr(self, name)!r}'
+        fields = cls._meta.fields  # pylint: disable=E1101
+        args = ", ".join(
+            f"{name}=..."
+            if isinstance(field, PasswordField)
+            else f"{name}={getattr(self, name)!r}"
             for name, field in fields.items()
         )
-        return f'{cls.__name__}({args})'
+        return f"{cls.__name__}({args})"

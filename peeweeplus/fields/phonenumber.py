@@ -3,7 +3,7 @@
 from peeweeplus.fields.char import RestrictedCharField
 
 
-__all__ = ['PhoneNumberField']
+__all__ = ["PhoneNumberField"]
 
 
 REGEX = r"^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$"

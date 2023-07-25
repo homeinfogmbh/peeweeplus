@@ -8,7 +8,7 @@ from peewee import CharField, Field
 from peeweeplus.fields.int import UnsignedIntegerField
 
 
-__all__ = ['IPAddressField', 'IPv4AddressField', 'IPv6AddressField']
+__all__ = ["IPAddressField", "IPv4AddressField", "IPv6AddressField"]
 
 
 IPAddress = Union[IPv4Address, IPv6Address]
@@ -59,14 +59,14 @@ class IPv4AddressField(UnsignedIntegerField):
 class IPv6AddressField(Field):
     """Field to store IPv4 or IPv6 addresses as integers."""
 
-    field_type = 'BINARY(16)'
+    field_type = "BINARY(16)"
 
     def db_value(self, value: Optional[IPv6Address]) -> Optional[bytes]:
         """Returns the IPv4 address's integer value or None."""
         if value is None:
             return None
 
-        return int(value).to_bytes(16, 'big')
+        return int(value).to_bytes(16, "big")
 
     def python_value(self, value: Optional[bytes]) -> Optional[IPv6Address]:
         """Returns the IP address object or None."""

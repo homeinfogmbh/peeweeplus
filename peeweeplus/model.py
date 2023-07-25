@@ -10,7 +10,7 @@ from peewee import ModelAlias
 from peewee import Select
 
 
-__all__ = ['select_tree']
+__all__ = ["select_tree"]
 
 
 ModelType = Union[ModelAlias, Type[Model]]
@@ -32,9 +32,7 @@ def select_tree(model: ModelType) -> Select:
     select = model.select(model, *(condition.rel_model for condition in tree))
 
     for model_, rel_model, join_type, condition in tree:
-        select = select.join_from(
-            model_, rel_model, join_type=join_type, on=condition
-        )
+        select = select.join_from(model_, rel_model, join_type=join_type, on=condition)
 
     return select
 
@@ -58,7 +56,7 @@ def get_foreign_keys(model: ModelType) -> Iterator[str]:
         if not isinstance(field, ForeignKeyField):
             continue
 
-        if attribute.endswith('_id') and attribute + '_id' not in fields:
+        if attribute.endswith("_id") and attribute + "_id" not in fields:
             continue
 
         if isinstance(model, ModelAlias):

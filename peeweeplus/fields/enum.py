@@ -6,7 +6,7 @@ from typing import Optional, Type
 from peewee import CharField
 
 
-__all__ = ['EnumField']
+__all__ = ["EnumField"]
 
 
 class EnumField(CharField):
@@ -25,15 +25,14 @@ class EnumField(CharField):
     def max_length(self) -> int:
         """Derives the required field size from the enumeration values."""
         return max(
-            len(value.name if self.use_name else value.value)
-            for value in self.enum
+            len(value.name if self.use_name else value.value) for value in self.enum
         )
 
     @max_length.setter
     def max_length(self, max_length: int):
         """Mockup to comply with super class' __init__."""
         if max_length is not None:
-            raise AttributeError('Cannot set max_length property.')
+            raise AttributeError("Cannot set max_length property.")
 
     def db_value(self, value: Enum) -> Optional[str]:
         """Coerce enumeration value for database."""

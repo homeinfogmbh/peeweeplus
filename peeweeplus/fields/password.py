@@ -3,7 +3,7 @@
 from peewee import FixedCharField
 
 
-__all__ = ['PasswordField']
+__all__ = ["PasswordField"]
 
 
 class PasswordField(FixedCharField):
