@@ -77,7 +77,7 @@ def get_orm_value(
         raise FieldValueError(model, key, attribute, field, json) from None
 
 
-def is_unique(record: Model, field, orm_value) -> bool:
+def is_unique(record: Model, field: Field, orm_value: Any) -> bool:
     """Checks whether the value is unique for the field."""
 
     model = field.model
