@@ -28,18 +28,18 @@ class HTMLTextAccessor(FieldAccessor):
 class HTMLCharField(CharField):
     """CharField with HTML escaped text."""
 
+    accessor_class = HTMLTextAccessor
+
     def __init__(self, *args, clean_func: Callable[[str], str] = sanitize, **kwargs):
         super().__init__(*args, **kwargs)
         self.clean_func = clean_func
-
-    accessor_class = HTMLTextAccessor
 
 
 class HTMLTextField(TextField):
     """TextField with HTML escaped text."""
 
+    accessor_class = HTMLTextAccessor
+
     def __init__(self, *args, clean_func: Callable[[str], str] = sanitize, **kwargs):
         super().__init__(*args, **kwargs)
         self.clean_func = clean_func
-
-    accessor_class = HTMLTextAccessor
