@@ -1,13 +1,14 @@
 """Context managers."""
 
-from typing import Type
+from contextlib import contextmanager
+from typing import Iterator, Type, Union
 
 from peewee import Database, Model
 
 from peeweeplus.dbproxy import DatabaseProxy
 
 
-__all__ = ["ChangedConnection"]
+__all__ = ["ChangedConnection", "connected"]
 
 
 def get_database(model: Type[Model]) -> Database:
@@ -17,6 +18,37 @@ def get_database(model: Type[Model]) -> Database:
         return database._database
 
     return database
+
+
+@contextmanager
+def connected(*databases: Union[Database, DatabaseProxy]) -> Iterator[None]:
+    """Keep one connection per database open for the enclosed block.
+
+    All queries inside the block reuse that connection instead of
+    connecting for each query. Usable as context manager or decorator:
+
+        with connected(DATABASE):
+            ...
+
+        @connected(DATABASE)
+        def handler():
+            ...
+
+    Reentrant: only connections opened here are closed on exit.
+    """
+    opened = []
+
+    try:
+        for database in databases:
+            if database.is_closed():
+                database.connect()
+                opened.append(database)
+
+        yield
+    finally:
+        for database in reversed(opened):
+            if not database.is_closed():
+                database.close()
 
 
 class ChangedConnection:

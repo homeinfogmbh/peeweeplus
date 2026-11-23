@@ -1,5 +1,5 @@
 # peeweeplus
-Stand: 2026-07-29, geprüft gegen Commit 02dea15
+Stand: 2026-11-23, geprüft gegen Commit 38abdf5
 
 ## Zweck
 Praktische Erweiterung des Peewee-ORM. Liefert zusätzliche Feldtypen,
@@ -21,6 +21,13 @@ Python 3, aufbauend auf `peewee`. Package `peeweeplus` mit Subpackages
 ### Bietet an
 - `MySQLDatabaseProxy` (verzögerte, konfigurierte DB-Anbindung — von `hwdb`,
   `mdb`, `sysmon`, `termgr` genutzt: `MySQLDatabaseProxy("<name>")`).
+- `MySQLDatabase`: ohne offene Verbindung wird pro Query verbunden und wieder
+  getrennt; eine bereits offene Verbindung (Transaktion oder `connected()`)
+  wird weiterverwendet.
+- `connected(*databases)` (Kontextmanager/Decorator, reentrant): hält je
+  Datenbank eine Verbindung für den Block offen und schließt nur selbst
+  geöffnete. Für WSGI-Handler gedacht, damit nicht jede Query neu verbindet
+  (bei entfernter DB ca. 44 ms statt 9 ms pro Query).
 - `JSONModel` (Peewee-Model mit `to_json`/JSON-Mapping), zusätzliche Felder
   (u. a. Enum-, IPv6-, HTML-Text-Felder) und Transaktions-/Introspektions-Helfer.
 

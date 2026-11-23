@@ -2,7 +2,7 @@
 
 from logging import getLogger
 
-from peeweeplus.contextmanagers import ChangedConnection
+from peeweeplus.contextmanagers import ChangedConnection, connected
 from peeweeplus.converters import dec2dom
 from peeweeplus.converters import dec2dict
 from peeweeplus.converters import dec2orm
@@ -43,6 +43,7 @@ __all__ = [
     "select_tree",
     "serialize",
     "ChangedConnection",
+    "connected",
     "DatabaseProxy",
     "FileMixin",
     "MySQLDatabase",

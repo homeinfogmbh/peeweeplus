@@ -16,10 +16,14 @@ class MySQLDatabase(_MySQLDatabase):
     """Extension of peewee.MySQLDatabase with closing option."""
 
     def execute_sql(self, *args, **kwargs) -> Any:
-        """Conditionally execute the SQL query in an
-        execution context iff closing is enabled.
+        """Execute the SQL query.
+
+        If a connection is already open (e.g. inside a transaction or a
+        peeweeplus.connected() block), it is reused. Otherwise a connection
+        is opened for this single query and closed again afterwards, so that
+        no idle connections are left behind in long-running processes.
         """
-        if self._state.transactions:
+        if self._state.transactions or not self.is_closed():
             return super().execute_sql(*args, **kwargs)
 
         with self.connection_context():
