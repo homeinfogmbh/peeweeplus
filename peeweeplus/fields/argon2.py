@@ -1,8 +1,9 @@
 """Argon2-based password hashing."""
 
 from __future__ import annotations
+from functools import cache
 from logging import getLogger
-from typing import Optional
+from typing import Optional, Type
 
 from argon2 import Parameters, PasswordHasher, extract_parameters
 from peewee import FieldAccessor, Model
@@ -16,6 +17,18 @@ __all__ = ["Argon2Field"]
 
 
 LOGGER = getLogger("Argon2Field")
+
+
+@cache
+def get_column_size(model: Type[Model], name: str) -> Optional[int]:
+    """Returns the size of the database column of the given field.
+
+    Cached, because it is needed each time a hash is set, i.e. for each record
+    loaded from the database, and requires a query.
+    """
+
+    # Fields overload "==", so they cannot be used as cache keys themselves.
+    return FieldType.from_field(model._meta.fields[name]).size
 
 
 class Argon2Hash(str):
@@ -96,7 +109,7 @@ class Argon2Field(PasswordField):
     @property
     def actual_size(self) -> int:
         """Returns the actual field size."""
-        return FieldType.from_field(self).size
+        return get_column_size(self.model, self.name)
 
     def python_value(self, value: str) -> Optional[Argon2Hash]:
         """Returns an Argon2 hash."""
