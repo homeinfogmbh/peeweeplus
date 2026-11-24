@@ -1,7 +1,7 @@
 """Miscellaneous stuff."""
 
 from functools import cache
-from typing import Any, Iterable, Iterator, NamedTuple, Type
+from typing import Any, Callable, Iterable, Iterator, NamedTuple, Optional, Type
 
 from peewee import Field, ForeignKeyField, Model
 
@@ -36,16 +36,28 @@ class FieldConverter(dict):
 
             return None
 
-        for typ, function in self.items():
-            if isinstance(field, typ):
-                break
-        else:
+        if (function := self.get_function(field)) is None:
             return value
 
-        try:
-            return function(value)
-        except TypeError:
-            return function(value, field)
+        return convert(function, value, field)
+
+    def get_function(self, field: Field) -> Optional[Callable[..., Any]]:
+        """Returns the conversion function for the field, if any."""
+
+        for typ, function in self.items():
+            if isinstance(field, typ):
+                return function
+
+        return None
+
+
+def convert(function: Callable[..., Any], value: Any, field: Field) -> Any:
+    """Converts the value using the conversion function."""
+
+    try:
+        return function(value)
+    except TypeError:
+        return function(value, field)
 
 
 def contains(

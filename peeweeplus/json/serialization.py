@@ -2,17 +2,19 @@
 
 from base64 import b64encode
 from contextlib import suppress
-from typing import Union
+from functools import lru_cache
+from typing import Any, Callable, NamedTuple, Optional, Type, Union
 
 from peewee import BlobField
 from peewee import DateField
 from peewee import DateTimeField
 from peewee import DecimalField
+from peewee import Field
 from peewee import Model
 from peewee import TimeField
 from peewee import UUIDField
 from peeweeplus.fields import EnumField, IPv4AddressField, IPv6AddressField
-from peeweeplus.json.fields import get_json_fields, FieldConverter
+from peeweeplus.json.fields import convert, get_json_fields, FieldConverter
 from peeweeplus.json.filter import FieldsFilter
 
 
@@ -32,6 +34,32 @@ CONVERTER = FieldConverter(
         UUIDField: lambda value: value.hex,
     }
 )
+
+
+class FieldSerializer(NamedTuple):
+    """A field to be serialized and its conversion function."""
+
+    key: str
+    attribute: str
+    field: Field
+    function: Optional[Callable[..., Any]]
+
+
+@lru_cache(maxsize=1024)
+def get_serializers(
+    model: Type[Model], fields_filter: FieldsFilter
+) -> tuple[FieldSerializer, ...]:
+    """Returns the fields of the model that pass the filter with their
+    conversion functions.
+
+    Filtering the fields and looking up the functions for each record takes
+    longer than the conversion itself, but depends on the model only.
+    """
+
+    return tuple(
+        FieldSerializer(key, attribute, field, CONVERTER.get_function(field))
+        for key, attribute, field in fields_filter.filter(get_json_fields(model))
+    )
 
 
 def _next(cascade: Union[bool, int]) -> Union[bool, int]:
@@ -66,13 +94,14 @@ def serialize(
 ) -> dict:
     """Returns a JSON-ish dict with the record's fields' values."""
 
-    model = type(record)
-    fields = get_json_fields(model)
     fields_filter = FieldsFilter.for_serialization(**filters)
     json = {}
 
-    for key, attribute, field in fields_filter.filter(fields):
-        value = CONVERTER(field, getattr(record, attribute), check_null=False)
+    for key, attribute, field, function in get_serializers(type(record), fields_filter):
+        value = getattr(record, attribute)
+
+        if value is not None and function is not None:
+            value = convert(function, value, field)
 
         if not null and value is None:
             continue
